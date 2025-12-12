@@ -1,0 +1,142 @@
+{
+  "userId": "korede",
+  "projectId": 1,
+  "projectTitle": "E-commerce Mobile App",
+  "totalMilestones": 7,
+  "completedMilestones": 2,
+  "payments": [
+    {
+      "id": 1,
+      "transactionId": "TRN-0932",
+      "date": "28 Aug 2025",
+      "projectName": "E-commerce Mobile App",
+      "milestoneNumber": 1,
+      "milestoneTitle": "Idea Consultation & PRD Generation",
+      "progress": {
+        "current": 1,
+        "total": 7,
+        "percentage": 14
+      },
+      "amount": 25000,
+      "currency": "NGN",
+      "percentagePaid": 20,
+      "status": "completed",
+      "paymentMethod": "wallet",
+      "paymentDate": "28 Aug 2025"
+    },
+    {
+      "id": 2,
+      "transactionId": "TRN-0933",
+      "date": "30 Aug 2025",
+      "projectName": "E-commerce Mobile App",
+      "milestoneNumber": 2,
+      "milestoneTitle": "PRD Review & Technical Planning",
+      "progress": {
+        "current": 2,
+        "total": 7,
+        "percentage": 29
+      },
+      "amount": 25000,
+      "currency": "NGN",
+      "percentagePaid": 20,
+      "status": "completed",
+      "paymentMethod": "paystack",
+      "paymentDate": "30 Aug 2025"
+    },
+    {
+      "id": 3,
+      "transactionId": "TRN-0934",
+      "date": "5 Sept 2025",
+      "projectName": "E-commerce Mobile App",
+      "milestoneNumber": 3,
+      "milestoneTitle": "Design & System Architecture",
+      "progress": {
+        "current": 3,
+        "total": 7,
+        "percentage": 43
+      },
+      "amount": 25000,
+      "currency": "NGN",
+      "percentagePaid": 20,
+      "status": "in-progress",
+      "paymentMethod": null,
+      "paymentDate": null
+    },
+    {
+      "id": 4,
+      "transactionId": "TRN-0935",
+      "date": "5 Sept 2025",
+      "projectName": "E-commerce Mobile App",
+      "milestoneNumber": 4,
+      "milestoneTitle": "Core Development (MVP Build)",
+      "progress": {
+        "current": 4,
+        "total": 7,
+        "percentage": 57
+      },
+      "amount": 25000,
+      "currency": "NGN",
+      "percentagePaid": 20,
+      "status": "pending",
+      "paymentMethod": null,
+      "paymentDate": null
+    },
+    {
+      "id": 5,
+      "transactionId": "TRN-0936",
+      "date": "5 Sept 2025",
+      "projectName": "E-commerce Mobile App",
+      "milestoneNumber": 5,
+      "milestoneTitle": "Quality Assurance & Testing",
+      "progress": {
+        "current": 5,
+        "total": 7,
+        "percentage": 71
+      },
+      "amount": 25000,
+      "currency": "NGN",
+      "percentagePaid": 20,
+      "status": "pending",
+      "paymentMethod": null,
+      "paymentDate": null
+    },
+    {
+      "id": 6,
+      "transactionId": "TRN-0937",
+      "date": "10 Sept 2025",
+      "projectName": "E-commerce Mobile App",
+      "milestoneNumber": 1,
+      "milestoneTitle": "Idea Consultation & PRD Generation",
+      "progress": {
+        "current": 1,
+        "total": 7,
+        "percentage": 14
+      },
+      "amount": 25000,
+      "currency": "NGN",
+      "percentagePaid": 20,
+      "status": "completed",
+      "paymentMethod": "wallet",
+      "paymentDate": "10 Sept 2025"
+    },
+    {
+      "id": 7,
+      "transactionId": "TRN-0938",
+      "date": "12 Sept 2025",
+      "projectName": "E-commerce Mobile App",
+      "milestoneNumber": 7,
+      "milestoneTitle": "Post-Launch Support & Optimization",
+      "progress": {
+        "current": 7,
+        "total": 7,
+        "percentage": 100
+      },
+      "amount": 25000,
+      "currency": "NGN",
+      "percentagePaid": 100,
+      "status": "completed",
+      "paymentMethod": "paystack",
+      "paymentDate": "12 Sept 2025"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "prds": [
+    {
+      "id": 1,
+      "projectName": "E-commerce Mobile App",
+      "description": "AI-powered fitness tracking app with personalized workout plans and nutrition guidance for busy professionals...",
+      "createdDate": "Sept 20, 2025",
+      "duration": "45 Secs",
+      "status": "In-Progress",
+      "modifiedDate": "today",
+      "prdUrl": "/prds/ecommerce-app-prd.pdf"
+    },
+    {
+      "id": 2,
+      "projectName": "E-commerce Mobile App",
+      "description": "AI-powered fitness tracking app with personalized workout plans and nutrition guidance for busy professionals...",
+      "createdDate": "Sept 20, 2025",
+      "duration": "45 Secs",
+      "status": "Completed",
+      "modifiedDate": "3 days ago",
+      "prdUrl": "/prds/ecommerce-app-prd-final.pdf"
+    },
+    {
+      "id": 3,
+      "projectName": "Real Estate Platform",
+      "description": "Property listing and management platform with virtual tours, mortgage calculator, and agent matching...",
+      "createdDate": "Sept 15, 2025",
+      "duration": "60 Secs",
+      "status": "Completed",
+      "modifiedDate": "1 week ago",
+      "prdUrl": "/prds/real-estate-prd.pdf"
+    },
+    {
+      "id": 4,
+      "projectName": "Healthcare Portal",
+      "description": "Patient management system with appointment scheduling, telemedicine integration, and medical records...",
+      "createdDate": "Sept 10, 2025",
+      "duration": "55 Secs",
+      "status": "In-Progress",
+      "modifiedDate": "2 days ago",
+      "prdUrl": "/prds/healthcare-portal-prd.pdf"
+    }
+  ]
+}

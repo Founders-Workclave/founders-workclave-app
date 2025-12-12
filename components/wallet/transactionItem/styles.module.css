@@ -1,0 +1,86 @@
+.item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  transition: background 0.2s;
+  border-bottom: 1px solid #e4e4e4;
+}
+
+.item:hover {
+  background: #f9fafb;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 14px;
+  font-family: "inter", sans-serif;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.amount {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.description {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 4px 0 0 0;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  font-family: "inter", sans-serif;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.statusCompleted {
+  background: #e1ffed;
+  color: #00b049;
+}
+
+.statusProcessing {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.statusFailed {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.date {
+  font-size: 14px;
+  color: #090202;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .item {
+    align-items: flex-start;
+  }
+
+  .right {
+    width: unset;
+    flex-shrink: unset;
+    justify-content: space-between;
+  }
+}

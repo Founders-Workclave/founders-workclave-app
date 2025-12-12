@@ -1,0 +1,41 @@
+{
+  "projectId": 1,
+  "documents": [
+    {
+      "id": 1,
+      "title": "Product Requirements Document (PRD)",
+      "type": "PDF",
+      "size": "2.4 MB",
+      "uploadDate": "Sept 18, 2025",
+      "url": "/documents/prd.pdf",
+      "icon": "document"
+    },
+    {
+      "id": 2,
+      "title": "Technical Specifications",
+      "type": "PDF",
+      "size": "2.4 MB",
+      "uploadDate": "Sept 18, 2025",
+      "url": "/documents/technical-specs.pdf",
+      "icon": "document"
+    },
+    {
+      "id": 3,
+      "title": "User Flow Diagrams",
+      "type": "PDF",
+      "size": "2.4 MB",
+      "uploadDate": "Sept 18, 2025",
+      "url": "/documents/user-flow.pdf",
+      "icon": "document"
+    },
+    {
+      "id": 4,
+      "title": "Contract",
+      "type": "PDF",
+      "size": "2.4 MB",
+      "uploadDate": "Sept 18, 2025",
+      "url": "/documents/contract.pdf",
+      "icon": "document"
+    }
+  ]
+}

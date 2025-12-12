@@ -1,0 +1,147 @@
+.container {
+  background: #08081b;
+}
+
+.contain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  height: 100vh;
+  padding: 16px;
+}
+
+.colOne {
+  width: 50%;
+  height: 100%;
+  background-image: url("../../public/assets/loginImg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: 8px;
+}
+
+.colTwo {
+  width: 50%;
+  padding: 0px 56px;
+}
+
+.colTwo h2 {
+  font-weight: 900;
+  font-size: 24px;
+  color: #ffffff;
+  line-height: 32px;
+  padding-top: 40px;
+}
+
+.colTwo > p {
+  color: #a6abe8;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  padding-top: 8px;
+  letter-spacing: 1%;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #17172d;
+  border-radius: 8px;
+  padding: 16px 24px;
+  font-family: "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+  color: #ffffff;
+  text-decoration: none;
+  justify-content: center;
+}
+
+.allBtn {
+  padding-top: 38px;
+}
+
+.loginBtn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dividerAlt {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 16px auto;
+}
+
+.dividerAlt::before,
+.dividerAlt::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #2d2d4d;
+}
+
+.dividerAlt > span {
+  font-family: "TestCalibre", sans-serif;
+  font-weight: 900;
+  padding: 0px 16px;
+  color: #a6abe8;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 8%;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.otherText {
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+  color: #ffffff;
+  padding-top: 16px;
+}
+
+.otherText2 {
+  font-weight: 400;
+  font-style: Regular;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+  color: #ffffff;
+  padding-top: 16px;
+}
+
+.otherText a {
+  color: #5865f2;
+  cursor: pointer;
+}
+
+.otherText2 a {
+  color: #5865f2;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .contain {
+    padding: 0px;
+  }
+  .colOne {
+    display: none;
+  }
+  .colTwo {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0px 16px;
+  }
+}

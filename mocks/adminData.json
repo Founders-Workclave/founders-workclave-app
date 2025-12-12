@@ -1,0 +1,122 @@
+{
+  "stats": [
+    {
+      "id": "1",
+      "icon": "users",
+      "label": "Total Founders",
+      "value": 50,
+      "bgColor": "#f0f4ff"
+    },
+    {
+      "id": "2",
+      "icon": "building",
+      "label": "Total Agencies",
+      "value": 45,
+      "bgColor": "#f0f4ff"
+    },
+    {
+      "id": "3",
+      "icon": "dollar",
+      "label": "Revenue this month",
+      "value": "$84,500",
+      "bgColor": "#f0f4ff"
+    },
+    {
+      "id": "4",
+      "icon": "document",
+      "label": "PRDs Generated",
+      "value": 200,
+      "bgColor": "#f0f4ff"
+    },
+    {
+      "id": "5",
+      "icon": "folder",
+      "label": "Active Projects",
+      "value": 200,
+      "bgColor": "#f0f4ff"
+    }
+  ],
+  "revenueData": {
+    "total": "₦200M",
+    "chart": [
+      { "day": "Mon", "amount": 20000000 },
+      { "day": "Tue", "amount": 10000000 },
+      { "day": "Wed", "amount": 20000000 },
+      { "day": "Thu", "amount": 25000000 },
+      { "day": "Fri", "amount": 20000000 },
+      { "day": "Sat", "amount": 30000000 },
+      { "day": "Sun", "amount": 15000000 }
+    ]
+  },
+  "subscriptionPlans": [
+    {
+      "name": "Starter",
+      "count": 300,
+      "color": "#5865F2",
+      "percentage": 15
+    },
+    {
+      "name": "Professional",
+      "count": 300,
+      "color": "#B83AD4",
+      "percentage": 45
+    },
+    {
+      "name": "Enterprise",
+      "count": 300,
+      "color": "#DAA839",
+      "percentage": 75
+    }
+  ],
+  "users": [
+    {
+      "id": "1",
+      "name": "Einstein Oyakhilome",
+      "email": "Einstein.oyakhilomw1@gmail.com",
+      "phone": "09035621993",
+      "agency": "Rebot business solutions",
+      "joinedDate": "Nov 17, 2025",
+      "role": "Founder",
+      "status": "Inactive",
+      "avatar": ""
+    },
+    {
+      "id": "2",
+      "name": "Einstein Oyakhilome",
+      "email": "Einstein.oyakhilomw1@gmail.com",
+      "phone": "09035621993",
+      "agency": "Rebot business solutions",
+      "joinedDate": "Nov 17, 2025",
+      "role": "Founder",
+      "status": "Active",
+      "avatar": ""
+    },
+    {
+      "id": "3",
+      "name": "Einstein Oyakhilome",
+      "email": "Einstein.oyakhilomw1@gmail.com",
+      "phone": "09035621993",
+      "agency": "Rebot business solutions",
+      "joinedDate": "Nov 17, 2025",
+      "role": "Founder",
+      "status": "Suspended",
+      "avatar": ""
+    },
+    {
+      "id": "4",
+      "name": "Einstein Oyakhilome",
+      "email": "Einstein.oyakhilomw1@gmail.com",
+      "phone": "09035621993",
+      "agency": "Rebot business solutions",
+      "joinedDate": "Nov 17, 2025",
+      "role": "Founder",
+      "status": "Inactive",
+      "avatar": ""
+    }
+  ],
+  "pagination": {
+    "currentPage": 3,
+    "totalPages": 30,
+    "totalUsers": 300
+  }
+}

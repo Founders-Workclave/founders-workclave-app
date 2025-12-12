@@ -1,0 +1,64 @@
+{
+  "userId": "korede",
+  "walletBalance": 20000000.0,
+  "currency": "NGN",
+  "transactions": [
+    {
+      "id": 1,
+      "type": "deposit",
+      "amount": 24000.0,
+      "date": "15 Dec, 2023",
+      "status": "completed",
+      "reference": "TRX-001-2023"
+    },
+    {
+      "id": 2,
+      "type": "deposit",
+      "amount": 24000.0,
+      "date": "15 Dec, 2023",
+      "status": "completed",
+      "reference": "TRX-002-2023"
+    },
+    {
+      "id": 3,
+      "type": "deposit",
+      "amount": 24000.0,
+      "date": "15 Dec, 2023",
+      "status": "completed",
+      "reference": "TRX-003-2023"
+    },
+    {
+      "id": 4,
+      "type": "deposit",
+      "amount": 24000.0,
+      "date": "15 Dec, 2023",
+      "status": "completed",
+      "reference": "TRX-004-2023"
+    },
+    {
+      "id": 5,
+      "type": "deposit",
+      "amount": 24000.0,
+      "date": "15 Dec, 2023",
+      "status": "completed",
+      "reference": "TRX-005-2023"
+    },
+    {
+      "id": 6,
+      "type": "withdrawal",
+      "amount": 5000.0,
+      "date": "14 Dec, 2023",
+      "status": "processing",
+      "reference": "TRX-006-2023"
+    },
+    {
+      "id": 7,
+      "type": "payment",
+      "amount": 15000.0,
+      "date": "13 Dec, 2023",
+      "status": "completed",
+      "reference": "TRX-007-2023",
+      "description": "Milestone payment - PRD Generation"
+    }
+  ]
+}

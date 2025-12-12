@@ -1,0 +1,96 @@
+{
+  "currentUser": {
+    "id": "user_1",
+    "name": "Current User",
+    "avatar": "/assets/profile.png"
+  },
+  "conversations": [
+    {
+      "id": "conv_1",
+      "participant": {
+        "id": "pm_1",
+        "name": "Wade Warren",
+        "avatar": "/assets/profile.png",
+        "isOnline": true,
+        "role": "Product Manager"
+      },
+      "lastMessage": {
+        "text": "Hello, please let try to...",
+        "timestamp": "2h",
+        "isRead": false
+      },
+      "unreadCount": 2
+    },
+    {
+      "id": "conv_2",
+      "participant": {
+        "id": "pm_2",
+        "name": "Wade Warren",
+        "avatar": "/assets/profile.png",
+        "isOnline": false,
+        "role": "Product Manager"
+      },
+      "lastMessage": {
+        "text": "Hello",
+        "timestamp": "2h",
+        "isRead": true
+      },
+      "unreadCount": 0
+    }
+  ],
+  "messages": {
+    "conv_1": [
+      {
+        "id": "msg_1",
+        "senderId": "pm_1",
+        "text": "Hi Sir",
+        "timestamp": "2023-12-17T13:12:00Z",
+        "isRead": true
+      },
+      {
+        "id": "msg_2",
+        "senderId": "pm_1",
+        "text": "Lorem ipsum dolor sit amet consectetur.",
+        "timestamp": "2023-12-17T13:12:30Z",
+        "isRead": true
+      },
+      {
+        "id": "msg_3",
+        "senderId": "pm_1",
+        "text": "Sit habitant in at vel et donec donec. Suspendisse nunc dictum ultricies accumsan tortor. Id ultrices viverra sit mi egestas vestibulum. A tincidunt auctor sed feugiat non.",
+        "timestamp": "2023-12-17T13:13:00Z",
+        "isRead": true
+      },
+      {
+        "id": "msg_4",
+        "senderId": "pm_1",
+        "text": "Arcu aliquet scelerisque velit scelerisque pellentesque bibendum ante. Viverra velit leo et lectus nullam porta molestie. Faucibus id arcu viverra mi.",
+        "timestamp": "2023-12-17T13:12:00Z",
+        "isRead": true
+      },
+      {
+        "id": "msg_5",
+        "senderId": "user_1",
+        "text": "Lorem ipsum dolor sit amet consectetur.",
+        "timestamp": "2023-12-17T13:12:00Z",
+        "isRead": true
+      },
+      {
+        "id": "msg_6",
+        "senderId": "user_1",
+        "text": "Sit habitant in at vel et donec donec. Suspendisse nunc dictum ultricies accumsan tortor. Id ultrices viverra sit mi egestas vestibulum. A tincidunt auctor sed feugiat non.",
+        "timestamp": "2023-12-17T13:12:00Z",
+        "isRead": true
+      }
+    ],
+    "conv_2": [
+      {
+        "id": "msg_7",
+        "senderId": "pm_2",
+        "text": "Hello",
+        "timestamp": "2023-12-17T11:00:00Z",
+        "isRead": true
+      }
+    ]
+  }
+}

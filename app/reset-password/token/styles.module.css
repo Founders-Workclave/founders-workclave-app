@@ -1,0 +1,22 @@
+.container {
+  background: #08081b;
+  height: 100vh;
+  padding: 16px;
+}
+
+.contain {
+  background: #17172d;
+  border-radius: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 84px;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .contain {
+    padding: 16px;
+  }
+}

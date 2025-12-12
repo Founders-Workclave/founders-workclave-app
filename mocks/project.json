@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "title": "E-commerce Mobile App",
+    "stage": "Idea Consultation & PRD Generation",
+    "progress": 70,
+    "status": "In-Progress"
+  },
+  {
+    "id": 2,
+    "title": "E-commerce Mobile App",
+    "stage": "Post-Launch Support & Optimization",
+    "progress": 100,
+    "status": "Completed"
+  }
+]

@@ -1,0 +1,55 @@
+{
+  "notifications": [
+    {
+      "id": "1",
+      "type": "milestone",
+      "title": "Milestone progress updated",
+      "description": "Design & Wireframes milestone updated to 60% complete",
+      "timestamp": "Oct 25, 2024 - 5:45 PM",
+      "isRead": false,
+      "avatar": "/assets/user-avatar.jpg"
+    },
+    {
+      "id": "2",
+      "type": "document",
+      "title": "Document uploaded",
+      "description": "Wireframes_v2.pdf added to project documents",
+      "timestamp": "Oct 25, 2024 - 5:45 PM",
+      "isRead": false
+    },
+    {
+      "id": "3",
+      "type": "payment",
+      "title": "Payment made",
+      "description": "$15,000 payment made for Milestone 2",
+      "timestamp": "Oct 25, 2024 - 5:45 PM",
+      "isRead": false,
+      "amount": 15000
+    },
+    {
+      "id": "4",
+      "type": "prd",
+      "title": "PRD generated",
+      "description": "Project 'AI Fitness Mobile App PRD generated",
+      "timestamp": "Oct 25, 2024 - 5:45 PM",
+      "isRead": true
+    },
+    {
+      "id": "5",
+      "type": "wallet",
+      "title": "Wallet funded",
+      "description": "$15,000 was funded to your wallet",
+      "timestamp": "Oct 25, 2024 - 5:45 PM",
+      "isRead": true,
+      "amount": 15000
+    },
+    {
+      "id": "6",
+      "type": "consultation",
+      "title": "Consultation booked",
+      "description": "Post-launch service booking scheduled for June 23, 2025",
+      "timestamp": "Oct 25, 2024 - 5:45 PM",
+      "isRead": true
+    }
+  ]
+}

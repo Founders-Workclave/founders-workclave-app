@@ -1,0 +1,46 @@
+.container {
+  background: linear-gradient(89.65deg, #5865f2 -12.33%, #833aea 122.33%);
+  padding: 32px;
+  border-radius: 16px;
+  color: white;
+}
+
+.iconWrapp {
+  margin-bottom: 8px;
+}
+
+.iconWrapper svg {
+  stroke: white;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 8px 0 8px 0;
+  color: white;
+}
+
+.description {
+  font-size: 14px;
+  color: #eef0fe;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.viewButton {
+  width: 100%;
+  background: white;
+  color: #5865f2;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viewButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

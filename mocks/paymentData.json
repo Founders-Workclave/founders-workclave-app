@@ -1,0 +1,33 @@
+{
+  "milestones": [
+    {
+      "id": 1,
+      "title": "Idea Consultation & PRD Generation",
+      "description": "Discuss, refine, and finalize the client's vision for a comprehensive Project Requirements Document (PRD).",
+      "dueDate": "Mar 20, 2025",
+      "amount": 5000,
+      "deliverables": [
+        "In-app discovery section (News & Consultant)",
+        "User to agent call/video session",
+        "Generation of Initial PRD and Project scope",
+        "High level features outline and commercialize core tasks"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Design & Prototype",
+      "description": "Create wireframes, mockups, and interactive prototypes for the mobile application.",
+      "dueDate": "Apr 15, 2025",
+      "amount": 8000,
+      "deliverables": [
+        "User flow diagrams",
+        "High-fidelity mockups",
+        "Interactive prototype",
+        "Design system documentation"
+      ]
+    }
+  ],
+  "user": {
+    "walletBalance": 200000000.0
+  }
+}

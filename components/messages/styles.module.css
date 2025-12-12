@@ -1,0 +1,54 @@
+.container {
+  display: flex;
+  height: 90vh;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.conversationListWrapper {
+  display: flex;
+  flex: 0 0 320px;
+}
+
+.chatWindowWrapper {
+  display: flex;
+  flex: 1;
+}
+
+.conversationListWrapper.hidden,
+.chatWindowWrapper.hidden {
+  display: flex;
+}
+
+@media (max-width: 768px) {
+  .container {
+    border-radius: 0;
+    height: 90vh;
+  }
+
+  .conversationListWrapper {
+    flex: 1;
+    width: 100%;
+  }
+
+  .chatWindowWrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    z-index: 10;
+  }
+
+  .conversationListWrapper.hidden {
+    display: none !important;
+  }
+
+  .chatWindowWrapper.hidden {
+    display: none !important;
+  }
+}

@@ -1,0 +1,55 @@
+.card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.label {
+  font-size: 12px;
+  color: #8e98a8;
+  margin: 0 0 8px 0;
+}
+
+.balance {
+  font-size: 24px;
+  font-weight: 900;
+  font-family: "inter", sans-serif;
+  color: #090202;
+  margin: 0 0 56px 0;
+}
+
+.fundButton {
+  width: 100%;
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.fundButton:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 24px;
+  }
+
+  .balance {
+    font-size: 28px;
+  }
+}

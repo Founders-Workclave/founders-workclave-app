@@ -1,0 +1,103 @@
+.container {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  font-family: "inter", sans-serif;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 14px;
+  color: #8e98a8;
+  margin: 0 0 8px 0;
+  font-weight: 400;
+  font-family: "inter", sans-serif;
+}
+
+.amount {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1b1e21;
+  margin: 0;
+}
+
+.filterSelect {
+  padding: 8px 14px;
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #6b7280;
+  background: white;
+  cursor: pointer;
+  font-family: "inter", sans-serif;
+}
+
+.chartContainer {
+  display: flex;
+  gap: 16px;
+  height: 300px;
+  color: #8e98a8;
+  font-size: 12px;
+  font-family: "inter", sans-serif;
+}
+
+.yAxis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #9ca3af;
+  padding: 10px 0;
+}
+
+.chart {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.barWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bar {
+  width: 80%;
+  background: #2563eb;
+  border-radius: 16px 16px 0 0;
+  min-height: 10px;
+  transition: all 0.3s ease;
+}
+
+.bar:hover {
+  background: #225cdb;
+}
+
+.label {
+  font-size: 12px;
+  color: #8e98a8;
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .chartContainer {
+    height: 250px;
+  }
+}

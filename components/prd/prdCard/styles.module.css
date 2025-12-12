@@ -1,0 +1,174 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  transition: all 0.2s;
+}
+
+.card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.iconWrapper {
+  width: 48px;
+  height: 48px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconWrapper svg {
+  stroke: #6b7280;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0b0a0a;
+  margin: 0 0 8px 0;
+}
+
+.description {
+  font-size: 14px;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+  color: #8e98a8;
+  line-height: 1.5;
+  margin: 0 0 8px 0;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.metaItem {
+  display: flex;
+  font-family: "Inter", sans-serif;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #8e98a8;
+}
+
+.metaItem svg {
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: "inter", sans-serif;
+}
+
+.statusCompleted {
+  background: #e1ffed;
+  color: #00b049;
+}
+
+.statusInProgress {
+  background: #fef3c7;
+  color: #7b580c;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.viewButton,
+.editButton,
+.downloadButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.viewButton {
+  background: white;
+  color: #8e98a8;
+  border: 1px solid #e5e7eb;
+}
+
+.viewButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.editButton {
+  background: white;
+  color: #8e98a8;
+  border: 1px solid #e5e7eb;
+}
+
+.editButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.downloadButton {
+  background: white;
+  color: #8e98a8;
+  border: 1px solid #e5e7eb;
+}
+
+.downloadButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.modifiedDate {
+  font-size: 12px;
+  color: #8e98a8;
+  font-family: "inter", sans-serif;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .card {
+    flex-direction: column;
+  }
+
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  .viewButton,
+  .editButton,
+  .downloadButton {
+    flex: 1;
+  }
+}

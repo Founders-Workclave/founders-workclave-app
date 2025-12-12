@@ -1,0 +1,188 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1f1f3a;
+  border: 1px solid #2d2d4d;
+  padding: 56px 40px;
+  border-radius: 8px;
+}
+
+.content {
+  text-align: center;
+}
+
+.title {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  color: #a6abe8;
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.email {
+  color: #a6abe8;
+  font-weight: 700;
+}
+
+.otpContainer {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+.otpInput {
+  width: 88px;
+  height: 64px;
+  background-color: #17172d;
+  border: 1px solid #5865f2;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 600;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  caret-color: #5865f2;
+}
+
+.otpInput:focus {
+  outline: none;
+  border-color: #5865f2;
+  background-color: #1e2440;
+  box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.1);
+}
+
+.otpInput.filled {
+  border-color: #5865f2;
+  background-color: #1e2440;
+}
+
+.otpInput:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.verifyButton {
+  width: 100%;
+  max-width: 600px;
+  background: #5865f2;
+  border: none;
+  border-radius: 12px;
+  padding: 18px 24px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 24px;
+}
+
+.verifyButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(88, 101, 242, 0.4);
+}
+
+.verifyButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.verifyButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loginText {
+  color: #a6abe8;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.loginLink {
+  color: #5865f2;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.loginLink:hover {
+  color: #4752c4;
+}
+
+.resendButton {
+  background: transparent;
+  border: none;
+  color: #5865f2;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s;
+  padding: 8px;
+}
+
+.resendButton:hover:not(:disabled) {
+  color: #4752c4;
+}
+
+.resendButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 16px;
+    width: 100%;
+  }
+
+  .content {
+    width: 100%;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 40px;
+  }
+
+  .otpContainer {
+    gap: 8px;
+  }
+
+  .otpInput {
+    width: 50px;
+    height: 60px;
+    font-size: 24px;
+  }
+
+  .verifyButton {
+    padding: 16px 20px;
+    font-size: 16px;
+  }
+
+  .loginText {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .otpContainer {
+    gap: 6px;
+  }
+
+  .otpInput {
+    width: 45px;
+    height: 55px;
+    font-size: 20px;
+  }
+}

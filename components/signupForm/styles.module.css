@@ -1,0 +1,240 @@
+.inputGroup {
+  margin-bottom: 28px;
+}
+
+.nameInputs {
+  display: grid;
+  grid-template-columns: 2fr 2fr;
+  gap: 16px;
+}
+
+.label {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  font-family: "inter", sans-serif;
+}
+
+.input {
+  width: 100%;
+  background-color: #17172d;
+  border: 0px;
+  border-radius: 8px;
+  padding: 18px 16px;
+  color: #a6abe8;
+  font-family: "inter", sans-serif;
+  font-size: 14px;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.input::placeholder {
+  color: #a6abe8;
+  font-family: "inter", sans-serif;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #5865f2;
+  background-color: #1e2440;
+}
+
+.phoneWrapper {
+  display: flex;
+  gap: 12px;
+  color: #a6abe8;
+  align-items: center;
+  background-color: #17172d;
+  border-radius: 8px;
+  font-family: "inter", sans-serif;
+}
+
+.countryCodeSelect {
+  background-color: transparent;
+  border-radius: 8px;
+  padding: 18px 16px;
+  color: #a6abe8;
+  font-size: 16px;
+  font-family: inherit;
+  cursor: pointer;
+  border: 0px;
+}
+
+.countryCodeSelect:focus {
+  outline: none;
+  border-color: #5865f2;
+  background-color: #1e2440;
+}
+
+.phoneInput {
+  flex: 1;
+}
+
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordWrapper .input {
+  padding-right: 50px;
+}
+
+.eyeButton {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.eyeButton:hover {
+  color: #a0aec0;
+}
+
+.eyeButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 40px;
+  margin-top: 10px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  background-color: #1a1f3a;
+  cursor: pointer;
+  margin-top: 2px;
+  appearance: none;
+  transition: all 0.2s;
+}
+
+.checkbox:checked {
+  background-color: #5865f2;
+  border-color: #5865f2;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='10' viewBox='0 0 12 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5L4.5 8.5L11 1.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.checkbox:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2);
+}
+
+.checkboxLabel {
+  color: #a6abe8;
+  font-size: 12px;
+  line-height: 1.5;
+  cursor: pointer;
+  font-family: "inter", sans-serif;
+}
+
+.link {
+  color: #5865f2;
+  text-decoration: underline;
+  font-family: "inter", sans-serif;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.link:hover {
+  color: #4752c4;
+}
+
+.submitButton {
+  width: 100%;
+  background: #5865f2;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 12px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.submitButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submitButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0px;
+  }
+
+  .form {
+    max-width: 100%;
+  }
+
+  .label {
+    font-size: 14px;
+  }
+
+  .input {
+    padding: 16px 18px;
+    font-size: 15px;
+  }
+
+  .countryCodeSelect {
+    padding: 16px 14px;
+    font-size: 15px;
+    min-width: 90px;
+  }
+
+  .submitButton {
+    padding: 16px 20px;
+    font-size: 16px;
+  }
+
+  .checkboxLabel {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .phoneWrapper {
+    gap: 8px;
+  }
+
+  .countryCodeSelect {
+    min-width: 80px;
+    padding: 16px 10px;
+  }
+}

@@ -1,0 +1,54 @@
+.container {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 20px 0;
+}
+
+.featuresGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.featureItem:hover {
+  background: #f3f4f6;
+}
+
+.checkIcon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: #6366f1;
+  stroke-width: 2.5;
+}
+
+.featureText {
+  font-family: "inter", sans-serif;
+  font-size: 14px;
+  color: #8e98a8;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .featuresGrid {
+    grid-template-columns: 1fr;
+  }
+}

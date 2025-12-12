@@ -1,0 +1,130 @@
+{
+  "projectId": 1,
+  "projectTitle": "E-commerce Mobile App",
+  "walletBalance": 200000000.0,
+  "milestones": [
+    {
+      "id": 1,
+      "number": 1,
+      "title": "Idea Consultation & PRD Generation",
+      "description": "Capture, refine, and structure the client's idea into a professional Product Requirement Document (PRD).",
+      "dueDate": "Sept 20, 2025",
+      "completedDate": "Sept 18, 2025",
+      "payment": 500,
+      "status": "completed",
+      "progress": 100,
+      "deliverables": [
+        "AI-led discovery session (Rebot AI Consultant)",
+        "Human-agent clarification session (post-commitment fee)",
+        "Generation of Initial PRD and project scope",
+        "High-level feature outline and recommended tech stack"
+      ]
+    },
+    {
+      "id": 2,
+      "number": 2,
+      "title": "PRD Review & Technical Planning",
+      "description": "Translate the PRD into actionable technical and design documentation.",
+      "dueDate": "Sept 20, 2025",
+      "completedDate": "Sept 18, 2025",
+      "payment": 500,
+      "status": "completed",
+      "progress": 100,
+      "deliverables": [
+        "Finalized and approved PRD",
+        "Technical architecture document",
+        "Database schema design",
+        "API endpoint specifications"
+      ]
+    },
+    {
+      "id": 3,
+      "number": 3,
+      "title": "Design & System Architecture",
+      "description": "Establish the product's foundational structure.",
+      "dueDate": "Sept 20, 2025",
+      "completedDate": null,
+      "payment": 500,
+      "status": "in-progress",
+      "progress": 70,
+      "deliverables": [
+        "Wireframes for all major screens",
+        "High-fidelity UI/UX designs",
+        "Design system and style guide",
+        "System architecture diagram"
+      ]
+    },
+    {
+      "id": 4,
+      "number": 4,
+      "title": "Core Development (MVP Build)",
+      "description": "Develop the product's core functionalities and user-facing components.",
+      "dueDate": "Sept 20, 2025",
+      "completedDate": null,
+      "payment": 500,
+      "status": "pending",
+      "progress": 0,
+      "deliverables": [
+        "Frontend development (React Native/Flutter)",
+        "Backend API development",
+        "Database implementation",
+        "Core feature integration"
+      ],
+      "note": "This milestone will unlock after the previous milestone is completed and payment is processed."
+    },
+    {
+      "id": 5,
+      "number": 5,
+      "title": "Quality Assurance & Testing",
+      "description": "Ensure the product meets functionality, security, and performance standards.",
+      "dueDate": "Sept 20, 2025",
+      "completedDate": null,
+      "payment": 500,
+      "status": "pending",
+      "progress": 0,
+      "deliverables": [
+        "Unit testing implementation",
+        "Integration testing",
+        "User acceptance testing (UAT)",
+        "Bug fixes and optimizations"
+      ],
+      "note": "This milestone will unlock after the previous milestone is completed and payment is processed."
+    },
+    {
+      "id": 6,
+      "number": 6,
+      "title": "Deployment & Handover",
+      "description": "Prepare and deploy the product to a live or staging environment.",
+      "dueDate": "Sept 20, 2025",
+      "completedDate": null,
+      "payment": 500,
+      "status": "pending",
+      "progress": 0,
+      "deliverables": [
+        "App store deployment (iOS & Android)",
+        "Server deployment and configuration",
+        "Documentation handover",
+        "Training session for client team"
+      ],
+      "note": "This milestone will unlock after the previous milestone is completed and payment is processed."
+    },
+    {
+      "id": 7,
+      "number": 7,
+      "title": "Post-Launch Support & Optimization",
+      "description": "Support client through early launch and user feedback stages.",
+      "dueDate": "Sept 20, 2025",
+      "completedDate": null,
+      "payment": 500,
+      "status": "pending",
+      "progress": 0,
+      "deliverables": [
+        "30-day post-launch support",
+        "Performance monitoring",
+        "Bug fixes and minor updates",
+        "Analytics setup and reporting"
+      ],
+      "note": "This milestone will unlock after the previous milestone is completed and payment is processed."
+    }
+  ]
+}
