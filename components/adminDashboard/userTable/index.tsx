@@ -13,6 +13,7 @@ export interface User {
   role: "Founder" | "Agency";
   status: "Active" | "Inactive" | "Suspended";
   avatar?: string;
+  title?: string;
 }
 
 interface UsersTableProps {
@@ -21,6 +22,8 @@ interface UsersTableProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   onSearch: (query: string) => void;
+  onUserSelect?: (userId: string) => void; // New prop for handling user selection
+  title: string;
 }
 
 const UsersTable: React.FC<UsersTableProps> = ({
@@ -29,8 +32,12 @@ const UsersTable: React.FC<UsersTableProps> = ({
   totalPages,
   onPageChange,
   onSearch,
+  onUserSelect,
+  title,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [openActionMenuId, setOpenActionMenuId] = useState<string | null>(null);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -40,20 +47,101 @@ const UsersTable: React.FC<UsersTableProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
-        return "#10b981";
+        return "#00B049";
       case "Inactive":
-        return "#f59e0b";
+        return "#7B580C";
       case "Suspended":
-        return "#ef4444";
+        return "#EB5757";
       default:
         return "#6b7280";
     }
   };
 
+  const toggleCard = (userId: string) => {
+    setExpandedCardId(expandedCardId === userId ? null : userId);
+    setOpenActionMenuId(null);
+  };
+
+  const toggleActionMenu = (userId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpenActionMenuId(openActionMenuId === userId ? null : userId);
+  };
+
+  const handleAction = (action: string, userId: string) => {
+    console.log(`${action} user:`, userId);
+    setOpenActionMenuId(null);
+
+    // Handle different actions
+    switch (action) {
+      case "See Details":
+        // Navigate to user profile
+        if (onUserSelect) {
+          onUserSelect(userId);
+        }
+        break;
+
+      case "Deactivate":
+        // Handle deactivation logic
+        console.log("Deactivating user:", userId);
+        // You can add API call here
+        break;
+
+      case "Reactivate":
+        // Handle reactivation logic
+        console.log("Reactivating user:", userId);
+        // You can add API call here
+        break;
+
+      case "Delete":
+        // Handle deletion logic with confirmation
+        const confirmDelete = window.confirm(
+          "Are you sure you want to delete this user?"
+        );
+        if (confirmDelete) {
+          console.log("Deleting user:", userId);
+          // You can add API call here
+        }
+        break;
+
+      default:
+        console.log("Unknown action:", action);
+    }
+  };
+
+  const renderPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 6;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, 5, 6);
+      } else if (currentPage >= totalPages - 2) {
+        for (let i = totalPages - 5; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(
+          currentPage - 2,
+          currentPage - 1,
+          currentPage,
+          currentPage + 1,
+          currentPage + 2,
+          currentPage + 3
+        );
+      }
+    }
+
+    return pages;
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3 className={styles.title}>Recent Users</h3>
+        <h3 className={styles.title}>{title}</h3>
         <div className={styles.searchWrapper}>
           <svg
             width="20"
@@ -130,23 +218,194 @@ const UsersTable: React.FC<UsersTableProps> = ({
                   </span>
                 </td>
                 <td>
-                  <button className={styles.actionButton}>
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
+                  <div className={styles.actionWrapper}>
+                    <button
+                      className={styles.actionButton}
+                      onClick={(e) => toggleActionMenu(user.id, e)}
                     >
-                      <circle cx="12" cy="12" r="2" />
-                      <circle cx="12" cy="5" r="2" />
-                      <circle cx="12" cy="19" r="2" />
-                    </svg>
-                  </button>
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <circle cx="12" cy="12" r="2" />
+                        <circle cx="12" cy="5" r="2" />
+                        <circle cx="12" cy="19" r="2" />
+                      </svg>
+                    </button>
+
+                    {openActionMenuId === user.id && (
+                      <div className={styles.actionMenu}>
+                        <button
+                          onClick={() => handleAction("See Details", user.id)}
+                        >
+                          See Details
+                        </button>
+                        <button
+                          onClick={() =>
+                            handleAction(
+                              user.status === "Active"
+                                ? "Deactivate"
+                                : "Reactivate",
+                              user.id
+                            )
+                          }
+                        >
+                          {user.status === "Active"
+                            ? "Deactivate User"
+                            : "Reactivate User"}
+                        </button>
+                        <button
+                          onClick={() => handleAction("Delete", user.id)}
+                          className={styles.deleteAction}
+                        >
+                          Delete User
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+
+        {/* Mobile Card View */}
+        <div className={styles.mobileCards}>
+          {users.map((user) => (
+            <div key={user.id} className={styles.mobileCard}>
+              <div
+                className={styles.mobileCardHeader}
+                onClick={() => toggleCard(user.id)}
+              >
+                <div className={styles.avatar}>
+                  {user.avatar ? (
+                    <Image
+                      src={user.avatar}
+                      alt={user.name}
+                      width={48}
+                      height={48}
+                    />
+                  ) : (
+                    <span>{user.name.charAt(0)}</span>
+                  )}
+                </div>
+                <div className={styles.mobileCardContent}>
+                  <h4 className={styles.mobileCardName}>{user.name}</h4>
+                  <p className={styles.mobileCardEmail}>{user.email}</p>
+                </div>
+                <svg
+                  className={`${styles.expandIcon} ${
+                    expandedCardId === user.id ? styles.expanded : ""
+                  }`}
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </div>
+
+              {expandedCardId === user.id && (
+                <div className={styles.mobileCardDetails}>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Phone Number</span>
+                    <span className={styles.detailValue}>{user.phone}</span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Agency</span>
+                    <span className={styles.detailValue}>{user.agency}</span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Joined Date</span>
+                    <span className={styles.detailValue}>
+                      {user.joinedDate}
+                    </span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Role</span>
+                    <span className={styles.roleBadge}>{user.role}</span>
+                  </div>
+                  <div className={styles.detailRow}>
+                    <span className={styles.detailLabel}>Status</span>
+                    <span
+                      className={styles.statusBadge}
+                      style={{
+                        backgroundColor: `${getStatusColor(user.status)}20`,
+                        color: getStatusColor(user.status),
+                      }}
+                    >
+                      {user.status}
+                    </span>
+                  </div>
+
+                  <div className={styles.mobileActions}>
+                    <button
+                      className={styles.mobileActionButton}
+                      onClick={() => handleAction("See Details", user.id)}
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                      Details
+                    </button>
+                    <button
+                      className={styles.mobileActionButton}
+                      onClick={() =>
+                        handleAction(
+                          user.status === "Active"
+                            ? "Deactivate"
+                            : "Reactivate",
+                          user.id
+                        )
+                      }
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M3 3l18 18M6 6v12a2 2 0 002 2h8a2 2 0 002-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                      </svg>
+                      {user.status === "Active" ? "Deactivate" : "Reactivate"}
+                    </button>
+                    <button
+                      className={`${styles.mobileActionButton} ${styles.deleteButton}`}
+                      onClick={() => handleAction("Delete", user.id)}
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" />
+                      </svg>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className={styles.pagination}>
@@ -154,7 +413,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
           Page {currentPage} of {totalPages}
         </span>
         <div className={styles.pageButtons}>
-          {[1, 2, 3, 4, 5, 6].map((page) => (
+          {renderPageNumbers().map((page) => (
             <button
               key={page}
               className={`${styles.pageButton} ${
@@ -169,7 +428,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
         <div className={styles.navButtons}>
           <button
             className={styles.navButton}
-            onClick={() => onPageChange(currentPage - 1)}
+            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
           >
             <svg
@@ -185,7 +444,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
           </button>
           <button
             className={styles.navButton}
-            onClick={() => onPageChange(currentPage + 1)}
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
           >
             <svg

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import styles from "./styles.module.css";
 import Image from "next/image";
 import { founderMenuItems } from "@/utils/data";
+import { getUser } from "@/lib/api/auth";
 import Link from "next/link";
 import HeaderNotification from "@/components/notificationDropdown/notificationComp";
 
@@ -34,6 +35,11 @@ const FounderLayout: React.FC<FounderLayoutProps> = ({
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
+  // header user display component
+  const [user] = useState<{ name: string } | null>(getUser());
+
+  if (!user) return null;
 
   return (
     <div className={styles.container}>
@@ -140,7 +146,7 @@ const FounderLayout: React.FC<FounderLayoutProps> = ({
                 height={32}
                 alt="profile"
               />
-              <p>Waden Warren</p>
+              <p>{user.name}</p>
             </div>
           </div>
           <button

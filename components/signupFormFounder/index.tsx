@@ -1,34 +1,57 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./styles.module.css";
-import { countryCodes, SignupFormData } from "@/utils/data";
+import { countryCodes, SignupFounder } from "@/utils/data";
+import { useSignup } from "@/hooks/userSignup";
 import ShowPassword from "@/svgs/showPassword";
 import HidePassword from "@/svgs/hidePassword";
 
 interface SignupFormProps {
   userType?: "Founder";
-  onSubmit?: (data: SignupFormData) => void;
+  onSubmit?: (data: SignupFounder) => void;
 }
 
 const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
-  const [formData, setFormData] = useState<SignupFormData>({
+  const router = useRouter();
+  const { isLoading, error, success, signup, resetState } = useSignup();
+
+  const [formData, setFormData] = useState<SignupFounder>({
     firstName: "",
     lastName: "",
     email: "",
-    companyName: "",
     phoneNumber: "",
     countryCode: "+234",
     password: "",
     agreedToTerms: false,
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Handle successful registration
+  useEffect(() => {
+    if (success) {
+      // Call parent onSubmit if provided
+      if (onSubmit) {
+        onSubmit(formData);
+      }
+
+      // Redirect to dashboard or success page after 2 seconds
+      setTimeout(() => {
+        router.push("/dashboard"); // or '/welcome' or '/verify-email'
+      }, 2000);
+    }
+  }, [success, router, onSubmit, formData]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+
+    // Clear error when user starts typing
+    if (error) {
+      resetState();
+    }
 
     if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
@@ -41,56 +64,33 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation
     if (!formData.agreedToTerms) {
       alert("Please agree to the Terms of Service and Privacy Policy");
       return;
     }
 
-    setIsLoading(true);
-
-    /*
-    // API intergation
-    try {
-      const response = await fetch('/api/signup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          userType: userType,
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        if (onSubmit) {
-          onSubmit(formData);
-        }
-        // Redirect to success page or dashboard
-      } else {
-        alert(data.message || 'Signup failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error during signup:', error);
-      alert('Something went wrong. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (formData.password.length < 8) {
+      alert("Password must be at least 8 characters long");
+      return;
     }
-    */
 
-    setTimeout(() => {
-      if (onSubmit) {
-        onSubmit(formData);
-      }
-      setIsLoading(false);
-    }, 1000);
+    await signup(formData);
   };
 
   return (
     <div className={styles.container}>
       <form onSubmit={handleSubmit} className={styles.form}>
+        {/* Success Message */}
+        {success && (
+          <div className={styles.successMessage}>
+            ✓ Account created successfully! Redirecting...
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && <div className={styles.errorMessage}>⚠ {error}</div>}
+
         <div className={styles.inputGroup}>
           <div className={styles.nameInputs}>
             <div>
@@ -106,6 +106,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
                 placeholder="Enter first name"
                 className={styles.input}
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -121,10 +122,12 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
                 placeholder="Enter last name"
                 className={styles.input}
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
         </div>
+
         {/* Email Address */}
         <div className={styles.inputGroup}>
           <label htmlFor="email" className={styles.label}>
@@ -139,6 +142,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
             placeholder="Enter email address"
             className={styles.input}
             required
+            disabled={isLoading}
           />
         </div>
 
@@ -153,6 +157,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
               value={formData.countryCode}
               onChange={handleInputChange}
               className={styles.countryCodeSelect}
+              disabled={isLoading}
             >
               {countryCodes.map((country) => (
                 <option key={country.code} value={country.code}>
@@ -169,6 +174,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
               placeholder="Enter phone number"
               className={`${styles.input} ${styles.phoneInput}`}
               required
+              disabled={isLoading}
             />
           </div>
         </div>
@@ -189,12 +195,14 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
               className={styles.input}
               minLength={8}
               required
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className={styles.eyeButton}
               aria-label="Toggle password visibility"
+              disabled={isLoading}
             >
               {showPassword ? <ShowPassword /> : <HidePassword />}
             </button>
@@ -211,6 +219,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
             onChange={handleInputChange}
             className={styles.checkbox}
             required
+            disabled={isLoading}
           />
           <label htmlFor="agreedToTerms" className={styles.checkboxLabel}>
             I agree to the{" "}

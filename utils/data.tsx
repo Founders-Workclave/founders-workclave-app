@@ -60,6 +60,16 @@ export interface SignupFormData {
   agreedToTerms: boolean;
 }
 
+export interface SignupFounder {
+  firstName: string | number | readonly string[] | undefined;
+  lastName: string | number | readonly string[] | undefined;
+  email: string;
+  phoneNumber: string;
+  countryCode: string;
+  password: string;
+  agreedToTerms: boolean;
+}
+
 export const founderMenuItems = (userId: string, projectId: string) => [
   {
     icon: <Dashboard />,

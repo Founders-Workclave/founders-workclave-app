@@ -1,20 +1,11 @@
-import ProjectComponet from "@/components/projectComp";
-import ProjectStart from "@/components/projectStart";
-import FounderLayout from "@/layout/founder";
+import UserDashboard from "@/components/userDashboardComp/page";
 
-const Dashboard = ({ params }: { params: { username: string } }) => {
-  return (
-    <>
-      <FounderLayout
-        pageTitle="Dashboard"
-        userId={params.username}
-        pageText="Manage and track your product ideas"
-      >
-        <ProjectStart />
-        <ProjectComponet />
-      </FounderLayout>
-    </>
-  );
+interface DashboardProps {
+  params: { username: string };
+}
+
+const Dashboard = ({ params }: DashboardProps) => {
+  return <UserDashboard params={params} />;
 };
 
 export default Dashboard;

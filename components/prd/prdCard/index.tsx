@@ -36,7 +36,6 @@ const PRDCard: React.FC<PRDCardProps> = ({
       <div className={styles.content}>
         <h3 className={styles.title}>{prd.projectName}</h3>
         <p className={styles.description}>{prd.description}</p>
-
         <div className={styles.meta}>
           <div className={styles.metaItem}>
             <SmallCalender />

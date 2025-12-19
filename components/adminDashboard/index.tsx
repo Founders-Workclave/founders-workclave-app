@@ -66,6 +66,7 @@ export default function AdminDashboard() {
 
       <UsersTable
         users={users as User[]}
+        title="Recent Users"
         currentPage={currentPage}
         totalPages={adminData.pagination.totalPages}
         onPageChange={handlePageChange}

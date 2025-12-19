@@ -1,14 +1,14 @@
-import AdminDashboard from "@/components/adminDashboard";
+import AdminFounderComp from "@/components/adminFounder";
 import AdminLayout from "@/layout/superAdmin";
 
-const AdminFounders = () => {
+const AdminFounder = () => {
   return (
     <>
       <AdminLayout pageTitle="Dashboard">
-        <AdminDashboard />
+        <AdminFounderComp />
       </AdminLayout>
     </>
   );
 };
 
-export default AdminFounders;
+export default AdminFounder;

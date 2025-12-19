@@ -1,0 +1,105 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Einstein Oyakhilome",
+      "email": "Einstein.oyakhilomw1@gmail.com",
+      "phone": "09035621993",
+      "agency": "Rebot business solutions",
+      "joinedDate": "Nov 17, 2025",
+      "role": "Founder",
+      "status": "Inactive",
+      "avatar": "",
+      "projects": [],
+      "prds": []
+    },
+    {
+      "id": "2",
+      "name": "Sarah Johnson",
+      "email": "sarah.johnson@techagency.com",
+      "phone": "08123456789",
+      "agency": "Tech Innovators Ltd",
+      "joinedDate": "Oct 5, 2025",
+      "role": "Agency",
+      "status": "Active",
+      "avatar": "",
+      "projects": [
+        {
+          "id": 1,
+          "title": "E-commerce Mobile App",
+          "stage": "Idea Consultation & PRD Generation",
+          "progress": 70,
+          "status": "In-Progress"
+        },
+        {
+          "id": 2,
+          "title": "E-commerce Web App",
+          "stage": "Post-Launch Support & Optimization",
+          "progress": 100,
+          "status": "Completed"
+        }
+      ],
+      "prds": [
+        {
+          "id": 1,
+          "projectName": "E-commerce Mobile App",
+          "description": "AI-powered fitness tracking app with personalized workout plans and nutrition guidance for busy professionals...",
+          "createdDate": "Sept 20, 2025",
+          "duration": "45 Secs",
+          "status": "In-Progress",
+          "modifiedDate": "today",
+          "prdUrl": "/prds/ecommerce-app-prd.pdf"
+        },
+        {
+          "id": 2,
+          "projectName": "E-commerce Web App",
+          "description": "AI-powered fitness tracking app with personalized workout plans and nutrition guidance for busy professionals...",
+          "createdDate": "Sept 20, 2025",
+          "duration": "45 Secs",
+          "status": "Completed",
+          "modifiedDate": "3 days ago",
+          "prdUrl": "/prds/ecommerce-app-prd-final.pdf"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Michael Chen",
+      "email": "michael.chen@digitalsolutions.com",
+      "phone": "07098765432",
+      "agency": "Digital Solutions Inc",
+      "joinedDate": "Sep 12, 2025",
+      "role": "Founder",
+      "status": "Suspended",
+      "avatar": "",
+      "projects": [],
+      "prds": []
+    },
+    {
+      "id": "4",
+      "name": "Amara Okafor",
+      "email": "amara.okafor@creativeagency.com",
+      "phone": "08187654321",
+      "agency": "Creative Agency",
+      "joinedDate": "Aug 20, 2025",
+      "role": "Founder",
+      "status": "Inactive",
+      "avatar": "",
+      "projects": [],
+      "prds": []
+    },
+    {
+      "id": "5",
+      "name": "David Williams",
+      "email": "david.williams@startuphub.com",
+      "phone": "08056781234",
+      "agency": "Startup Hub",
+      "joinedDate": "Jul 10, 2025",
+      "role": "Agency",
+      "status": "Active",
+      "avatar": "",
+      "projects": [],
+      "prds": []
+    }
+  ]
+}
