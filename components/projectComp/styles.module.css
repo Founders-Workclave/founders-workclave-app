@@ -1,0 +1,13 @@
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loadingContainer p {
+  font-size: 14px;
+  color: #171717;
+}

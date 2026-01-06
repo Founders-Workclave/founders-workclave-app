@@ -44,8 +44,14 @@
   gap: 0;
 }
 
+.container > p {
+  font-size: 12px;
+  margin-top: 10px;
+}
+
 @media (max-width: 768px) {
   .container {
+    max-width: unset;
     padding: 24px 16px;
   }
 
@@ -56,7 +62,7 @@
   }
 
   .title {
-    font-size: 24px;
+    font-size: 14px;
   }
 
   .walletInfo {

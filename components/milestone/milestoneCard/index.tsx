@@ -8,20 +8,7 @@ import SmallCalender from "@/svgs/smallCalender";
 import Payment from "@/svgs/payment";
 import CompletedNew from "@/svgs/completedNew";
 import ListIcons from "@/svgs/listIcons";
-
-interface Milestone {
-  id: number;
-  number: number;
-  title: string;
-  description: string;
-  dueDate: string;
-  completedDate: string | null;
-  payment: number;
-  status: "completed" | "in-progress" | "pending";
-  progress: number;
-  deliverables: string[];
-  note?: string;
-}
+import { Milestone } from "@/types/project";
 
 interface MilestoneCardProps {
   milestone: Milestone;
@@ -36,8 +23,11 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
 }) => {
   const [showDeliverables, setShowDeliverables] = useState(false);
 
+  // Use status directly from milestone data
+  const status = milestone.status;
+
   const getStatusBadge = () => {
-    switch (milestone.status) {
+    switch (status) {
       case "completed":
         return { text: "Completed", class: styles.statusCompleted };
       case "in-progress":
@@ -48,7 +38,7 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
   };
 
   const getStatusIcon = () => {
-    switch (milestone.status) {
+    switch (status) {
       case "completed":
         return <Completed />;
       case "in-progress":
@@ -60,18 +50,32 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
 
   const statusBadge = getStatusBadge();
 
+  const parsePrice = (priceStr: string): number => {
+    return parseFloat(priceStr.replace(/,/g, ""));
+  };
+
+  // Format date to readable format
+  const formatDate = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.iconLine}>
         <div className={styles.iconWrapper}>{getStatusIcon()}</div>
-        {milestone.number < 7 && <div className={styles.connectingLine} />}
+        {milestone.order < 7 && <div className={styles.connectingLine} />}
       </div>
 
       <div className={styles.content}>
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <span className={styles.milestoneNumber}>
-              Milestones {milestone.number}
+              Milestone {milestone.number}
             </span>
             <span className={`${styles.statusBadge} ${statusBadge.class}`}>
               {statusBadge.text}
@@ -85,23 +89,25 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
         <div className={styles.meta}>
           <div className={styles.metaItem}>
             <SmallCalender />
-            <span>Due: {milestone.dueDate}</span>
+            <span>Due: {formatDate(milestone.dueDate)}</span>
           </div>
 
           <div className={styles.metaItem}>
             <Payment />
-            <span>Payment: ${milestone.payment.toLocaleString()}</span>
+            <span>
+              Payment: ${parsePrice(milestone.price).toLocaleString()}
+            </span>
           </div>
 
           {milestone.completedDate && (
             <div className={`${styles.metaItem} ${styles.completed}`}>
               <CompletedNew />
-              <span>Completed: {milestone.completedDate}</span>
+              <span>Completed: {formatDate(milestone.completedDate)}</span>
             </div>
           )}
         </div>
 
-        {milestone.status === "in-progress" && (
+        {status === "in-progress" && milestone.progress !== undefined && (
           <div className={styles.progressSection}>
             <div className={styles.progressHeader}>
               <span className={styles.progressLabel}>Progress</span>
@@ -125,7 +131,7 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
         )}
 
         <div className={styles.actions}>
-          {milestone.status === "completed" && (
+          {status === "completed" && milestone.deliverables.length > 0 && (
             <button
               onClick={() => setShowDeliverables(!showDeliverables)}
               className={styles.viewDeliverablesButton}
@@ -147,7 +153,7 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
             </button>
           )}
 
-          {milestone.status === "in-progress" && (
+          {status === "in-progress" && (
             <>
               <button
                 onClick={onViewDetails}
@@ -165,7 +171,7 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
           )}
         </div>
 
-        {showDeliverables && (
+        {showDeliverables && milestone.deliverables.length > 0 && (
           <div className={styles.deliverables}>
             <ul className={styles.deliverablesList}>
               {milestone.deliverables.map((deliverable, index) => (

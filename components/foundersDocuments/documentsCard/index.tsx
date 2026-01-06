@@ -2,15 +2,14 @@ import React from "react";
 import styles from "./styles.module.css";
 import ViewDocuments from "@/svgs/viewDocument";
 import DownloadDocuments from "@/svgs/downloadDocuments";
+import { DocumentService } from "@/lib/api/documentService";
 
 interface DocumentCardProps {
   document: {
     id: number;
-    title: string;
-    type: string;
-    size: string;
-    uploadDate: string;
-    url: string;
+    description: string | null;
+    documentUrl: string;
+    uploadedAt: string;
   };
   onView: (id: number) => void;
   onDownload: (id: number) => void;
@@ -21,9 +20,56 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
   onView,
   onDownload,
 }) => {
+  // Format date to readable format
+  const formatDate = (dateStr: string): string => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Get filename from URL
+  const getTitle = (): string => {
+    const filename = DocumentService.getFilenameFromUrl(document.documentUrl);
+    return document.description || filename || `Document ${document.id}`;
+  };
+
+  // Get file type from URL
+  const getFileType = (): string => {
+    return DocumentService.getFileExtension(document.documentUrl);
+  };
+
+  // Get file extension icon color based on type
+  const getFileTypeColor = (type: string): string => {
+    const typeUpper = type.toUpperCase();
+    switch (typeUpper) {
+      case "PDF":
+        return "#e74c3c";
+      case "DOCX":
+      case "DOC":
+        return "#2980b9";
+      case "XLSX":
+      case "XLS":
+        return "#27ae60";
+      case "PNG":
+      case "JPG":
+      case "JPEG":
+        return "#9b59b6";
+      default:
+        return "#95a5a6";
+    }
+  };
+
+  const fileType = getFileType();
+
   return (
     <div className={styles.card}>
-      <div className={styles.iconWrapper}>
+      <div
+        className={styles.iconWrapper}
+        style={{ color: getFileTypeColor(fileType) }}
+      >
         <svg
           width="24"
           height="24"
@@ -41,13 +87,11 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
       </div>
 
       <div className={styles.content}>
-        <h3 className={styles.title}>{document.title}</h3>
+        <h3 className={styles.title}>{getTitle()}</h3>
         <div className={styles.meta}>
-          <span>{document.type}</span>
+          <span>{fileType}</span>
           <span className={styles.separator}>•</span>
-          <span>{document.size}</span>
-          <span className={styles.separator}>•</span>
-          <span>{document.uploadDate}</span>
+          <span>{formatDate(document.uploadedAt)}</span>
         </div>
       </div>
 
@@ -56,6 +100,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
           onClick={() => onView(document.id)}
           className={styles.actionButton}
           aria-label="View document"
+          title="View document"
         >
           <ViewDocuments />
         </button>
@@ -64,6 +109,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({
           onClick={() => onDownload(document.id)}
           className={styles.actionButton}
           aria-label="Download document"
+          title="Download document"
         >
           <DownloadDocuments />
         </button>

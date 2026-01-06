@@ -86,7 +86,6 @@ const PrdComp: React.FC<UserProfileProps> = ({ user }) => {
   });
 
   const handleView = (id: number) => {
-    console.log("Viewing PRD:", id);
     const prd = user.prds.find((p) => parseInt(p.id) === id);
     if (prd && prd.prdUrl) {
       window.open(prd.prdUrl, "_blank");

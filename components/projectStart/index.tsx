@@ -30,9 +30,11 @@ const ProjectStart = () => {
             <h3>8mins</h3>
           </div>
         </div>
-        <Link href="/" className={styles.actionBtn}>
-          + Start AI consultation
-        </Link>
+        <div className={styles.btnContainer}>
+          <Link href="/" className={styles.actionBtn}>
+            + Start AI consultation
+          </Link>
+        </div>
       </div>
     </div>
   );

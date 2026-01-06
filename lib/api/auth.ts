@@ -158,6 +158,7 @@ export const authApi = {
     }
   },
 
+  // Login Endpoint
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
     try {
       const requestBody = {
@@ -186,7 +187,6 @@ export const authApi = {
       }
 
       const data = await response.json();
-      console.log("Login response data:", data);
 
       if (response.status === 400 && data.errors) {
         const errorMessages = Object.entries(data.errors)
@@ -210,6 +210,32 @@ export const authApi = {
           message: data.message || data.error || "Invalid email or password",
           error: data.error || data.message || `HTTP ${response.status}`,
         };
+      }
+
+      // ✅ STORE THE TOKEN AND USER INFO AFTER SUCCESSFUL LOGIN
+      if (data || response.ok) {
+        const accessToken = data.access || data.data?.access;
+        const refreshToken = data.refresh || data.data?.refresh;
+
+        if (accessToken) {
+          localStorage.setItem("access_token", accessToken);
+        }
+
+        if (refreshToken) {
+          localStorage.setItem("refresh_token", refreshToken);
+        }
+
+        // Store user info
+        const userData = {
+          id: data.userId || data.data?.userId || data.id || data.data?.id,
+          name:
+            data.name ||
+            `${data.firstName || ""} ${data.lastName || ""}`.trim() ||
+            "User",
+          email: data.email || payload.email,
+          username: data.username || payload.email.split("@")[0],
+        };
+        setUser(userData);
       }
 
       return {

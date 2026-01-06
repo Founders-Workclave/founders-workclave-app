@@ -1,10 +1,12 @@
 "use client";
-import { notFound } from "next/navigation";
-import projectsDataRaw from "../../mocks/projectdetail.json";
+import { useState, useEffect } from "react";
+import { notFound, useRouter } from "next/navigation";
+import { ProjectService } from "@/lib/api/projectService";
+import { Project } from "@/types/project";
 import styles from "./styles.module.css";
-import ProjectHeader from "../projectDetail/projectHeader";
-import { ProjectDetailsTypes as ProjectDetail } from "../../types/project";
-import ProjectTabs from "../TabHeader";
+import ProjectHeader from "@/components/projectDetail/projectHeader";
+import ProjectTabs from "@/components/TabHeader";
+import Loader from "../loader";
 
 interface PageProps {
   params: {
@@ -13,56 +15,132 @@ interface PageProps {
   };
 }
 
-export default function Page({ params }: PageProps) {
-  const projectsData = projectsDataRaw as unknown as ProjectDetail[];
-  const projectIdStr = params?.projectId || "1";
-  const projectId = parseInt(projectIdStr, 10);
+export default function ProjectDetailPage({ params }: PageProps) {
+  const router = useRouter();
+  const [project, setProject] = useState<Project | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Find the specific project by ID
-  const project = projectsData.find((p) => p.id === projectId);
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const data = await ProjectService.getProjectById(params.projectId);
+        setProject(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load project");
+        console.error("Error fetching project:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (params.projectId) {
+      fetchProject();
+    }
+  }, [params.projectId]);
+
+  const handleBack = () => {
+    router.back();
+  };
+
+  const handleMessagePM = () => {
+    console.log("Message PM clicked");
+    // TODO: Implement messaging functionality
+  };
+
+  const handleDownloadPRD = async () => {
+    console.log("Download PRD clicked");
+    try {
+      const documents = await fetch(
+        `${
+          process.env.NEXT_PUBLIC_API_URL ||
+          "https://foundersapi.up.railway.app"
+        }/founder/project/${params.projectId}/prds/`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      ).then((res) => res.json());
+
+      if (documents.prds && documents.prds.length > 0) {
+        window.open(documents.prds[0].documentUrl, "_blank");
+      } else {
+        alert("No PRD available for download");
+      }
+    } catch (error) {
+      console.error("Error downloading PRD:", error);
+      alert("Failed to download PRD");
+    }
+  };
+
+  const handleProjectUpdated = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const data = await ProjectService.getProjectById(params.projectId);
+      setProject(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load project");
+      console.error("Error fetching project:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const formatDate = (date: string | Date | null | undefined) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.errorContainer}>
+        <h2>Error loading project</h2>
+        <p>{error}</p>
+        <button onClick={() => router.back()} className={styles.errorButton}>
+          Go Back
+        </button>
+      </div>
+    );
+  }
 
   if (!project) {
     notFound();
   }
 
-  const handleBack = () => {
-    if (typeof window !== "undefined") {
-      window.history.back();
-    }
-  };
-
-  const handleMessagePM = () => {
-    console.log("Message PM clicked");
-  };
-
-  const handleDownloadPRD = () => {
-    console.log("Download PRD clicked");
-  };
-
-  const handlePauseProject = () => {
-    console.log("Pause project clicked");
-  };
-
-  const handleTerminateProject = () => {
-    console.log("Terminate project clicked");
-  };
-
   return (
     <div className={styles.pageContainer}>
       <ProjectHeader
-        id={String(project.id)}
-        title={project.title}
+        id={project.id}
+        title={project.name}
         status={project.status}
-        createdOn={project.createdOn}
-        lastUpdated={project.lastUpdated}
-        dueDate={project.dueDate}
+        createdOn={formatDate(project.dateCreated)}
+        lastUpdated={formatDate(project.updatedDate)}
+        dueDate={project.dueDate ? formatDate(project.dueDate) : undefined}
         onBack={handleBack}
         onMessagePM={handleMessagePM}
         onDownloadPRD={handleDownloadPRD}
-        onPauseProject={handlePauseProject}
-        onTerminateProject={handleTerminateProject}
+        onProjectUpdated={handleProjectUpdated}
       />
-      <ProjectTabs params={params} />
+      <ProjectTabs params={{ userId: params.userId, projectId: project.id }} />
     </div>
   );
 }

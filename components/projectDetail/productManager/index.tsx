@@ -1,7 +1,7 @@
-// components/projectDetail/ProductManager.tsx
 import React from "react";
 import styles from "./styles.module.css";
 import MessageApp from "@/svgs/messageApp";
+import Image from "next/image";
 
 interface ManagerData {
   name: string;
@@ -24,9 +24,11 @@ const ProductManager: React.FC<ProductManagerProps> = ({
 
       <div className={styles.managerInfo}>
         {manager.avatar ? (
-          <div>
-            <h2>EO</h2>
-          </div>
+          <Image
+            src={manager.avatar}
+            alt={manager.name}
+            className={styles.avatar}
+          />
         ) : (
           <div className={styles.avatarPlaceholder}>{manager.initials}</div>
         )}

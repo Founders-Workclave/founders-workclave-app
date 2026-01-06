@@ -55,30 +55,35 @@
 .statusBadge {
   padding: 6px 16px;
   border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
+  font-weight: 400;
+  font-family: "inter", sans-serif;
+  font-size: 12px;
   text-transform: capitalize;
 }
 
 .statusInProgress {
   background: #ffefcb;
-  font-weight: 400;
-  font-size: 12px;
   color: #7b580c;
-  font-family: "inter", sans-serif;
 }
 
 .statusCompleted {
   background: #e1ffed;
-  font-weight: 400;
-  font-family: "inter", sans-serif;
-  font-size: 12px;
   color: #00b049;
 }
 
 .statusPending {
   background: #e0e7ff;
   color: #3730a3;
+}
+
+.statusPaused {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statusTerminated {
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .projectTitle {

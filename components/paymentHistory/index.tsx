@@ -1,51 +1,85 @@
-// components/PaymentHistory/index.tsx
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
-import milestoneDataRaw from "../../mocks/projectMilestone.json";
-import { ProjectMilestoneData } from "@/types/project";
-
-interface PaymentTransaction {
-  id: number;
-  milestoneNumber: number;
-  milestoneTitle: string;
-  amount: number;
-  date: string;
-  method: "Wallet" | "Paystack" | "Stripe";
-  status: "completed" | "pending" | "failed";
-}
+import { PaymentService, PaymentTransaction } from "@/lib/api/paymentService";
+import Loader from "../loader";
 
 interface PaymentHistoryProps {
   projectId?: string;
 }
 
-const PaymentHistory: React.FC<PaymentHistoryProps> = ({}) => {
-  const project = milestoneDataRaw as ProjectMilestoneData;
+interface PaymentData {
+  projectValue: string;
+  paid: string;
+  remaining: string;
+  paymentHistory: PaymentTransaction[];
+}
 
-  // Calculate totals
-  const totalProjectValue = project.milestones.reduce(
-    (sum, milestone) => sum + milestone.payment,
-    0
+const PaymentHistory: React.FC<PaymentHistoryProps> = ({ projectId }) => {
+  const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      if (!projectId) {
+        setError("Project ID is required");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const data = await PaymentService.getPaymentHistory(projectId);
+        setPaymentData({
+          projectValue: data.projectValue,
+          paid: data.paid,
+          remaining: data.remaining,
+          paymentHistory: data.paymentHistory,
+        });
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load payment history"
+        );
+        console.error("Error fetching payment history:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPaymentHistory();
+  }, [projectId]);
+
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
+        <p>Loading payment history...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <p>Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!paymentData) {
+    return null;
+  }
+
+  const totalProjectValue = PaymentService.parseAmount(
+    paymentData.projectValue
   );
-
-  const paidAmount = project.milestones
-    .filter((m) => m.status === "completed")
-    .reduce((sum, milestone) => sum + milestone.payment, 0);
-
-  const remainingAmount = totalProjectValue - paidAmount;
-
-  // Generate payment transactions from completed milestones
-  const paymentTransactions: PaymentTransaction[] = project.milestones
-    .filter((m) => m.status === "completed" && m.completedDate)
-    .map((milestone, index) => ({
-      id: milestone.id,
-      milestoneNumber: milestone.number,
-      milestoneTitle: milestone.title,
-      amount: milestone.payment,
-      date: milestone.completedDate!,
-      method: index % 2 === 0 ? "Wallet" : "Paystack", // Alternate payment methods for demo
-      status: "completed" as const,
-    }));
+  const paidAmount = PaymentService.parseAmount(paymentData.paid);
+  const remainingAmount = PaymentService.parseAmount(paymentData.remaining);
 
   return (
     <div className={styles.container}>
@@ -76,34 +110,34 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({}) => {
         <h2 className={styles.historyTitle}>Payment history</h2>
 
         <div className={styles.transactionsList}>
-          {paymentTransactions.length === 0 ? (
+          {paymentData.paymentHistory.length === 0 ? (
             <div className={styles.emptyState}>
               <p>No payment history yet</p>
             </div>
           ) : (
-            paymentTransactions.map((transaction) => (
+            paymentData.paymentHistory.map((transaction) => (
               <div key={transaction.id} className={styles.transactionCard}>
                 <div className={styles.transactionLeft}>
                   <h4 className={styles.transactionTitle}>
-                    Milestone {transaction.milestoneNumber}:{" "}
-                    {transaction.milestoneTitle}
+                    {transaction.milestoneName}
                   </h4>
                   <p className={styles.transactionMeta}>
-                    {transaction.date} • {transaction.method}
+                    {PaymentService.formatDate(transaction.paymentDate)} •{" "}
+                    {transaction.paymentChannel}
                   </p>
                 </div>
 
                 <div className={styles.transactionRight}>
                   <span className={styles.transactionAmount}>
-                    ${transaction.amount.toLocaleString()}
+                    $
+                    {PaymentService.parseAmount(
+                      transaction.amount
+                    ).toLocaleString()}
                   </span>
                   <span
-                    className={`${styles.statusBadge} ${
-                      styles[`status${transaction.status}`]
-                    }`}
+                    className={`${styles.statusBadge} ${styles.statuscompleted}`}
                   >
-                    {transaction.status.charAt(0).toUpperCase() +
-                      transaction.status.slice(1)}
+                    Completed
                   </span>
                 </div>
               </div>

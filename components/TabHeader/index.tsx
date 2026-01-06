@@ -11,7 +11,7 @@ interface PageProps {
   };
 }
 
-const ProjectTabs: React.FC<PageProps> = async ({ params }) => {
+const ProjectTabs: React.FC<PageProps> = ({ params }) => {
   return (
     <ComponentSwitcher
       defaultTabId="progress"
@@ -24,7 +24,7 @@ const ProjectTabs: React.FC<PageProps> = async ({ params }) => {
         {
           id: "milestone",
           label: "Milestones",
-          component: <MilestonesPage />,
+          component: <MilestonesPage projectId={params.projectId} />,
         },
         {
           id: "documents",

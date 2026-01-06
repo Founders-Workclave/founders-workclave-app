@@ -93,7 +93,12 @@
   }
 
   .meta {
-    font-size: 13px;
+    font-size: 12px;
+  }
+
+  .meta > span {
+    max-width: unset;
+    overflow-y: hidden;
   }
 
   .iconWrapper {

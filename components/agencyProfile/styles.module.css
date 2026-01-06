@@ -1,0 +1,409 @@
+.profileContainer {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  font-family: "inter", sans-serif;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: #5865f2;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 24px;
+  font-family: "inter", sans-serif;
+}
+
+/* Header Card */
+.headerCard {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 32px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.userInfo {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.avatarSection {
+  position: relative;
+}
+
+.largeAvatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5865f2 0%, #7c5aff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.largeAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarInitials {
+  font-size: 40px;
+  font-weight: 700;
+  color: white;
+  font-family: "inter", sans-serif;
+}
+
+.statusIndicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid white;
+}
+
+.userDetails {
+  flex: 1;
+}
+
+.userName {
+  font-size: 24px;
+  font-weight: 900;
+  color: #111827;
+  margin: 0 0 8px 0;
+  font-family: "Test Calibre", sans-serif;
+}
+
+.agencyName {
+  font-size: 14px;
+  color: #8e98a8;
+  margin: 0 0 4px 0;
+  font-family: "inter", sans-serif;
+}
+
+.contactInfo {
+  font-size: 14px;
+  color: #8e98a8;
+  margin: 0 0 4px 0;
+  font-family: "inter", sans-serif;
+}
+
+.userMeta {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.planBadge {
+  display: inline-block;
+  border-radius: 6px;
+  padding-top: 4px;
+  background-color: transparent !important;
+  font-size: 13px;
+  color: #65c165 !important;
+  font-weight: 400;
+  font-family: "inter", sans-serif;
+}
+
+.joinedDate {
+  font-size: 12px;
+  color: #a3a7ab;
+  font-weight: 400;
+  font-family: "inter", sans-serif;
+}
+
+.roleBadge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: "inter", sans-serif;
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
+.messageButton,
+.deactivateButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "inter", sans-serif;
+  white-space: nowrap;
+}
+
+.messageButton {
+  background: white;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.messageButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.deactivateButton {
+  background: white;
+  border: 1px solid #fecaca;
+  color: #ef4444;
+}
+
+.deactivateButton:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.statCard {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.statIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statInfo {
+  flex: 1;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 8px 0;
+  text-align: center;
+  font-family: "inter", sans-serif;
+}
+
+.statValue {
+  font-size: 28px;
+  text-align: center;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  font-family: "inter", sans-serif;
+}
+
+/* Tabs */
+.tabsContainer {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.tab {
+  flex: 1;
+  padding: 16px 24px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  font-family: "inter", sans-serif;
+}
+
+.tab:hover {
+  color: #5865f2;
+  background: #f9fafb;
+}
+
+.activeTab {
+  color: #5865f2;
+  font-weight: 600;
+}
+
+.activeTab::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #5865f2;
+}
+
+.tabContent {
+  padding: 48px 24px;
+  min-height: 400px;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.emptyIcon {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #f0f4ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.emptyTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  font-family: "inter", sans-serif;
+}
+
+.emptyText {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  font-family: "inter", sans-serif;
+}
+
+.createButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #5865f2;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: "inter", sans-serif;
+}
+
+.createButton:hover {
+  background: #4f46e5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profileContainer {
+    padding: 16px;
+  }
+
+  .headerCard {
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  .userInfo {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .userDetails {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .userMeta {
+    justify-content: center;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .messageButton,
+  .deactivateButton {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tab {
+    flex: 0 0 auto;
+    min-width: 120px;
+  }
+
+  .tabContent {
+    padding: 24px 16px;
+  }
+}

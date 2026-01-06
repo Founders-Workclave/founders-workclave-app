@@ -1,34 +1,47 @@
 import styles from "./styles.module.css";
-import mockProjectsData from "../../../mocks/project.json";
+import { Project } from "@/types/project";
 import Prd from "@/svgs/prd";
 import Link from "next/link";
 
-interface Project {
-  id: number;
-  title: string;
-  stage: string;
-  progress: number;
-  status: "In-Progress" | "Completed" | "Pending";
+interface RecentProjectsProps {
+  projects: Project[];
 }
 
-const mockProjects: Project[] = mockProjectsData as Project[];
-
-const RecentProjects = () => {
+const RecentProjects: React.FC<RecentProjectsProps> = ({ projects }) => {
   const getStatusStyle = (status: string) => {
-    switch (status.toLowerCase()) {
+    const normalizedStatus = status.toLowerCase().replace(/\s+/g, "-");
+    switch (normalizedStatus) {
       case "completed":
         return styles.statusCompleted;
       case "in-progress":
         return styles.statusInProgress;
       case "pending":
         return styles.statusPending;
+      case "paused":
+        return styles.statusPaused;
+      case "terminated":
+        return styles.statusTerminated;
       default:
         return "";
     }
   };
 
-  const getStatusText = (status: string) => {
-    return status;
+  const getStage = (project: Project) => {
+    // Use latest_milestone if available
+    if (project.latestMilestone) {
+      return `Milestone ${project.latestMilestone}`;
+    }
+
+    // Fallback to completedMilestone/totalMilestone if available
+    if (project.totalMilestone > 0) {
+      if (project.completedMilestone === 0) {
+        return "Not started";
+      }
+      return `Milestone ${project.completedMilestone}/${project.totalMilestone}`;
+    }
+
+    // Default based on status
+    return "Not started";
   };
 
   return (
@@ -36,7 +49,7 @@ const RecentProjects = () => {
       <h2 className={styles.heading}>Recent Projects</h2>
 
       <div className={styles.projectsList}>
-        {mockProjects.map((project: Project) => (
+        {projects.map((project: Project) => (
           <Link
             key={project.id}
             href={`/projects/${project.id}`}
@@ -50,24 +63,24 @@ const RecentProjects = () => {
                     project.status
                   )}`}
                 >
-                  {getStatusText(project.status)}
+                  {project.status}
                 </span>
               </div>
 
-              <h3 className={styles.projectTitle}>{project.title}</h3>
-              <p className={styles.projectPhase}>{project.stage}</p>
+              <h3 className={styles.projectTitle}>{project.name}</h3>
+              <p className={styles.projectPhase}>{getStage(project)}</p>
 
               <div className={styles.progressSection}>
                 <div className={styles.progressHeader}>
                   <span className={styles.progressLabel}>Progress</span>
                   <span className={styles.progressPercentage}>
-                    {project.progress}%
+                    {project.progressPercentage}%
                   </span>
                 </div>
                 <div className={styles.progressBar}>
                   <div
                     className={styles.progressFill}
-                    style={{ width: `${project.progress}%` }}
+                    style={{ width: `${project.progressPercentage}%` }}
                   />
                 </div>
               </div>

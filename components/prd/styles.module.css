@@ -147,6 +147,21 @@
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 0;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loadingContainer > p {
+  margin: 0;
+  font-size: 14px;
+  color: #4d4d4d;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .container {

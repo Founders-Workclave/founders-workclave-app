@@ -10,8 +10,68 @@
       "role": "Founder",
       "status": "Inactive",
       "avatar": "",
-      "projects": [],
-      "prds": []
+      "projectsCount": 3,
+      "projects": [
+        {
+          "id": "1",
+          "title": "E-commerce Mobile App",
+          "stage": "Idea Consultation & PRD Generation",
+          "progress": 70,
+          "status": "In-Progress"
+        },
+        {
+          "id": "2",
+          "title": "Fitness Tracking App",
+          "stage": "Development & Testing",
+          "progress": 45,
+          "status": "In-Progress"
+        },
+        {
+          "id": "3",
+          "title": "Restaurant Management System",
+          "stage": "Post-Launch Support & Optimization",
+          "progress": 100,
+          "status": "Completed"
+        }
+      ],
+      "prds": [
+        {
+          "id": "1",
+          "title": "E-commerce Mobile App PRD",
+          "projectId": "1",
+          "projectName": "E-commerce Mobile App",
+          "description": "Comprehensive PRD for building a scalable e-commerce mobile application with payment integration",
+          "createdDate": "Sept 20, 2025",
+          "lastModified": "Nov 20, 2025",
+          "duration": "45 Secs",
+          "status": "Review",
+          "prdUrl": "/prds/ecommerce-app-prd.pdf"
+        },
+        {
+          "id": "2",
+          "title": "Fitness Tracking App PRD",
+          "projectId": "2",
+          "projectName": "Fitness Tracking App",
+          "description": "AI-powered fitness tracking app with personalized workout plans and nutrition guidance",
+          "createdDate": "Oct 5, 2025",
+          "lastModified": "Nov 15, 2025",
+          "duration": "38 Secs",
+          "status": "Draft",
+          "prdUrl": "/prds/fitness-app-prd.pdf"
+        },
+        {
+          "id": "3",
+          "title": "Restaurant Management System PRD",
+          "projectId": "3",
+          "projectName": "Restaurant Management System",
+          "description": "Complete restaurant management solution with POS, inventory, and analytics",
+          "createdDate": "Aug 12, 2025",
+          "lastModified": "Oct 30, 2025",
+          "duration": "52 Secs",
+          "status": "Approved",
+          "prdUrl": "/prds/restaurant-system-prd.pdf"
+        }
+      ]
     },
     {
       "id": "2",
@@ -23,44 +83,13 @@
       "role": "Agency",
       "status": "Active",
       "avatar": "",
-      "projects": [
-        {
-          "id": 1,
-          "title": "E-commerce Mobile App",
-          "stage": "Idea Consultation & PRD Generation",
-          "progress": 70,
-          "status": "In-Progress"
-        },
-        {
-          "id": 2,
-          "title": "E-commerce Web App",
-          "stage": "Post-Launch Support & Optimization",
-          "progress": 100,
-          "status": "Completed"
-        }
-      ],
-      "prds": [
-        {
-          "id": 1,
-          "projectName": "E-commerce Mobile App",
-          "description": "AI-powered fitness tracking app with personalized workout plans and nutrition guidance for busy professionals...",
-          "createdDate": "Sept 20, 2025",
-          "duration": "45 Secs",
-          "status": "In-Progress",
-          "modifiedDate": "today",
-          "prdUrl": "/prds/ecommerce-app-prd.pdf"
-        },
-        {
-          "id": 2,
-          "projectName": "E-commerce Web App",
-          "description": "AI-powered fitness tracking app with personalized workout plans and nutrition guidance for busy professionals...",
-          "createdDate": "Sept 20, 2025",
-          "duration": "45 Secs",
-          "status": "Completed",
-          "modifiedDate": "3 days ago",
-          "prdUrl": "/prds/ecommerce-app-prd-final.pdf"
-        }
-      ]
+      "plan": "Professional",
+      "pms": 32,
+      "mrr": 2000,
+      "projects": [],
+      "clients": [],
+      "productManagers": [],
+      "prds": []
     },
     {
       "id": "3",
@@ -72,8 +101,37 @@
       "role": "Founder",
       "status": "Suspended",
       "avatar": "",
-      "projects": [],
-      "prds": []
+      "projectsCount": 5,
+      "projects": [
+        {
+          "id": "1",
+          "title": "Social Media Platform",
+          "stage": "Idea Consultation & PRD Generation",
+          "progress": 25,
+          "status": "In-Progress"
+        },
+        {
+          "id": "2",
+          "title": "Video Streaming App",
+          "stage": "Development & Testing",
+          "progress": 60,
+          "status": "In-Progress"
+        }
+      ],
+      "prds": [
+        {
+          "id": "1",
+          "title": "Social Media Platform PRD",
+          "projectId": "1",
+          "projectName": "Social Media Platform",
+          "description": "Next-generation social media platform with AI-driven content recommendations",
+          "createdDate": "Oct 1, 2025",
+          "lastModified": "Nov 10, 2025",
+          "duration": "55 Secs",
+          "status": "Draft",
+          "prdUrl": "/prds/social-media-prd.pdf"
+        }
+      ]
     },
     {
       "id": "4",
@@ -85,7 +143,16 @@
       "role": "Founder",
       "status": "Inactive",
       "avatar": "",
-      "projects": [],
+      "projectsCount": 2,
+      "projects": [
+        {
+          "id": "1",
+          "title": "Portfolio Website Builder",
+          "stage": "Post-Launch Support & Optimization",
+          "progress": 100,
+          "status": "Completed"
+        }
+      ],
       "prds": []
     },
     {
@@ -98,6 +165,138 @@
       "role": "Agency",
       "status": "Active",
       "avatar": "",
+      "plan": "Enterprise",
+      "pms": 45,
+      "mrr": 5000,
+      "projects": [],
+      "clients": [],
+      "productManagers": [],
+      "prds": []
+    },
+    {
+      "id": "6",
+      "name": "Jennifer Martinez",
+      "email": "jennifer.martinez@founder.com",
+      "phone": "08098765432",
+      "agency": "Martinez Ventures",
+      "joinedDate": "Jun 15, 2025",
+      "role": "Founder",
+      "status": "Active",
+      "avatar": "",
+      "projectsCount": 7,
+      "projects": [
+        {
+          "id": "1",
+          "title": "Travel Booking Platform",
+          "stage": "Development & Testing",
+          "progress": 65,
+          "status": "In-Progress"
+        },
+        {
+          "id": "2",
+          "title": "Hotel Management System",
+          "stage": "Post-Launch Support & Optimization",
+          "progress": 100,
+          "status": "Completed"
+        }
+      ],
+      "prds": [
+        {
+          "id": "1",
+          "title": "Travel Booking Platform PRD",
+          "projectId": "1",
+          "projectName": "Travel Booking Platform",
+          "description": "Comprehensive travel booking system with flight, hotel, and car rental integration",
+          "createdDate": "Jul 20, 2025",
+          "lastModified": "Nov 16, 2025",
+          "duration": "50 Secs",
+          "status": "Review",
+          "prdUrl": "/prds/travel-booking-prd.pdf"
+        }
+      ]
+    },
+    {
+      "id": "7",
+      "name": "Robert Brown",
+      "email": "robert.brown@techcorp.com",
+      "phone": "07012345678",
+      "agency": "TechCorp Solutions",
+      "joinedDate": "May 22, 2025",
+      "role": "Agency",
+      "status": "Active",
+      "avatar": "",
+      "plan": "Starter",
+      "pms": 8,
+      "mrr": 500,
+      "projects": [],
+      "clients": [],
+      "productManagers": [],
+      "prds": []
+    },
+    {
+      "id": "8",
+      "name": "Fatima Ahmed",
+      "email": "fatima.ahmed@innovate.com",
+      "phone": "08134567890",
+      "agency": "Innovate Labs",
+      "joinedDate": "Apr 10, 2025",
+      "role": "Founder",
+      "status": "Active",
+      "avatar": "",
+      "projectsCount": 4,
+      "projects": [
+        {
+          "id": "1",
+          "title": "Educational Platform",
+          "stage": "Development & Testing",
+          "progress": 75,
+          "status": "In-Progress"
+        }
+      ],
+      "prds": [
+        {
+          "id": "1",
+          "title": "Educational Platform PRD",
+          "projectId": "1",
+          "projectName": "Educational Platform",
+          "description": "Online learning platform with video courses and interactive assessments",
+          "createdDate": "May 15, 2025",
+          "lastModified": "Nov 12, 2025",
+          "duration": "46 Secs",
+          "status": "Approved",
+          "prdUrl": "/prds/educational-platform-prd.pdf"
+        }
+      ]
+    },
+    {
+      "id": "9",
+      "name": "James Wilson",
+      "email": "james.wilson@agency.com",
+      "phone": "09087654321",
+      "agency": "Wilson & Associates",
+      "joinedDate": "Mar 5, 2025",
+      "role": "Agency",
+      "status": "Inactive",
+      "avatar": "",
+      "plan": "Professional",
+      "pms": 20,
+      "mrr": 1800,
+      "projects": [],
+      "clients": [],
+      "productManagers": [],
+      "prds": []
+    },
+    {
+      "id": "10",
+      "name": "Chioma Nwachukwu",
+      "email": "chioma.nwachukwu@startup.com",
+      "phone": "08145678901",
+      "agency": "Nwachukwu Enterprises",
+      "joinedDate": "Feb 18, 2025",
+      "role": "Founder",
+      "status": "Active",
+      "avatar": "",
+      "projectsCount": 6,
       "projects": [],
       "prds": []
     }

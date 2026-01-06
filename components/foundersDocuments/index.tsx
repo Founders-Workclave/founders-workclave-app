@@ -1,8 +1,10 @@
 "use client";
-import documentsData from "../../mocks/projectDocuments.json";
+import { useState, useEffect } from "react";
 import styles from "./styles.module.css";
 import DocumentCard from "./documentsCard";
 import DocEmpty from "@/svgs/docEmpty";
+import { DocumentService, Document } from "@/lib/api/documentService";
+import Loader from "../loader";
 
 interface PageProps {
   params: {
@@ -11,50 +13,100 @@ interface PageProps {
   };
 }
 
-const DocumentsPage = ({}: PageProps) => {
+const DocumentsPage = ({ params }: PageProps) => {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      if (!params.projectId) {
+        setError("Project ID is required");
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const data = await DocumentService.getDocuments(params.projectId);
+        setDocuments(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load documents"
+        );
+        console.error("Error fetching documents:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDocuments();
+  }, [params.projectId]);
+
   const handleViewDocument = (documentId: number) => {
-    console.log("View document:", documentId);
-    const doc = documentsData.documents.find((d) => d.id === documentId);
+    const doc = documents.find((d) => d.id === documentId);
     if (doc) {
-      window.open(doc.url, "_blank");
+      window.open(doc.documentUrl, "_blank");
     }
   };
 
   const handleDownloadDocument = (documentId: number) => {
-    console.log("Download document:", documentId);
-    const doc = documentsData.documents.find((d) => d.id === documentId);
+    const doc = documents.find((d) => d.id === documentId);
     if (doc) {
-      const link = window.document.createElement("a");
-      link.href = doc.url;
-      link.download = `${doc.title}.${doc.type.toLowerCase()}`;
-      window.document.body.appendChild(link);
-      link.click();
-      window.document.body.removeChild(link);
+      const filename = DocumentService.getFilenameFromUrl(doc.documentUrl);
+      const extension = DocumentService.getFileExtension(doc.documentUrl);
+      DocumentService.downloadDocument(
+        doc.documentUrl,
+        `${filename}.${extension.toLowerCase()}`
+      );
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
+        <p>Loading documents...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <p>Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Documents</h1>
-        {/* <p className={styles.subtitle}>
-          {documentsData.documents.length} document
-          {documentsData.documents.length !== 1 ? "s" : ""} available
-        </p> */}
+        {documents.length > 0 && (
+          <p className={styles.subtitle}>
+            {documents.length} document
+            {documents.length !== 1 ? "s" : ""} available
+          </p>
+        )}
       </div>
 
-      <div className={styles.documentsList}>
-        {documentsData.documents.map((document) => (
-          <DocumentCard
-            key={document.id}
-            document={document}
-            onView={handleViewDocument}
-            onDownload={handleDownloadDocument}
-          />
-        ))}
-      </div>
-
-      {documentsData.documents.length === 0 && (
+      {documents.length > 0 ? (
+        <div className={styles.documentsList}>
+          {documents.map((document) => (
+            <DocumentCard
+              key={document.id}
+              document={document}
+              onView={handleViewDocument}
+              onDownload={handleDownloadDocument}
+            />
+          ))}
+        </div>
+      ) : (
         <div className={styles.emptyState}>
           <DocEmpty />
           <p className={styles.emptyText}>No document uploaded yet</p>

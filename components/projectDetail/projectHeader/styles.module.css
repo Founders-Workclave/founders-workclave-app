@@ -56,29 +56,34 @@
 .statusBadge {
   padding: 6px 14px;
   border-radius: 16px;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: "inter", sans-serif;
 }
 
 .statusInProgress {
   background: #ffefcb;
   color: #7b580c;
-  font-family: "inter", sans-serif;
-  font-size: 12px;
-  font-weight: 400;
 }
 
 .statusCompleted {
   background: #e1ffed;
   color: #00b049;
-  font-family: "inter", sans-serif;
-  font-size: 12px;
-  font-weight: 400;
 }
 
 .statusPending {
   background: #e0e7ff;
   color: #3730a3;
+}
+
+.statusPaused {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statusTerminated {
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .metadata {
@@ -259,6 +264,24 @@
   height: 2px;
   background: #6366f1;
   border-radius: 2px 2px 0 0;
+}
+
+.dangerItem {
+  color: #ef4444;
+}
+
+.dangerItem:hover {
+  background-color: #fef2f2;
+}
+
+.dropdownItem:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.moreButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 1024px) {

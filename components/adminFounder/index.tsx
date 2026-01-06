@@ -1,9 +1,10 @@
 "use client";
 import React, { useState } from "react";
 import userData from "../../mocks/userData.json";
-import UsersTable from "../adminDashboard/userTable";
-import UserProfile from "../adminUserProfile";
 import styles from "./styles.module.css";
+import FoundersTable from "../foundersTable";
+import UserProfile from "../adminUserProfile";
+import type { UserData, Founder } from "../../types/user"; // Import types
 
 const AdminFounderComp: React.FC = () => {
   const [currentView, setCurrentView] = useState<"table" | "profile">("table");
@@ -11,65 +12,57 @@ const AdminFounderComp: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Get the selected user data
+  const typedUserData = userData as UserData;
+  const founders = typedUserData.users.filter(
+    (user): user is Founder => user.role === "Founder"
+  );
+
   const selectedUser = selectedUserId
-    ? userData.users.find((user) => user.id === selectedUserId)
+    ? founders.find((user) => user.id === selectedUserId)
     : null;
 
-  const filteredUsers = userData.users.filter((user) => {
+  const filteredFounders = founders.filter((founder) => {
     const query = searchQuery.toLowerCase();
     return (
-      user.name.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      user.agency.toLowerCase().includes(query) ||
-      user.phone.includes(query)
+      founder.name.toLowerCase().includes(query) ||
+      founder.email.toLowerCase().includes(query) ||
+      founder.phone.includes(query) ||
+      (founder.agency && founder.agency.toLowerCase().includes(query))
     );
-  }) as typeof userData.users;
+  });
 
-  // Handle user selection - navigate to profile
-  const handleUserSelect = (userId: string) => {
-    setSelectedUserId(userId);
+  // Handle founder selection - navigate to profile
+  const handleFounderSelect = (founderId: string) => {
+    setSelectedUserId(founderId);
     setCurrentView("profile");
   };
-
-  // Handle back to table view
   const handleBackToTable = () => {
     setCurrentView("table");
     setSelectedUserId(null);
   };
-
-  // Handle page change
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
-  // Handle search
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1);
   };
 
   return (
     <div className={styles.container}>
       {currentView === "table" && (
-        <UsersTable
-          users={filteredUsers}
+        <FoundersTable
+          founders={filteredFounders}
           currentPage={currentPage}
           totalPages={30}
           onPageChange={handlePageChange}
           onSearch={handleSearch}
-          onUserSelect={handleUserSelect}
-          title="All Users"
+          onFounderSelect={handleFounderSelect}
         />
       )}
 
       {currentView === "profile" && selectedUser && (
-        <UserProfile
-          user={
-            selectedUser as typeof selectedUser & { role: "Founder" | "Agency" }
-          }
-          onBack={handleBackToTable}
-        />
+        <UserProfile user={selectedUser} onBack={handleBackToTable} />
       )}
     </div>
   );

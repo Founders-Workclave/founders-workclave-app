@@ -166,6 +166,11 @@
   margin: 0;
 }
 
+.container > p {
+  font-size: 12px;
+  margin-top: 10px;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .summaryCards {
@@ -183,7 +188,8 @@
 
 @media (max-width: 768px) {
   .container {
-    padding: 24px 16px;
+    padding: 24px 0px;
+    max-width: unset;
   }
 
   .summaryCards {
@@ -204,11 +210,12 @@
   }
 
   .historyTitle {
-    font-size: 20px;
+    font-size: 14px;
   }
 
   .transactionCard {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
     align-items: flex-start;
     gap: 12px;
   }

@@ -42,9 +42,15 @@
   margin: 0;
 }
 
+.container > p {
+  font-size: 12px;
+  margin-top: 10px;
+}
+
 @media (max-width: 640px) {
   .container {
     padding: 24px 16px;
+    max-width: unset;
   }
 
   .title {

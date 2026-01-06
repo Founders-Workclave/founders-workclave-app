@@ -1,17 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import styles from "./styles.module.css";
 import Image from "next/image";
 import Photo from "@/svgs/photo";
-
-interface UserProfile {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  countryCode: string;
-  avatar?: string;
-}
+import { UserService, UserProfile } from "@/lib/api/userService";
+import Loader from "../loader";
 
 interface PasswordData {
   currentPassword: string;
@@ -20,14 +14,10 @@ interface PasswordData {
 }
 
 const SettingsPage = () => {
-  const [profile, setProfile] = useState<UserProfile>({
-    firstName: "Waren",
-    lastName: "Waden",
-    email: "Einstein.oyakhilome1@gmail.com",
-    phone: "9045433344",
-    countryCode: "+234",
-    avatar: undefined,
-  });
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const [passwords, setPasswords] = useState<PasswordData>({
     currentPassword: "",
@@ -39,53 +29,146 @@ const SettingsPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setIsLoading(true);
+        const data = await UserService.getUserProfile();
+        setProfile(data);
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Failed to load profile"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
+
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
   };
 
   const handleProfileChange = (field: keyof UserProfile, value: string) => {
-    setProfile((prev) => ({ ...prev, [field]: value }));
+    if (profile) {
+      setProfile({ ...profile, [field]: value });
+    }
   };
 
   const handlePasswordChange = (field: keyof PasswordData, value: string) => {
     setPasswords((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleProfileSave = () => {
-    console.log("Saving profile:", profile);
-    // Add your profile save logic here
-    alert("Profile saved successfully!");
+  const handleProfileSave = async () => {
+    if (!profile) return;
+
+    setIsSaving(true);
+    const loadingToast = toast.loading("Saving profile...");
+
+    try {
+      const formData = new FormData();
+      formData.append("firstName", profile.firstName);
+      formData.append("lastName", profile.lastName);
+      formData.append("phone", profile.phone);
+
+      // Add avatar if changed
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+      }
+
+      const response = await UserService.updateUserProfile(formData);
+      toast.success(response.message || "Profile updated successfully!", {
+        id: loadingToast,
+      });
+
+      // Refresh profile data
+      const updatedProfile = await UserService.getUserProfile();
+      setProfile(updatedProfile);
+      setAvatarFile(null);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update profile",
+        { id: loadingToast }
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handlePasswordSave = () => {
+  const handlePasswordSave = async () => {
     if (passwords.newPassword !== passwords.confirmPassword) {
-      alert("New password and confirm password do not match!");
+      toast.error("New password and confirm password do not match!");
       return;
     }
     if (passwords.newPassword.length < 8) {
-      alert("Password must be at least 8 characters long!");
+      toast.error("Password must be at least 8 characters long!");
       return;
     }
-    console.log("Changing password");
-    // Add your password change logic here
-    alert("Password changed successfully!");
-    setPasswords({
-      currentPassword: "",
-      newPassword: "",
-      confirmPassword: "",
-    });
+
+    setIsSaving(true);
+    const loadingToast = toast.loading("Changing password...");
+
+    try {
+      const response = await UserService.changePassword({
+        currentPassword: passwords.currentPassword,
+        newPassword: passwords.newPassword,
+      });
+
+      toast.success(response.message || "Password changed successfully!", {
+        id: loadingToast,
+      });
+
+      setPasswords({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to change password",
+        { id: loadingToast }
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setAvatarFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfile((prev) => ({ ...prev, avatar: reader.result as string }));
+        if (profile) {
+          setProfile({ ...profile, avatar: reader.result as string });
+        }
       };
       reader.readAsDataURL(file);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
+          <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
+          <p>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <p>Failed to load profile</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -119,6 +202,7 @@ const SettingsPage = () => {
               accept="image/*"
               onChange={handleAvatarChange}
               className={styles.avatarInput}
+              disabled={isSaving}
             />
           </div>
           <div className={styles.userInfo}>
@@ -137,6 +221,7 @@ const SettingsPage = () => {
               value={profile.firstName}
               onChange={(e) => handleProfileChange("firstName", e.target.value)}
               className={styles.input}
+              disabled={isSaving}
             />
           </div>
 
@@ -147,37 +232,30 @@ const SettingsPage = () => {
               value={profile.lastName}
               onChange={(e) => handleProfileChange("lastName", e.target.value)}
               className={styles.input}
+              disabled={isSaving}
             />
           </div>
         </div>
 
         <div className={styles.formGroup}>
           <label className={styles.label}>Phone number</label>
-          <div className={styles.phoneInput}>
-            <div className={styles.countryCode}>
-              <span className={styles.flag}>🇳🇬</span>
-              <span>{profile.countryCode}</span>
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M7 10l5 5 5-5z" />
-              </svg>
-            </div>
-            <input
-              type="tel"
-              value={profile.phone}
-              onChange={(e) => handleProfileChange("phone", e.target.value)}
-              className={styles.phoneNumberInput}
-            />
-          </div>
+          <input
+            type="tel"
+            value={profile.phone}
+            onChange={(e) => handleProfileChange("phone", e.target.value)}
+            className={styles.input}
+            placeholder="+2349045433344"
+            disabled={isSaving}
+          />
         </div>
 
         <div className={styles.actionButtons}>
-          <button onClick={handleProfileSave} className={styles.saveButton}>
-            Save Changes
+          <button
+            onClick={handleProfileSave}
+            className={styles.saveButton}
+            disabled={isSaving}
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
@@ -196,6 +274,7 @@ const SettingsPage = () => {
                 handlePasswordChange("currentPassword", e.target.value)
               }
               className={styles.input}
+              disabled={isSaving}
             />
             <button
               type="button"
@@ -231,12 +310,13 @@ const SettingsPage = () => {
           <div className={styles.passwordInput}>
             <input
               type={showNewPassword ? "text" : "password"}
-              placeholder="Enter current password"
+              placeholder="Enter new password"
               value={passwords.newPassword}
               onChange={(e) =>
                 handlePasswordChange("newPassword", e.target.value)
               }
               className={styles.input}
+              disabled={isSaving}
             />
             <button
               type="button"
@@ -278,6 +358,7 @@ const SettingsPage = () => {
                 handlePasswordChange("confirmPassword", e.target.value)
               }
               className={styles.input}
+              disabled={isSaving}
             />
             <button
               type="button"
@@ -309,8 +390,12 @@ const SettingsPage = () => {
         </div>
 
         <div className={styles.actionButtons}>
-          <button onClick={handlePasswordSave} className={styles.saveButton}>
-            Save Changes
+          <button
+            onClick={handlePasswordSave}
+            className={styles.saveButton}
+            disabled={isSaving}
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>

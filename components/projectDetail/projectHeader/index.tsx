@@ -1,10 +1,12 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import toast from "react-hot-toast";
 import styles from "./styles.module.css";
 import MessageApp from "@/svgs/messageApp";
 import PrdDownload from "@/svgs/prdDownload";
 import Pause from "@/svgs/pause";
 import Terminate from "@/svgs/terminate";
+import { ProjectService } from "@/lib/api/projectService";
 
 interface ProjectHeaderProps {
   id: string;
@@ -12,15 +14,15 @@ interface ProjectHeaderProps {
   status: string;
   createdOn: string;
   lastUpdated: string;
-  dueDate: string;
+  dueDate?: string;
   onBack: () => void;
   onMessagePM: () => void;
   onDownloadPRD: () => void;
-  onPauseProject: () => void;
-  onTerminateProject: () => void;
+  onProjectUpdated?: () => void; // Callback to refresh project data
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
+  id,
   title,
   status,
   createdOn,
@@ -29,10 +31,10 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   onBack,
   onMessagePM,
   onDownloadPRD,
-  onPauseProject,
-  onTerminateProject,
+  onProjectUpdated,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -51,26 +53,95 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   }, []);
 
   const getStatusClass = () => {
-    switch (status.toLowerCase()) {
+    const normalizedStatus = status.toLowerCase().replace(/\s+/g, "-");
+    switch (normalizedStatus) {
       case "in-progress":
         return styles.statusInProgress;
       case "completed":
         return styles.statusCompleted;
       case "pending":
+      case "paused":
         return styles.statusPending;
+      case "terminated":
+        return styles.statusTerminated;
       default:
         return "";
     }
   };
 
-  const handlePauseProject = () => {
+  const handlePauseProject = async () => {
     setIsDropdownOpen(false);
-    onPauseProject();
+
+    if (isProcessing) return;
+
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      "Are you sure you want to pause this project? Work will be temporarily suspended."
+    );
+
+    if (!confirmed) return;
+
+    setIsProcessing(true);
+    const loadingToast = toast.loading("Pausing project...");
+
+    try {
+      const response = await ProjectService.pauseProject(id);
+      toast.success(response.message || "Project paused successfully", {
+        id: loadingToast,
+      });
+
+      // Refresh project data
+      if (onProjectUpdated) {
+        onProjectUpdated();
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to pause project",
+        { id: loadingToast }
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
-  const handleTerminateProject = () => {
+  const handleTerminateProject = async () => {
     setIsDropdownOpen(false);
-    onTerminateProject();
+
+    if (isProcessing) return;
+
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      "Are you sure you want to terminate this project? This action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    setIsProcessing(true);
+    const loadingToast = toast.loading("Terminating project...");
+
+    try {
+      const response = await ProjectService.terminateProject(id);
+      toast.success(response.message || "Project terminated successfully", {
+        id: loadingToast,
+      });
+
+      // Refresh project data or navigate away
+      if (onProjectUpdated) {
+        onProjectUpdated();
+      } else {
+        // Optionally navigate back to projects list after termination
+        setTimeout(() => {
+          onBack();
+        }, 2000);
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to terminate project",
+        { id: loadingToast }
+      );
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -100,7 +171,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
           <p className={styles.metadata}>
             Created on {createdOn} • Last updated {lastUpdated}
           </p>
-          <p className={styles.dueDate}>Due: {dueDate}</p>
+          {dueDate && <p className={styles.dueDate}>Due: {dueDate}</p>}
         </div>
 
         <div className={styles.actions}>
@@ -117,6 +188,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
             <button
               className={styles.moreButton}
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              disabled={isProcessing}
             >
               <svg
                 width="20"
@@ -137,6 +209,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
                 <button
                   onClick={handlePauseProject}
                   className={styles.dropdownItem}
+                  disabled={isProcessing}
                 >
                   <div className={styles.dropdownIcon}>
                     <Pause />
@@ -146,7 +219,8 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
 
                 <button
                   onClick={handleTerminateProject}
-                  className={styles.dropdownItem}
+                  className={`${styles.dropdownItem} ${styles.dangerItem}`}
+                  disabled={isProcessing}
                 >
                   <div className={styles.dropdownIcon}>
                     <Terminate />
@@ -158,15 +232,6 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
           </div>
         </div>
       </div>
-
-      {/* <div className={styles.tabs}>
-        <button className={`${styles.tab} ${styles.tabActive}`}>
-          Overview
-        </button>
-        <button className={styles.tab}>Milestones</button>
-        <button className={styles.tab}>Documents</button>
-        <button className={styles.tab}>Payment</button>
-      </div> */}
     </div>
   );
 };
