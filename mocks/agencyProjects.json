@@ -1,0 +1,306 @@
+{
+  "projects": [
+    {
+      "id": "proj_001",
+      "projectName": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "initials": "JD",
+        "email": "john.doe@example.com"
+      },
+      "totalProjectValue": 25000,
+      "amountPaid": 5000,
+      "percentPaid": 20,
+      "progress": {
+        "current": 1,
+        "total": 7
+      },
+      "status": "In-Progress",
+      "createdDate": "2025-09-15",
+      "lastUpdated": "2 hours ago",
+      "dueDate": "2025-11-30",
+      "timeline": "3-4 months",
+      "startedAgo": "2 weeks ago",
+      "totalBudget": 50000,
+      "budgetPaid": 30000,
+      "documents": 12,
+      "lastDocumentUpload": "2weeks ago",
+      "projectProgress": {
+        "overallCompletion": 10,
+        "milestones": [
+          {
+            "id": "m1",
+            "name": "AI Consultation",
+            "status": "completed"
+          },
+          {
+            "id": "m2",
+            "name": "PRD Review & Technical Planning",
+            "status": "completed"
+          },
+          {
+            "id": "m3",
+            "name": "Design & System Architecture",
+            "status": "pending"
+          },
+          {
+            "id": "m4",
+            "name": "Core Development (MVP Build)",
+            "status": "pending"
+          },
+          {
+            "id": "m5",
+            "name": "Quality Assurance & Testing",
+            "status": "pending"
+          },
+          {
+            "id": "m6",
+            "name": "Deployment & Handover",
+            "status": "pending"
+          },
+          {
+            "id": "m7",
+            "name": "Post-Launch Support & Optimization",
+            "status": "pending"
+          }
+        ]
+      },
+      "problemStatement": "Small e-commerce businesses struggle with managing inventory, processing orders, and tracking customer engagement across multiple platforms. Current solutions are either too expensive or lack mobile-first capabilities, resulting in lost sales and poor customer experience.",
+      "keyFeatures": [
+        { "id": "f1", "name": "Inventory Management" },
+        { "id": "f2", "name": "Order Processing" },
+        { "id": "f3", "name": "Customer Analytics" },
+        { "id": "f4", "name": "Payment Integration" },
+        { "id": "f5", "name": "Push Notifications" },
+        { "id": "f6", "name": "Multi-vendor Support" }
+      ],
+      "productManager": {
+        "name": "Einstein Oyakhilome",
+        "initials": "EO",
+        "email": "einstein@example.com"
+      }
+    },
+    {
+      "id": "proj_002",
+      "projectName": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "initials": "JD",
+        "email": "john.doe@example.com"
+      },
+      "totalProjectValue": 25000,
+      "amountPaid": 25000,
+      "percentPaid": 20,
+      "progress": {
+        "current": 7,
+        "total": 7
+      },
+      "status": "Completed",
+      "createdDate": "2025-06-10",
+      "lastUpdated": "1 week ago",
+      "dueDate": "2025-09-15",
+      "timeline": "3 months",
+      "startedAgo": "4 months ago",
+      "totalBudget": 50000,
+      "budgetPaid": 50000,
+      "documents": 25,
+      "lastDocumentUpload": "1 week ago",
+      "projectProgress": {
+        "overallCompletion": 100,
+        "milestones": [
+          {
+            "id": "m1",
+            "name": "AI Consultation",
+            "status": "completed"
+          },
+          {
+            "id": "m2",
+            "name": "PRD Review & Technical Planning",
+            "status": "completed"
+          },
+          {
+            "id": "m3",
+            "name": "Design & System Architecture",
+            "status": "completed"
+          },
+          {
+            "id": "m4",
+            "name": "Core Development (MVP Build)",
+            "status": "completed"
+          },
+          {
+            "id": "m5",
+            "name": "Quality Assurance & Testing",
+            "status": "completed"
+          },
+          {
+            "id": "m6",
+            "name": "Deployment & Handover",
+            "status": "completed"
+          },
+          {
+            "id": "m7",
+            "name": "Post-Launch Support & Optimization",
+            "status": "completed"
+          }
+        ]
+      },
+      "problemStatement": "Healthcare providers need a secure platform to manage patient appointments and medical records efficiently.",
+      "keyFeatures": [
+        { "id": "f1", "name": "Appointment Scheduling" },
+        { "id": "f2", "name": "Medical Records" },
+        { "id": "f3", "name": "Patient Portal" },
+        { "id": "f4", "name": "Telemedicine" }
+      ]
+    },
+    {
+      "id": "proj_003",
+      "projectName": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "initials": "JD",
+        "email": "john.doe@example.com"
+      },
+      "totalProjectValue": 25000,
+      "amountPaid": 5000,
+      "percentPaid": 20,
+      "progress": {
+        "current": 1,
+        "total": 7
+      },
+      "status": "In-Progress",
+      "createdDate": "2025-08-20",
+      "lastUpdated": "3 days ago",
+      "dueDate": "2025-12-15",
+      "timeline": "4 months",
+      "startedAgo": "3 weeks ago",
+      "totalBudget": 45000,
+      "budgetPaid": 15000,
+      "documents": 8,
+      "lastDocumentUpload": "3 days ago",
+      "projectProgress": {
+        "overallCompletion": 15,
+        "milestones": [
+          {
+            "id": "m1",
+            "name": "AI Consultation",
+            "status": "completed"
+          },
+          {
+            "id": "m2",
+            "name": "PRD Review & Technical Planning",
+            "status": "in-progress"
+          },
+          {
+            "id": "m3",
+            "name": "Design & System Architecture",
+            "status": "pending"
+          },
+          {
+            "id": "m4",
+            "name": "Core Development (MVP Build)",
+            "status": "pending"
+          },
+          {
+            "id": "m5",
+            "name": "Quality Assurance & Testing",
+            "status": "pending"
+          },
+          {
+            "id": "m6",
+            "name": "Deployment & Handover",
+            "status": "pending"
+          },
+          {
+            "id": "m7",
+            "name": "Post-Launch Support & Optimization",
+            "status": "pending"
+          }
+        ]
+      },
+      "problemStatement": "Educational institutions require a comprehensive learning management system for remote education.",
+      "keyFeatures": [
+        { "id": "f1", "name": "Course Management" },
+        { "id": "f2", "name": "Live Classes" },
+        { "id": "f3", "name": "Assessment Tools" },
+        { "id": "f4", "name": "Student Analytics" }
+      ]
+    },
+    {
+      "id": "proj_004",
+      "projectName": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "initials": "JD",
+        "email": "john.doe@example.com"
+      },
+      "totalProjectValue": 25000,
+      "amountPaid": 5000,
+      "percentPaid": 20,
+      "progress": {
+        "current": 1,
+        "total": 7
+      },
+      "status": "In-Progress",
+      "createdDate": "2025-07-05",
+      "lastUpdated": "5 hours ago",
+      "dueDate": "2025-10-30",
+      "timeline": "3-4 months",
+      "startedAgo": "1 month ago",
+      "totalBudget": 35000,
+      "budgetPaid": 10000,
+      "documents": 15,
+      "lastDocumentUpload": "1 day ago",
+      "projectProgress": {
+        "overallCompletion": 25,
+        "milestones": [
+          {
+            "id": "m1",
+            "name": "AI Consultation",
+            "status": "completed"
+          },
+          {
+            "id": "m2",
+            "name": "PRD Review & Technical Planning",
+            "status": "completed"
+          },
+          {
+            "id": "m3",
+            "name": "Design & System Architecture",
+            "status": "in-progress"
+          },
+          {
+            "id": "m4",
+            "name": "Core Development (MVP Build)",
+            "status": "pending"
+          },
+          {
+            "id": "m5",
+            "name": "Quality Assurance & Testing",
+            "status": "pending"
+          },
+          {
+            "id": "m6",
+            "name": "Deployment & Handover",
+            "status": "pending"
+          },
+          {
+            "id": "m7",
+            "name": "Post-Launch Support & Optimization",
+            "status": "pending"
+          }
+        ]
+      },
+      "problemStatement": "Real estate agencies need digital tools to showcase properties and manage client interactions.",
+      "keyFeatures": [
+        { "id": "f1", "name": "Property Listings" },
+        { "id": "f2", "name": "Virtual Tours" },
+        { "id": "f3", "name": "Client Management" },
+        { "id": "f4", "name": "Document Management" }
+      ]
+    }
+  ],
+  "totalPages": 30,
+  "currentPage": 3,
+  "totalProjects": 120
+}

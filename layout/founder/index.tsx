@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import styles from "./styles.module.css";
 import Image from "next/image";
 import { founderMenuItems } from "@/utils/data";
-import { getUser } from "@/lib/api/auth";
+import { getUser, getCurrentUser } from "@/lib/api/auth";
 import Link from "next/link";
 import HeaderNotification from "@/components/notificationDropdown/notificationComp";
 
@@ -15,6 +15,8 @@ interface FounderLayoutProps {
   projectId?: string;
   userId?: string;
 }
+
+const currentUser = getCurrentUser();
 
 const FounderLayout: React.FC<FounderLayoutProps> = ({
   children,
@@ -140,13 +142,17 @@ const FounderLayout: React.FC<FounderLayoutProps> = ({
           <div className={styles.otherNavItems}>
             <HeaderNotification />
             <div className={styles.profileSection}>
-              <Image
-                src="/assets/profile.png"
-                width={32}
-                height={32}
-                alt="profile"
-              />
-              <p>{user.name}</p>
+              {currentUser?.name ? (
+                <div className={styles.profilePlaceholder}>
+                  {currentUser.name
+                    .split(" ")
+                    .map((word) => word.charAt(0).toUpperCase())
+                    .join("")}
+                </div>
+              ) : (
+                <div className={styles.profilePlaceholder}>U</div>
+              )}
+              <p>{currentUser?.name || "User"}</p>
             </div>
           </div>
           <button

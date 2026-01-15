@@ -11,67 +11,8 @@
       "status": "Inactive",
       "avatar": "",
       "projectsCount": 3,
-      "projects": [
-        {
-          "id": "1",
-          "title": "E-commerce Mobile App",
-          "stage": "Idea Consultation & PRD Generation",
-          "progress": 70,
-          "status": "In-Progress"
-        },
-        {
-          "id": "2",
-          "title": "Fitness Tracking App",
-          "stage": "Development & Testing",
-          "progress": 45,
-          "status": "In-Progress"
-        },
-        {
-          "id": "3",
-          "title": "Restaurant Management System",
-          "stage": "Post-Launch Support & Optimization",
-          "progress": 100,
-          "status": "Completed"
-        }
-      ],
-      "prds": [
-        {
-          "id": "1",
-          "title": "E-commerce Mobile App PRD",
-          "projectId": "1",
-          "projectName": "E-commerce Mobile App",
-          "description": "Comprehensive PRD for building a scalable e-commerce mobile application with payment integration",
-          "createdDate": "Sept 20, 2025",
-          "lastModified": "Nov 20, 2025",
-          "duration": "45 Secs",
-          "status": "Review",
-          "prdUrl": "/prds/ecommerce-app-prd.pdf"
-        },
-        {
-          "id": "2",
-          "title": "Fitness Tracking App PRD",
-          "projectId": "2",
-          "projectName": "Fitness Tracking App",
-          "description": "AI-powered fitness tracking app with personalized workout plans and nutrition guidance",
-          "createdDate": "Oct 5, 2025",
-          "lastModified": "Nov 15, 2025",
-          "duration": "38 Secs",
-          "status": "Draft",
-          "prdUrl": "/prds/fitness-app-prd.pdf"
-        },
-        {
-          "id": "3",
-          "title": "Restaurant Management System PRD",
-          "projectId": "3",
-          "projectName": "Restaurant Management System",
-          "description": "Complete restaurant management solution with POS, inventory, and analytics",
-          "createdDate": "Aug 12, 2025",
-          "lastModified": "Oct 30, 2025",
-          "duration": "52 Secs",
-          "status": "Approved",
-          "prdUrl": "/prds/restaurant-system-prd.pdf"
-        }
-      ]
+      "projects": [],
+      "prds": []
     },
     {
       "id": "2",

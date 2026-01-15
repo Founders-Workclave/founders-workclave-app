@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { authApi, setUser } from "@/lib/api/auth";
+import { authApi } from "@/lib/api/auth";
 
 interface LoginPayload {
   email: string;
@@ -19,40 +19,30 @@ export const useLogin = () => {
     try {
       const response = await authApi.login(payload);
 
-      if (response.success && response.data) {
-        // Store token if available
-        if (response.data.token) {
-          localStorage.setItem("token", response.data.token);
-        }
-
-        // Extract username from email (everything before @)
-        const emailUsername = (response.data.email || payload.email).split(
-          "@"
-        )[0];
-
-        // Construct user info - adjust based on your API response
-        const userData = {
-          id: response.data.userId || response.data.id || "unknown",
-          name:
-            response.data.firstName && response.data.lastName
-              ? `${response.data.firstName} ${response.data.lastName}`
-              : response.data.name || emailUsername,
-          email: response.data.email || payload.email,
-          username: emailUsername, // Add username field for URL routing
-        };
-
-        // Store user info in localStorage
-        setUser(userData);
+      if (response.success) {
         setSuccess(true);
         setError(null);
+        return response;
       } else {
         setError(response.message || "Login failed");
         setSuccess(false);
+        return response;
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "An unexpected error occurred. Please try again.";
+
+      setError(errorMessage);
       setSuccess(false);
+
+      return {
+        success: false,
+        message: errorMessage,
+        error: errorMessage,
+      };
     } finally {
       setIsLoading(false);
     }

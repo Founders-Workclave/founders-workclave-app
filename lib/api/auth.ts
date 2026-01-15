@@ -1,3 +1,5 @@
+// TYPES & INTERFACES
+
 interface RegisterPayload {
   firstName: string;
   lastName: string;
@@ -28,30 +30,345 @@ interface ResetPasswordPayload {
 }
 
 export interface UserInfo {
-  id?: string;
+  id: string;
   name: string;
   email: string;
+  username: string;
+  role: "admin" | "user";
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+}
+
+interface ApiUserData {
+  id?: string;
+  userId?: string;
+  email?: string;
+  access?: string;
+  refresh?: string;
+  token?: string;
+  firstName?: string;
+  lastName?: string;
+  first_name?: string;
+  last_name?: string;
+  name?: string;
   username?: string;
+  role?: string;
+  userType?: string;
+  is_superuser?: boolean;
+  is_staff?: boolean;
+  phone?: string;
+  phoneNumber?: string;
 }
 
 interface AuthResponse {
   success: boolean;
   message: string;
-  data?: {
-    id?: string;
-    userId?: string;
-    email?: string;
-    token?: string;
-    firstName?: string;
-    lastName?: string;
-    name?: string;
-  };
+  data?: ApiUserData;
+  access?: string;
+  refresh?: string;
+  userId?: string;
+  id?: string;
+  is_superuser?: boolean;
+  is_staff?: boolean;
+  firstName?: string;
+  lastName?: string;
+  first_name?: string;
+  last_name?: string;
+  name?: string;
   error?: string;
   errors?: Record<string, string[]>;
 }
 
+// CONSTANTS
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+
+const TOKEN_KEY = "access_token" as const;
+const REFRESH_TOKEN_KEY = "refresh_token" as const;
+const USER_KEY = "user" as const;
+
+// List of admin email domains/patterns (configure based on your needs)
+const ADMIN_EMAIL_PATTERNS = ["admin@", "superadmin@"];
+
+// TOKEN MANAGEMENT
+
+/**
+ * Get authentication token from localStorage
+ */
+export const getAuthToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(TOKEN_KEY);
+};
+
+/**
+ * Get refresh token from localStorage
+ */
+export const getRefreshToken = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(REFRESH_TOKEN_KEY);
+};
+
+/**
+ * Store authentication tokens securely
+ */
+export const setAuthTokens = (
+  accessToken: string,
+  refreshToken?: string
+): void => {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(TOKEN_KEY, accessToken);
+    if (refreshToken) {
+      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    }
+  } catch (error) {
+    console.error("Failed to store auth tokens:", error);
+  }
+};
+
+/**
+ * Clear all authentication tokens
+ */
+export const clearAuthTokens = (): void => {
+  if (typeof window === "undefined") return;
+
+  const keysToRemove = [TOKEN_KEY, REFRESH_TOKEN_KEY, "token", "authToken"];
+  keysToRemove.forEach((key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.error(`Failed to remove ${key}:`, error);
+    }
+  });
+};
+
+/**
+ * Get authorization headers for API requests
+ */
+export const getAuthHeaders = (): HeadersInit => {
+  const token = getAuthToken();
+  return {
+    "Content-Type": "application/json",
+    ...(token && { Authorization: `Bearer ${token}` }),
+  };
+};
+
+// USER MANAGEMENT
+
+/**
+ * Safely parse JSON with error handling
+ */
+const safeJsonParse = <T>(jsonString: string | null): T | null => {
+  if (!jsonString) return null;
+
+  try {
+    return JSON.parse(jsonString) as T;
+  } catch (error) {
+    console.error("Failed to parse JSON:", error);
+    return null;
+  }
+};
+
+/**
+ * Get current user from localStorage
+ */
+export const getUser = (): UserInfo | null => {
+  if (typeof window === "undefined") return null;
+
+  const userStr = localStorage.getItem(USER_KEY);
+  return safeJsonParse<UserInfo>(userStr);
+};
+
+/**
+ * Store user information in localStorage
+ */
+export const setUser = (user: UserInfo): void => {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  } catch (error) {
+    console.error("Failed to store user data:", error);
+  }
+};
+
+/**
+ * Clear all user data and tokens
+ */
+export const clearUser = (): void => {
+  if (typeof window === "undefined") return;
+
+  try {
+    localStorage.removeItem(USER_KEY);
+    clearAuthTokens();
+  } catch (error) {
+    console.error("Failed to clear user data:", error);
+  }
+};
+
+/**
+ * Check if current user is admin
+ */
+export const isAdmin = (): boolean => {
+  const user = getUser();
+  return user?.role === "admin";
+};
+
+/**
+ * Check if user is authenticated
+ */
+export const isAuthenticated = (): boolean => {
+  return !!getAuthToken() && !!getUser();
+};
+
+/**
+ * Get current user (alias for getUser)
+ */
+export const getCurrentUser = (): UserInfo | null => {
+  return getUser();
+};
+
+// USER DISPLAY UTILITIES
+
+/**
+ * Get user info with fallbacks for display purposes
+ * Use this in your components instead of getUser() directly
+ */
+export const getUserForDisplay = (): UserInfo | null => {
+  const user = getUser();
+  if (!user) return null;
+
+  // Ensure we always have display-friendly values
+  return {
+    ...user,
+    firstName: user.firstName || "User",
+    lastName: user.lastName || "",
+    name: user.name || user.firstName || user.email?.split("@")[0] || "User",
+  };
+};
+
+/**
+ * Get user's display name with smart fallbacks
+ */
+export const getUserDisplayName = (): string => {
+  const user = getUser();
+  if (!user) return "User";
+
+  // Priority: full name > first name > username > email prefix
+  if (user.name && user.name.trim() !== "") return user.name;
+  if (user.firstName && user.firstName.trim() !== "") return user.firstName;
+  if (user.username && user.username.trim() !== "") return user.username;
+  if (user.email) return user.email.split("@")[0];
+
+  return "User";
+};
+
+/**
+ * Get user's initials for avatar
+ */
+export const getUserInitials = (): string => {
+  const user = getUser();
+  if (!user) return "U";
+
+  if (user.firstName && user.lastName) {
+    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  }
+
+  if (user.firstName) {
+    return user.firstName.substring(0, 2).toUpperCase();
+  }
+
+  if (user.name && user.name.trim() !== "") {
+    const parts = user.name.trim().split(" ");
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return user.name.substring(0, 2).toUpperCase();
+  }
+
+  return "U";
+};
+
+// ROLE DETECTION HELPER
+
+/**
+ * Determine if user should have admin role based on API response
+ */
+const determineAdminRole = (data: AuthResponse, email: string): boolean => {
+  // Check explicit admin flags from API
+  if (
+    data.is_superuser === true ||
+    data.is_staff === true ||
+    data.data?.is_superuser === true ||
+    data.data?.is_staff === true
+  ) {
+    return true;
+  }
+
+  // Check role fields
+  const roleFields = [data.data?.role, data.data?.userType];
+  const adminRoleValues = ["admin", "superadmin", "administrator"];
+
+  if (
+    roleFields.some(
+      (role) => role && adminRoleValues.includes(role.toLowerCase())
+    )
+  ) {
+    return true;
+  }
+
+  // Fallback: Check email patterns (less secure, use only if API doesn't provide role)
+  const emailLower = email.toLowerCase();
+  if (ADMIN_EMAIL_PATTERNS.some((pattern) => emailLower.includes(pattern))) {
+    console.warn(
+      "⚠️ Using email pattern for admin detection. Consider updating API to return role explicitly."
+    );
+    return true;
+  }
+
+  return false;
+};
+
+/**
+ * Extract name fields from API response with multiple fallback strategies
+ */
+const extractNameFields = (data: AuthResponse, email: string) => {
+  // Try to get firstName from multiple possible locations
+  const firstName =
+    data.data?.firstName ||
+    data.data?.first_name ||
+    data.firstName ||
+    data.first_name ||
+    "";
+
+  // Try to get lastName from multiple possible locations
+  const lastName =
+    data.data?.lastName ||
+    data.data?.last_name ||
+    data.lastName ||
+    data.last_name ||
+    "";
+
+  // Try to get full name
+  let displayName = data.data?.name || data.name;
+
+  if (!displayName && (firstName || lastName)) {
+    // Construct name from first/last if not provided
+    displayName = `${firstName} ${lastName}`.trim();
+  }
+
+  if (!displayName) {
+    // Ultimate fallback to email username
+    displayName = email.split("@")[0];
+  }
+
+  return { firstName, lastName, displayName };
+};
+
+// API METHODS
 
 export const authApi = {
   register: async (payload: RegisterPayload): Promise<AuthResponse> => {
@@ -61,14 +378,15 @@ export const authApi = {
       const requestBody = {
         firstName: payload.firstName,
         lastName: payload.lastName,
-        email: payload.email,
+        email: payload.email.trim().toLowerCase(),
         phone: fullPhoneNumber,
         password: payload.password,
       };
 
-      // Build URL with query parameter if userType is provided
       const url = payload.userType
-        ? `${API_BASE_URL}/register/?user_type=${payload.userType.toLowerCase()}`
+        ? `${API_BASE_URL}/register/?user_type=${encodeURIComponent(
+            payload.userType.toLowerCase()
+          )}`
         : `${API_BASE_URL}/register/`;
 
       const response = await fetch(url, {
@@ -80,7 +398,7 @@ export const authApi = {
       });
 
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      if (!contentType?.includes("application/json")) {
         const textResponse = await response.text();
         console.error("Non-JSON response:", textResponse.substring(0, 500));
 
@@ -92,7 +410,6 @@ export const authApi = {
       }
 
       const data = await response.json();
-      console.log("Registration response:", response.status, data);
 
       if (response.status === 400 && data.errors) {
         const errorMessages = Object.entries(data.errors)
@@ -118,21 +435,31 @@ export const authApi = {
         };
       }
 
-      // After successful registration, store user info
-      if (data.data || data) {
-        const emailUsername = payload.email.split("@")[0];
-        const userData = {
-          id: data.data?.userId || data.userId,
-          name: `${payload.firstName} ${payload.lastName}`,
-          email: payload.email,
-          username: emailUsername,
-        };
-        setUser(userData);
+      // Store tokens
+      const accessToken =
+        data.access || data.data?.access || data.data?.token || data.token;
+      const refreshToken = data.refresh || data.data?.refresh;
 
-        if (data.data?.token || data.token) {
-          localStorage.setItem("token", data.data?.token || data.token);
-        }
+      if (accessToken) {
+        setAuthTokens(accessToken, refreshToken);
+        console.log("🔑 Tokens stored after registration");
       }
+
+      // Create user object with the data we sent
+      const userData: UserInfo = {
+        id: data.data?.userId || data.userId || data.data?.id || data.id || "",
+        firstName: payload.firstName,
+        lastName: payload.lastName,
+        name: `${payload.firstName} ${payload.lastName}`,
+        email: payload.email.trim().toLowerCase(),
+        username: payload.email.split("@")[0],
+        role: "user",
+        phone: fullPhoneNumber,
+      };
+
+      setUser(userData);
+
+      console.log("✅ Registration successful - User data saved:", userData);
 
       return {
         success: true,
@@ -140,25 +467,19 @@ export const authApi = {
         data: data.data || data,
       };
     } catch (error) {
-      console.error("Registration error:", error);
-
-      if (error instanceof Error) {
-        return {
-          success: false,
-          message: "Network error: " + error.message,
-          error: error.message,
-        };
-      }
+      console.error("❌ Registration error:", error);
 
       return {
         success: false,
-        message: "An unexpected error occurred. Please try again.",
-        error: "Unknown error",
+        message:
+          error instanceof Error
+            ? `Network error: ${error.message}`
+            : "An unexpected error occurred. Please try again.",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   },
 
-  // Login Endpoint
   login: async (payload: LoginPayload): Promise<AuthResponse> => {
     try {
       const requestBody = {
@@ -175,7 +496,7 @@ export const authApi = {
       });
 
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      if (!contentType?.includes("application/json")) {
         const textResponse = await response.text();
         console.error("Non-JSON response:", textResponse.substring(0, 500));
 
@@ -186,7 +507,7 @@ export const authApi = {
         };
       }
 
-      const data = await response.json();
+      const data: AuthResponse = await response.json();
 
       if (response.status === 400 && data.errors) {
         const errorMessages = Object.entries(data.errors)
@@ -212,30 +533,98 @@ export const authApi = {
         };
       }
 
-      // ✅ STORE THE TOKEN AND USER INFO AFTER SUCCESSFUL LOGIN
-      if (data || response.ok) {
-        const accessToken = data.access || data.data?.access;
-        const refreshToken = data.refresh || data.data?.refresh;
+      // Extract tokens
+      const accessToken = data.access || data.data?.access || data.data?.token;
+      const refreshToken = data.refresh || data.data?.refresh;
 
-        if (accessToken) {
-          localStorage.setItem("access_token", accessToken);
-        }
+      console.log("🔑 Tokens extracted:", {
+        hasAccess: !!accessToken,
+        hasRefresh: !!refreshToken,
+      });
 
-        if (refreshToken) {
-          localStorage.setItem("refresh_token", refreshToken);
-        }
-
-        // Store user info
-        const userData = {
-          id: data.userId || data.data?.userId || data.id || data.data?.id,
-          name:
-            data.name ||
-            `${data.firstName || ""} ${data.lastName || ""}`.trim() ||
-            "User",
-          email: data.email || payload.email,
-          username: data.username || payload.email.split("@")[0],
+      if (!accessToken) {
+        console.error("❌ No access token in response!");
+        return {
+          success: false,
+          message: "Login failed: No access token received",
+          error: "No access token in response",
         };
-        setUser(userData);
+      }
+
+      // Store tokens
+      setAuthTokens(accessToken, refreshToken);
+
+      // Determine user role
+      const isAdminUser = determineAdminRole(data, requestBody.email);
+      const role: "admin" | "user" = isAdminUser ? "admin" : "user";
+
+      // Extract name fields using the helper function
+      const { firstName, lastName, displayName } = extractNameFields(
+        data,
+        requestBody.email
+      );
+
+      console.log("👤 User data extraction:", {
+        firstName,
+        lastName,
+        displayName,
+        role,
+        rawData: data.data,
+      });
+
+      const existingUser = getUser();
+      const finalFirstName = firstName || existingUser?.firstName || "";
+      const finalLastName = lastName || existingUser?.lastName || "";
+      const finalDisplayName =
+        displayName ||
+        (finalFirstName || finalLastName
+          ? `${finalFirstName} ${finalLastName}`.trim()
+          : "") ||
+        existingUser?.name ||
+        requestBody.email.split("@")[0];
+
+      console.log("👤 Final user data (with fallbacks):", {
+        finalFirstName,
+        finalLastName,
+        finalDisplayName,
+        hadExistingUser: !!existingUser,
+      });
+
+      // Create user object with all available data
+      const userData: UserInfo = {
+        id:
+          data.data?.userId ||
+          data.data?.id ||
+          data.userId ||
+          data.id ||
+          existingUser?.id ||
+          "",
+        firstName: finalFirstName,
+        lastName: finalLastName,
+        name: finalDisplayName,
+        email: data.data?.email || requestBody.email,
+        username: data.data?.username || requestBody.email.split("@")[0],
+        role: role,
+        phone:
+          data.data?.phone || data.data?.phoneNumber || existingUser?.phone,
+      };
+
+      setUser(userData);
+
+      console.log("✅ Login successful - User data saved:", userData);
+
+      // Verify data was stored correctly
+      const verification = getUser();
+      console.log("🔍 Verification - Data stored correctly:", {
+        stored: !!verification,
+        firstName: verification?.firstName,
+        lastName: verification?.lastName,
+        name: verification?.name,
+        role: verification?.role,
+      });
+
+      if (!verification) {
+        console.error("❌ WARNING: User data not stored correctly!");
       }
 
       return {
@@ -244,25 +633,19 @@ export const authApi = {
         data: data.data || data,
       };
     } catch (error) {
-      console.error("Login error:", error);
-
-      if (error instanceof Error) {
-        return {
-          success: false,
-          message: "Network error: " + error.message,
-          error: error.message,
-        };
-      }
+      console.error("❌ Login error:", error);
 
       return {
         success: false,
-        message: "An unexpected error occurred. Please try again.",
-        error: "Unknown error",
+        message:
+          error instanceof Error
+            ? `Network error: ${error.message}`
+            : "An unexpected error occurred. Please try again.",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   },
 
-  // Send OTP to email for password reset
   sendOtp: async (payload: SendOtpPayload): Promise<AuthResponse> => {
     try {
       const response = await fetch(`${API_BASE_URL}/send-otp/`, {
@@ -274,7 +657,7 @@ export const authApi = {
       });
 
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      if (!contentType?.includes("application/json")) {
         const textResponse = await response.text();
         console.error("Non-JSON response:", textResponse.substring(0, 500));
 
@@ -286,7 +669,6 @@ export const authApi = {
       }
 
       const data = await response.json();
-      console.log("Send OTP response:", response.status, data);
 
       if (!response.ok) {
         return {
@@ -305,27 +687,21 @@ export const authApi = {
     } catch (error) {
       console.error("Send OTP error:", error);
 
-      if (error instanceof Error) {
-        return {
-          success: false,
-          message: "Network error: " + error.message,
-          error: error.message,
-        };
-      }
-
       return {
         success: false,
-        message: "An unexpected error occurred. Please try again.",
-        error: "Unknown error",
+        message:
+          error instanceof Error
+            ? `Network error: ${error.message}`
+            : "An unexpected error occurred. Please try again.",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   },
 
-  // Verify OTP
   verifyOtp: async (payload: VerifyOtpPayload): Promise<AuthResponse> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/verify-otp/${payload.otp}/`,
+        `${API_BASE_URL}/verify-otp/${encodeURIComponent(payload.otp)}/`,
         {
           method: "GET",
           headers: {
@@ -335,7 +711,7 @@ export const authApi = {
       );
 
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      if (!contentType?.includes("application/json")) {
         const textResponse = await response.text();
         console.error("Non-JSON response:", textResponse.substring(0, 500));
 
@@ -347,7 +723,6 @@ export const authApi = {
       }
 
       const data = await response.json();
-      console.log("Verify OTP response:", response.status, data);
 
       if (!response.ok) {
         return {
@@ -368,29 +743,25 @@ export const authApi = {
     } catch (error) {
       console.error("Verify OTP error:", error);
 
-      if (error instanceof Error) {
-        return {
-          success: false,
-          message: "Network error: " + error.message,
-          error: error.message,
-        };
-      }
-
       return {
         success: false,
-        message: "An unexpected error occurred. Please try again.",
-        error: "Unknown error",
+        message:
+          error instanceof Error
+            ? `Network error: ${error.message}`
+            : "An unexpected error occurred. Please try again.",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   },
 
-  // Reset password with OTP
   resetPassword: async (
     payload: ResetPasswordPayload
   ): Promise<AuthResponse> => {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/change-password/otp/${payload.otp}/`,
+        `${API_BASE_URL}/change-password/otp/${encodeURIComponent(
+          payload.otp
+        )}/`,
         {
           method: "POST",
           headers: {
@@ -404,7 +775,7 @@ export const authApi = {
       );
 
       const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
+      if (!contentType?.includes("application/json")) {
         const textResponse = await response.text();
         console.error("Non-JSON response:", textResponse.substring(0, 500));
 
@@ -416,7 +787,6 @@ export const authApi = {
       }
 
       const data = await response.json();
-      console.log("Reset password response:", response.status, data);
 
       if (response.status === 400 && data.errors) {
         const errorMessages = Object.entries(data.errors)
@@ -450,41 +820,14 @@ export const authApi = {
     } catch (error) {
       console.error("Reset password error:", error);
 
-      if (error instanceof Error) {
-        return {
-          success: false,
-          message: "Network error: " + error.message,
-          error: error.message,
-        };
-      }
-
       return {
         success: false,
-        message: "An unexpected error occurred. Please try again.",
-        error: "Unknown error",
+        message:
+          error instanceof Error
+            ? `Network error: ${error.message}`
+            : "An unexpected error occurred. Please try again.",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   },
-};
-
-// Utility functions to manage user info in localStorage
-export const getUser = (): UserInfo | null => {
-  if (typeof window === "undefined") return null;
-
-  const user = localStorage.getItem("user");
-  return user ? JSON.parse(user) : null;
-};
-
-export const setUser = (user: UserInfo) => {
-  localStorage.setItem("user", JSON.stringify(user));
-};
-
-export const clearUser = () => {
-  localStorage.removeItem("user");
-  localStorage.removeItem("token");
-};
-
-export const getToken = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
 };

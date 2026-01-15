@@ -61,6 +61,11 @@
   font-family: "inter", sans-serif;
 }
 
+.statusOngoing {
+  background: #ffefcb;
+  color: #7b580c;
+}
+
 .statusInProgress {
   background: #ffefcb;
   color: #7b580c;

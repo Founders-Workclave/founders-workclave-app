@@ -9,7 +9,7 @@ import Prd from "@/svgs/prd";
 import PrdComp from "./prdcomp";
 
 export interface Project {
-  id: number;
+  id: number | string; // Support both number and string IDs
   title: string;
   stage: string;
   progress: number;
@@ -40,29 +40,24 @@ export interface UserProfileData {
   prds: PRD[];
 }
 
-// Updated User interface for the table to include projects and prds
-export interface UserWithDetails {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  agency: string;
-  joinedDate: string;
-  role: "Founder" | "Agency";
-  status: "Active" | "Inactive" | "Suspended";
-  avatar?: string;
-  title?: string;
-  projects?: Project[];
-  prds?: PRD[];
-}
-
 interface UserProfileProps {
   user: UserProfileData;
   onBack: () => void;
+  onDeactivate?: (userId: string, currentStatus: string) => void;
 }
 
-const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
+const UserProfile: React.FC<UserProfileProps> = ({
+  user,
+  onBack,
+  onDeactivate,
+}) => {
   const [activeTab, setActiveTab] = useState<"projects" | "prds">("projects");
+
+  console.log("🎨 UserProfile rendered with:", {
+    userId: user.id,
+    projectsCount: user.projects?.length,
+    projects: user.projects,
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -79,12 +74,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
       case "On Hold":
         return "#EB5757";
       case "In Progress":
+      case "In-Progress":
       case "Review":
         return "#2563eb";
       default:
         return "#6b7280";
     }
   };
+
   const getStatusStyle = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
@@ -100,6 +97,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
 
   const getStatusText = (status: string) => {
     return status;
+  };
+
+  const handleDeactivateClick = () => {
+    if (onDeactivate) {
+      onDeactivate(user.id, user.status);
+    }
   };
 
   return (
@@ -153,7 +156,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
           {/* User Details */}
           <div className={styles.userDetails}>
             <h2 className={styles.userName}>{user.name}</h2>
-            <p className={styles.userAgency}>{user.agency}</p>
+            <p className={styles.userAgency}>{user.agency || "N/A"}</p>
             <p className={styles.userContact}>
               {user.email} | {user.phone}
             </p>
@@ -172,9 +175,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
               <MessageApp />
               Message
             </button>
-            <button className={styles.deactivateButton}>
+            <button
+              className={styles.deactivateButton}
+              onClick={handleDeactivateClick}
+            >
               <DeleteUser />
-              Deactivate user
+              {user.status === "Active" ? "Deactivate user" : "Activate user"}
             </button>
           </div>
         </div>
@@ -188,7 +194,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
           }`}
           onClick={() => setActiveTab("projects")}
         >
-          Projects
+          Projects ({user.projects?.length || 0})
         </button>
         <button
           className={`${styles.tab} ${
@@ -196,7 +202,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
           }`}
           onClick={() => setActiveTab("prds")}
         >
-          PRDs
+          PRDs ({user.prds?.length || 0})
         </button>
       </div>
 
@@ -204,10 +210,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
       <div className={styles.contentArea}>
         {activeTab === "projects" && (
           <>
-            {user.projects.length > 0 ? (
+            {user.projects && user.projects.length > 0 ? (
               <div className={styles.itemsList}>
-                {user.projects.map((project: Project) => (
-                  <div className={styles.projectCard} key={project.id}>
+                {user.projects.map((project: Project, index: number) => (
+                  <div className={styles.projectCard} key={project.id || index}>
                     <div className={styles.cardHeader}>
                       <Prd />
                       <span
@@ -246,21 +252,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onBack }) => {
                 </div>
                 <h3 className={styles.emptyTitle}>No Project Yet!</h3>
                 <p className={styles.emptyDescription}>
-                  Assign a project to get started
+                  This user hasn&apos;t created any projects yet.
                 </p>
-                <button className={styles.assignButton}>
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                  Assign New
-                </button>
               </div>
             )}
           </>

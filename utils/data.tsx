@@ -1,4 +1,6 @@
 import AgenciesIcon from "@/svgs/agenciesIcon";
+import CalenderAdmin from "@/svgs/calender";
+import ClientsAdmin from "@/svgs/clients";
 import Dashboard from "@/svgs/dashboard";
 import FounderIcon from "@/svgs/founderIcon";
 import Logout from "@/svgs/logout";
@@ -106,6 +108,64 @@ export const founderMenuItems = (userId: string, projectId: string) => [
     icon: <Settings />,
     label: "Settings",
     link: `/${userId}/profile`,
+  },
+  {
+    icon: <Logout />,
+    label: "",
+    link: "/login",
+  },
+];
+
+export const agencyMenuItems = [
+  {
+    icon: <Dashboard />,
+    label: "Dashboard",
+    link: `/agency`,
+  },
+  {
+    icon: <Projects />,
+    label: "All Projects",
+    link: `#`,
+  },
+  {
+    icon: <Prd />,
+    label: "All PRDs",
+    link: `#`,
+  },
+  {
+    icon: <ClientsAdmin />,
+    label: "Clients",
+    link: `#`,
+  },
+  {
+    icon: <ClientsAdmin />,
+    label: "Product Managers",
+    link: `#`,
+  },
+  {
+    icon: <Messages />,
+    label: "Messages",
+    link: `#`,
+  },
+  {
+    icon: <CalenderAdmin />,
+    label: "Calender",
+    link: `#`,
+  },
+  {
+    icon: <Wallets />,
+    label: "Wallet",
+    link: `#`,
+  },
+  {
+    icon: <Payments />,
+    label: "Payments",
+    link: `#`,
+  },
+  {
+    icon: <Settings />,
+    label: "Settings",
+    link: `#`,
   },
   {
     icon: <Logout />,

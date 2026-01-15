@@ -55,6 +55,8 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   const getStatusClass = () => {
     const normalizedStatus = status.toLowerCase().replace(/\s+/g, "-");
     switch (normalizedStatus) {
+      case "ongoing":
+        return styles.statusOngoing;
       case "in-progress":
         return styles.statusInProgress;
       case "completed":

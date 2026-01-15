@@ -264,6 +264,20 @@
   cursor: not-allowed;
 }
 
+.cancelButton {
+  padding: 12px 32px;
+  background: #c70707;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-family: "inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-right: 16px;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .container {

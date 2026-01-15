@@ -6,6 +6,7 @@ import Image from "next/image";
 import Photo from "@/svgs/photo";
 import { UserService, UserProfile } from "@/lib/api/userService";
 import Loader from "../loader";
+import { useRouter } from "next/navigation";
 
 interface PasswordData {
   currentPassword: string;
@@ -14,10 +15,15 @@ interface PasswordData {
 }
 
 const SettingsPage = () => {
+  const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [originalProfile, setOriginalProfile] = useState<UserProfile | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   const [passwords, setPasswords] = useState<PasswordData>({
     currentPassword: "",
@@ -30,22 +36,33 @@ const SettingsPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const loadProfile = () => {
       try {
         setIsLoading(true);
-        const data = await UserService.getUserProfile();
-        setProfile(data);
+
+        // Get profile from localStorage (populated during login/signup)
+        const cached = UserService.getCachedUserProfile();
+
+        if (!cached) {
+          toast.error("No profile found. Please log in again.");
+          router.push("/login");
+          return;
+        }
+
+        setProfile(cached);
+        setOriginalProfile(cached);
       } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Failed to load profile"
-        );
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to load profile";
+        toast.error(errorMessage);
+        router.push("/login");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchProfile();
-  }, []);
+    loadProfile();
+  }, [router]);
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
@@ -61,17 +78,37 @@ const SettingsPage = () => {
     setPasswords((prev) => ({ ...prev, [field]: value }));
   };
 
+  const hasProfileChanges = () => {
+    if (!profile || !originalProfile) return false;
+    return (
+      profile.firstName !== originalProfile.firstName ||
+      profile.lastName !== originalProfile.lastName ||
+      profile.phone !== originalProfile.phone ||
+      avatarFile !== null
+    );
+  };
+
   const handleProfileSave = async () => {
     if (!profile) return;
+
+    // Validate inputs
+    if (!profile.firstName.trim()) {
+      toast.error("First name is required");
+      return;
+    }
+    if (!profile.lastName.trim()) {
+      toast.error("Last name is required");
+      return;
+    }
 
     setIsSaving(true);
     const loadingToast = toast.loading("Saving profile...");
 
     try {
       const formData = new FormData();
-      formData.append("firstName", profile.firstName);
-      formData.append("lastName", profile.lastName);
-      formData.append("phone", profile.phone);
+      formData.append("firstName", profile.firstName.trim());
+      formData.append("lastName", profile.lastName.trim());
+      formData.append("phone", profile.phone.trim());
 
       // Add avatar if changed
       if (avatarFile) {
@@ -83,10 +120,14 @@ const SettingsPage = () => {
         id: loadingToast,
       });
 
-      // Refresh profile data
-      const updatedProfile = await UserService.getUserProfile();
-      setProfile(updatedProfile);
+      // Refresh profile data from localStorage (it was updated by the service)
+      const updatedProfile = UserService.getCachedUserProfile();
+      if (updatedProfile) {
+        setProfile(updatedProfile);
+        setOriginalProfile(updatedProfile);
+      }
       setAvatarFile(null);
+      setAvatarPreview(null);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to update profile",
@@ -97,13 +138,34 @@ const SettingsPage = () => {
     }
   };
 
+  const handleCancelProfile = () => {
+    if (originalProfile) {
+      setProfile(originalProfile);
+      setAvatarFile(null);
+      setAvatarPreview(null);
+    }
+  };
+
   const handlePasswordSave = async () => {
+    // Validate password fields
+    if (!passwords.currentPassword) {
+      toast.error("Please enter your current password");
+      return;
+    }
+    if (!passwords.newPassword) {
+      toast.error("Please enter a new password");
+      return;
+    }
     if (passwords.newPassword !== passwords.confirmPassword) {
       toast.error("New password and confirm password do not match!");
       return;
     }
     if (passwords.newPassword.length < 8) {
       toast.error("Password must be at least 8 characters long!");
+      return;
+    }
+    if (passwords.newPassword === passwords.currentPassword) {
+      toast.error("New password must be different from current password!");
       return;
     }
 
@@ -120,11 +182,17 @@ const SettingsPage = () => {
         id: loadingToast,
       });
 
+      // Clear password fields
       setPasswords({
         currentPassword: "",
         newPassword: "",
         confirmPassword: "",
       });
+
+      // Reset visibility toggles
+      setShowCurrentPassword(false);
+      setShowNewPassword(false);
+      setShowConfirmPassword(false);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to change password",
@@ -138,18 +206,38 @@ const SettingsPage = () => {
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast.error("Please select an image file");
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("Image size must be less than 5MB");
+        return;
+      }
+
       setAvatarFile(file);
+
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        if (profile) {
-          setProfile({ ...profile, avatar: reader.result as string });
-        }
+        setAvatarPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  if (isLoading) {
+  const hasPasswordChanges = () => {
+    return (
+      passwords.currentPassword !== "" ||
+      passwords.newPassword !== "" ||
+      passwords.confirmPassword !== ""
+    );
+  };
+
+  if (isLoading && !profile) {
     return (
       <div className={styles.container}>
         <div className={styles.loadingContainer}>
@@ -165,6 +253,12 @@ const SettingsPage = () => {
       <div className={styles.container}>
         <div className={styles.errorContainer}>
           <p>Failed to load profile</p>
+          <button
+            onClick={() => router.push("/login")}
+            className={styles.saveButton}
+          >
+            Go to Login
+          </button>
         </div>
       </div>
     );
@@ -180,12 +274,13 @@ const SettingsPage = () => {
 
         <div className={styles.avatarSection}>
           <div className={styles.avatarWrapper}>
-            {profile.avatar ? (
+            {avatarPreview || profile.avatar ? (
               <Image
-                src={profile.avatar}
+                src={avatarPreview || profile.avatar!}
                 alt="Profile"
                 width={100}
                 height={100}
+                loading="eager"
                 className={styles.avatar}
               />
             ) : (
@@ -222,6 +317,7 @@ const SettingsPage = () => {
               onChange={(e) => handleProfileChange("firstName", e.target.value)}
               className={styles.input}
               disabled={isSaving}
+              placeholder="Enter first name"
             />
           </div>
 
@@ -233,8 +329,20 @@ const SettingsPage = () => {
               onChange={(e) => handleProfileChange("lastName", e.target.value)}
               className={styles.input}
               disabled={isSaving}
+              placeholder="Enter last name"
             />
           </div>
+        </div>
+
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Email</label>
+          <input
+            type="email"
+            value={profile.email}
+            className={styles.input}
+            disabled
+            title="Email cannot be changed"
+          />
         </div>
 
         <div className={styles.formGroup}>
@@ -250,10 +358,19 @@ const SettingsPage = () => {
         </div>
 
         <div className={styles.actionButtons}>
+          {hasProfileChanges() && (
+            <button
+              onClick={handleCancelProfile}
+              className={styles.cancelButton}
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+          )}
           <button
             onClick={handleProfileSave}
             className={styles.saveButton}
-            disabled={isSaving}
+            disabled={isSaving || !hasProfileChanges()}
           >
             {isSaving ? "Saving..." : "Save Changes"}
           </button>
@@ -280,6 +397,9 @@ const SettingsPage = () => {
               type="button"
               onClick={() => setShowCurrentPassword(!showCurrentPassword)}
               className={styles.eyeButton}
+              aria-label={
+                showCurrentPassword ? "Hide password" : "Show password"
+              }
             >
               <svg
                 width="20"
@@ -310,7 +430,7 @@ const SettingsPage = () => {
           <div className={styles.passwordInput}>
             <input
               type={showNewPassword ? "text" : "password"}
-              placeholder="Enter new password"
+              placeholder="Enter new password (min. 8 characters)"
               value={passwords.newPassword}
               onChange={(e) =>
                 handlePasswordChange("newPassword", e.target.value)
@@ -322,6 +442,7 @@ const SettingsPage = () => {
               type="button"
               onClick={() => setShowNewPassword(!showNewPassword)}
               className={styles.eyeButton}
+              aria-label={showNewPassword ? "Hide password" : "Show password"}
             >
               <svg
                 width="20"
@@ -352,7 +473,7 @@ const SettingsPage = () => {
           <div className={styles.passwordInput}>
             <input
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Repeat password"
+              placeholder="Repeat new password"
               value={passwords.confirmPassword}
               onChange={(e) =>
                 handlePasswordChange("confirmPassword", e.target.value)
@@ -364,6 +485,9 @@ const SettingsPage = () => {
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               className={styles.eyeButton}
+              aria-label={
+                showConfirmPassword ? "Hide password" : "Show password"
+              }
             >
               <svg
                 width="20"
@@ -393,9 +517,9 @@ const SettingsPage = () => {
           <button
             onClick={handlePasswordSave}
             className={styles.saveButton}
-            disabled={isSaving}
+            disabled={isSaving || !hasPasswordChanges()}
           >
-            {isSaving ? "Saving..." : "Save Changes"}
+            {isSaving ? "Saving..." : "Change Password"}
           </button>
         </div>
       </div>

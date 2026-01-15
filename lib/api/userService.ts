@@ -1,4 +1,4 @@
-import { getAuthHeaders } from "@/lib/utils/auth";
+import { getAuthToken } from "@/lib/utils/auth";
 
 export interface UserProfile {
   id: string;
@@ -7,11 +7,6 @@ export interface UserProfile {
   email: string;
   phone: string;
   avatar?: string;
-}
-
-interface UserProfileResponse {
-  message: string;
-  user: UserProfile;
 }
 
 interface PasswordChangeRequest {
@@ -28,48 +23,86 @@ const API_BASE_URL =
 
 export class UserService {
   /**
-   * Get current user profile
-   * @returns Promise with user profile
+   * Get current user profile from localStorage
+   * This is populated during login/signup
    */
-  static async getUserProfile(): Promise<UserProfile> {
+  static getCachedUserProfile(): UserProfile | null {
+    if (typeof window === "undefined") return null;
+
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return null;
+
     try {
-      const response = await fetch(`${API_BASE_URL}/user/profile/`, {
-        method: "GET",
-        headers: getAuthHeaders(),
-        cache: "no-store",
-      });
-
-      if (response.status === 401) {
-        throw new Error("Unauthorized. Please log in again.");
-      }
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch profile: ${response.statusText}`);
-      }
-
-      const data: UserProfileResponse = await response.json();
-      return data.user;
-    } catch (error) {
-      console.error("Error in getUserProfile:", error);
-      throw error;
+      const user = JSON.parse(userStr);
+      // Map the stored user format to UserProfile format
+      return {
+        id: user.id || "",
+        firstName: user.firstName || user.name?.split(" ")[0] || "",
+        lastName:
+          user.lastName || user.name?.split(" ").slice(1).join(" ") || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        avatar: user.avatar || undefined,
+      };
+    } catch {
+      return null;
     }
   }
 
   /**
+   * Update cached user data in localStorage
+   */
+  private static updateCachedUser(profile: UserProfile) {
+    const user = {
+      id: profile.id,
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+      name: `${profile.firstName} ${profile.lastName}`.trim(),
+      email: profile.email,
+      username: profile.email.split("@")[0],
+      phone: profile.phone,
+      avatar: profile.avatar,
+    };
+    localStorage.setItem("user", JSON.stringify(user));
+  }
+
+  /**
+   * Clear all authentication data
+   */
+  private static clearAuth() {
+    if (typeof window === "undefined") return;
+
+    // Clear all possible token storage locations
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+
+    // Clear cookies
+    document.cookie =
+      "authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie =
+      "access_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+  }
+
+  /**
    * Update user profile
-   * @param profileData - Updated profile data (formdata)
+   * @param profileData - Updated profile data (FormData)
    * @returns Promise with response message
    */
   static async updateUserProfile(
     profileData: FormData
-  ): Promise<{ message: string }> {
+  ): Promise<{ message: string; user?: UserProfile }> {
+    const token = getAuthToken();
+
+    if (!token) {
+      throw new Error("No authentication token found. Please log in.");
+    }
+
     try {
-      const token = localStorage.getItem("access_token");
-
-      if (!token) {
-        throw new Error("No authentication token found. Please log in.");
-      }
-
       const response = await fetch(`${API_BASE_URL}/user-edit/`, {
         method: "PATCH",
         headers: {
@@ -80,6 +113,7 @@ export class UserService {
       });
 
       if (response.status === 401) {
+        this.clearAuth();
         throw new Error("Unauthorized. Please log in again.");
       }
 
@@ -92,6 +126,26 @@ export class UserService {
       }
 
       const data = await response.json();
+
+      // If response includes updated user, cache it
+      if (data.user) {
+        this.updateCachedUser(data.user);
+      } else {
+        // Update cache manually with form data
+        const cached = this.getCachedUserProfile();
+        if (cached) {
+          const updatedProfile = {
+            ...cached,
+            firstName:
+              (profileData.get("firstName") as string) || cached.firstName,
+            lastName:
+              (profileData.get("lastName") as string) || cached.lastName,
+            phone: (profileData.get("phone") as string) || cached.phone,
+          };
+          this.updateCachedUser(updatedProfile);
+        }
+      }
+
       return data;
     } catch (error) {
       console.error("Error in updateUserProfile:", error);
@@ -107,21 +161,46 @@ export class UserService {
   static async changePassword(
     passwordData: PasswordChangeRequest
   ): Promise<PasswordChangeResponse> {
+    const token = getAuthToken();
+
+    if (!token) {
+      throw new Error("No authentication token found. Please log in.");
+    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/change-password/`, {
         method: "POST",
-        headers: getAuthHeaders(),
-        body: JSON.stringify(passwordData),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          oldPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
       });
 
       if (response.status === 401) {
+        this.clearAuth();
         throw new Error("Unauthorized. Please log in again.");
       }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+
+        // Handle specific field errors
+        if (errorData.oldPassword) {
+          throw new Error(
+            errorData.oldPassword[0] || "Old password is incorrect"
+          );
+        }
+        if (errorData.newPassword) {
+          throw new Error(errorData.newPassword[0] || "Invalid new password");
+        }
+
         throw new Error(
           errorData.message ||
+            errorData.detail ||
             `Failed to change password: ${response.statusText}`
         );
       }
@@ -132,5 +211,9 @@ export class UserService {
       console.error("Error in changePassword:", error);
       throw error;
     }
+  }
+
+  static logout() {
+    this.clearAuth();
   }
 }

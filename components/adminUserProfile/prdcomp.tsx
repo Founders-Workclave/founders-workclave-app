@@ -111,11 +111,6 @@ const PrdComp: React.FC<UserProfileProps> = ({ user }) => {
     }
   };
 
-  const handleStartConsultation = () => {
-    console.log("Start AI consultation");
-    // Navigate to consultation page or open modal
-  };
-
   return (
     <div className={styles.prdContainer}>
       <div className={styles.prdHeader}>
@@ -194,24 +189,6 @@ const PrdComp: React.FC<UserProfileProps> = ({ user }) => {
               ? "Try adjusting your search terms"
               : "Start your first project to bring your ideas to life"}
           </p>
-          {!searchQuery && (
-            <button
-              className={styles.assignButton}
-              onClick={handleStartConsultation}
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-              Assign New
-            </button>
-          )}
         </div>
       )}
     </div>

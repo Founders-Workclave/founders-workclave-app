@@ -1,0 +1,123 @@
+.card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.label {
+  color: #8e98a8;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: "Inter", sans-serif;
+  flex-shrink: 0;
+}
+
+.value {
+  color: #090202;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  font-family: "Inter", sans-serif;
+}
+
+.amountPaidContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.percentPaid {
+  color: #8e98a8;
+  font-size: 12px;
+  font-family: "Inter", sans-serif;
+  font-weight: 400;
+}
+
+.progressContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex: 1;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 400;
+  font-family: "inter", sans-serif;
+  text-align: center;
+}
+
+.statusCompleted {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.statusInProgress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.statusOnHold {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.statusPending {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.detailsButton {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.detailsButton:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+@media (min-width: 768px) {
+  .card {
+    display: none;
+  }
+}

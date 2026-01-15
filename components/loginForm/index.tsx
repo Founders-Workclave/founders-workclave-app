@@ -1,10 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./styles.module.css";
 import { useLogin } from "@/hooks/useLogin";
-import { getUser } from "@/lib/api/auth";
+import { getUser, isAdmin } from "@/lib/api/auth";
 import ShowPassword from "@/svgs/showPassword";
 import HidePassword from "@/svgs/hidePassword";
 import Google from "@/svgs/google";
@@ -14,7 +13,6 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
-  const router = useRouter();
   const { isLoading, error, success, login, resetState } = useLogin();
 
   const [formData, setFormData] = useState({
@@ -24,28 +22,50 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  // Handle successful login
+  // Handle successful login with role-based routing
   useEffect(() => {
     if (success) {
       if (onSubmit) {
         onSubmit(formData.email);
       }
 
-      // Get user info and redirect to their dashboard
-      setTimeout(() => {
+      // Wait for localStorage to be updated and verified
+      const timer = setTimeout(() => {
         const user = getUser();
 
-        if (user && user.name) {
-          // Convert name to URL format (firstname.lastname)
-          const username = user.name.toLowerCase().replace(/\s+/g, ".");
-          router.push(`/${username}`);
-        } else {
-          // Fallback to generic dashboard if name not available
-          router.push("/dashboard");
+        console.log("🔄 Redirecting user:", {
+          userId: user?.id,
+          role: user?.role,
+          isAdmin: isAdmin(),
+          fullUser: user,
+        });
+
+        if (!user) {
+          console.error("❌ No user found after successful login");
+          return;
         }
-      }, 1000);
+
+        // Verify localStorage has the data
+        const storedUser = localStorage.getItem("user");
+        console.log("💾 Stored user (raw):", storedUser);
+
+        // Redirect based on user role - use window.location for hard navigation
+        if (user.role === "admin") {
+          console.log("✅ Redirecting to admin dashboard");
+          // Hard navigation to ensure fresh state
+          window.location.href = "/admin";
+        } else {
+          // Redirect regular user to their personal dashboard
+          const username =
+            user.username || user.name.toLowerCase().replace(/\s+/g, ".");
+          console.log("✅ Redirecting to user dashboard:", `/${username}`);
+          window.location.href = `/${username}`;
+        }
+      }, 800);
+
+      return () => clearTimeout(timer);
     }
-  }, [success, router, onSubmit, formData.email]);
+  }, [success, onSubmit, formData.email]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -65,8 +85,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Basic validation
+    if (!formData.email.trim()) {
+      resetState();
+      return;
+    }
+
+    if (!formData.password) {
+      resetState();
+      return;
+    }
+
     await login({
-      email: formData.email,
+      email: formData.email.trim(),
       password: formData.password,
     });
   };
@@ -102,6 +133,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
             className={styles.input}
             required
             disabled={isLoading}
+            autoComplete="email"
           />
         </div>
 
@@ -120,6 +152,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
               className={styles.input}
               required
               disabled={isLoading}
+              autoComplete="current-password"
             />
             <button
               type="button"
@@ -143,7 +176,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
         <button
           type="submit"
           className={styles.loginButton}
-          disabled={isLoading}
+          disabled={isLoading || !formData.email || !formData.password}
         >
           {isLoading ? "Logging in..." : "Login"}
           <svg

@@ -30,8 +30,18 @@ export default function ProjectDetailPage({ params }: PageProps) {
         const data = await ProjectService.getProjectById(params.projectId);
         setProject(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load project");
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load project";
+        setError(errorMessage);
         console.error("Error fetching project:", err);
+
+        // If unauthorized, redirect to login
+        if (
+          errorMessage.includes("Authentication failed") ||
+          errorMessage.includes("log in")
+        ) {
+          setTimeout(() => router.push("/login"), 2000);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -40,7 +50,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
     if (params.projectId) {
       fetchProject();
     }
-  }, [params.projectId]);
+  }, [params.projectId, router]);
 
   const handleBack = () => {
     router.back();
@@ -54,17 +64,30 @@ export default function ProjectDetailPage({ params }: PageProps) {
   const handleDownloadPRD = async () => {
     console.log("Download PRD clicked");
     try {
-      const documents = await fetch(
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        alert("Please log in to download PRD");
+        return;
+      }
+
+      const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL ||
           "https://foundersapi.up.railway.app"
         }/founder/project/${params.projectId}/prds/`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
         }
-      ).then((res) => res.json());
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch PRD");
+      }
+
+      const documents = await response.json();
 
       if (documents.prds && documents.prds.length > 0) {
         window.open(documents.prds[0].documentUrl, "_blank");
@@ -85,7 +108,9 @@ export default function ProjectDetailPage({ params }: PageProps) {
       const data = await ProjectService.getProjectById(params.projectId);
       setProject(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load project");
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load project";
+      setError(errorMessage);
       console.error("Error fetching project:", err);
     } finally {
       setIsLoading(false);
@@ -94,18 +119,22 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
   const formatDate = (date: string | Date | null | undefined) => {
     if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    try {
+      return new Date(date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch {
+      return "N/A";
+    }
   };
 
   if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
         <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
-        <p>Loading...</p>
+        <p>Loading project details...</p>
       </div>
     );
   }
@@ -115,9 +144,13 @@ export default function ProjectDetailPage({ params }: PageProps) {
       <div className={styles.errorContainer}>
         <h2>Error loading project</h2>
         <p>{error}</p>
-        <button onClick={() => router.back()} className={styles.errorButton}>
-          Go Back
-        </button>
+        {error.includes("Authentication") ? (
+          <p className={styles.errorSubtext}>Redirecting to login...</p>
+        ) : (
+          <button onClick={() => router.back()} className={styles.errorButton}>
+            Go Back
+          </button>
+        )}
       </div>
     );
   }

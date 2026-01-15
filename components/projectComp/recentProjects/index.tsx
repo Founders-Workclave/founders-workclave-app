@@ -11,6 +11,8 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects }) => {
   const getStatusStyle = (status: string) => {
     const normalizedStatus = status.toLowerCase().replace(/\s+/g, "-");
     switch (normalizedStatus) {
+      case "ongoing":
+        return styles.statusInProgress;
       case "completed":
         return styles.statusCompleted;
       case "in-progress":

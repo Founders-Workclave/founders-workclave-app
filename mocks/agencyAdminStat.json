@@ -1,0 +1,32 @@
+{
+  "stats": [
+    {
+      "id": "1",
+      "icon": "projects",
+      "label": "Active Projects",
+      "value": 45,
+      "bgColor": "#f0f4ff"
+    },
+    {
+      "id": "2",
+      "icon": "clients",
+      "label": "Total Clients",
+      "value": 50,
+      "bgColor": "#f0f4ff"
+    },
+    {
+      "id": "3",
+      "icon": "dollar",
+      "label": "Revenue this month",
+      "value": "$10,500",
+      "bgColor": "#f0f4ff"
+    },
+    {
+      "id": "4",
+      "icon": "document",
+      "label": "PRDs Generated",
+      "value": 200,
+      "bgColor": "#f0f4ff"
+    }
+  ]
+}
