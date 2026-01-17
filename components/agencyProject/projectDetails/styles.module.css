@@ -185,6 +185,13 @@
   font-weight: 500;
 }
 
+/* Overview */
+.overviewTab {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+}
+
 /* Stats Grid */
 .statsGrid {
   display: grid;
@@ -275,11 +282,11 @@
 }
 
 /* Content Grid */
-.contentGrid {
+/* .contentGrid {
   display: grid;
   grid-template-columns: 1fr 350px;
   gap: 24px;
-}
+} */
 
 .mainContent {
   display: flex;

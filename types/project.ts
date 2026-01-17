@@ -42,7 +42,12 @@ export interface Milestone {
   description: string;
   dueDate: string;
   completedDate?: string | null;
-  deliverables: Array<{ task: string }>;
+  deliverables: string[]; // Changed from Array<{ task: string }>
+  status: "completed" | "in-progress" | "pending";
+  number: number;
+  progress?: number;
+  note?: string;
+  payment: number;
 }
 
 export interface ProjectMilestoneData {

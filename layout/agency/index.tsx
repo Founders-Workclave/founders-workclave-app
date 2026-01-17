@@ -1,14 +1,19 @@
 "use client";
-import { usePathname } from "next/navigation";
-import React, { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
 import Image from "next/image";
 import { agencyMenuItems } from "@/utils/data";
 import Link from "next/link";
 import HeaderNotification from "@/components/notificationDropdown/notificationComp";
-import { getCurrentUser } from "@/lib/api/auth";
+import {
+  getCurrentUser,
+  isAuthenticated,
+  getUserInitials,
+} from "@/lib/api/auth";
+import Loader from "@/components/loader";
 
-interface FounderLayoutProps {
+interface AgencyLayoutProps {
   pageTitle: string;
   pageText: string;
   children?: React.ReactNode;
@@ -16,14 +21,79 @@ interface FounderLayoutProps {
   userId?: string;
 }
 
-const AgencyLayout: React.FC<FounderLayoutProps> = ({
+const AgencyLayout: React.FC<AgencyLayoutProps> = ({
   children,
   pageTitle,
   pageText,
 }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const menu = agencyMenuItems;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(getCurrentUser());
+
+  // Protection: Check authentication and user type on mount and route changes
+  useEffect(() => {
+    const checkAuth = () => {
+      // First check if user is authenticated
+      if (!isAuthenticated()) {
+        console.log("🚫 Not authenticated, redirecting to agency login...");
+        router.replace("/login");
+        return;
+      }
+
+      const currentUser = getCurrentUser();
+
+      if (!currentUser) {
+        console.log("🚫 No user data found, redirecting to agency login...");
+        router.replace("/login");
+        return;
+      }
+
+      // CRITICAL: Check if user is an agency user
+      const userUserType = currentUser.userType?.toLowerCase();
+
+      console.log("🔍 Agency Layout - User validation:", {
+        userType: userUserType,
+        role: currentUser.role,
+        email: currentUser.email,
+        name: currentUser.name,
+      });
+
+      // If user is not an agency user, redirect them to their correct dashboard
+      if (userUserType !== "agency") {
+        console.log(
+          "🚫 User is not an agency user, redirecting to correct dashboard..."
+        );
+
+        // Redirect based on their actual user type/role
+        if (currentUser.role === "admin") {
+          router.replace("/admin");
+        } else {
+          // Regular founder user
+          const username =
+            currentUser.username ||
+            currentUser.name.toLowerCase().replace(/\s+/g, ".");
+          router.replace(`/${username}`);
+        }
+        return;
+      }
+
+      // User is authenticated and is an agency user
+      setUser(currentUser);
+      setIsLoading(false);
+
+      console.log("✅ Agency layout: User authenticated and validated", {
+        name: currentUser.name,
+        email: currentUser.email,
+        userType: currentUser.userType,
+        role: currentUser.role,
+      });
+    };
+
+    checkAuth();
+  }, [pathname, router]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -32,6 +102,21 @@ const AgencyLayout: React.FC<FounderLayoutProps> = ({
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
+        <p>Loading agency dashboard...</p>
+      </div>
+    );
+  }
+
+  // Don't render anything if no user (will redirect)
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className={styles.container}>
@@ -81,6 +166,7 @@ const AgencyLayout: React.FC<FounderLayoutProps> = ({
                     className={`${styles.menuListing} ${
                       pathname.startsWith(items.link) ? styles.active : ""
                     }`}
+                    onClick={closeMobileMenu}
                   >
                     {items.icon}
                     <Link href={items.link}>{items.label}</Link>
@@ -98,6 +184,7 @@ const AgencyLayout: React.FC<FounderLayoutProps> = ({
                   className={`${styles.menuListing} ${
                     items.link === pathname ? styles.active : ""
                   }`}
+                  onClick={closeMobileMenu}
                 >
                   {items.icon}
                   <Link href={items.link}>{items.label}</Link>
@@ -132,17 +219,10 @@ const AgencyLayout: React.FC<FounderLayoutProps> = ({
           <div className={styles.otherNavItems}>
             <HeaderNotification />
             <div className={styles.profileSection}>
-              {getCurrentUser?.name ? (
-                <div className={styles.profilePlaceholder}>
-                  {getCurrentUser.name
-                    .split(" ")
-                    .map((word) => word.charAt(0).toUpperCase())
-                    .join("")}
-                </div>
-              ) : (
-                <div className={styles.profilePlaceholder}>U</div>
-              )}
-              <p>{getCurrentUser?.name || "User"}</p>
+              <div className={styles.profilePlaceholder}>
+                {getUserInitials()}
+              </div>
+              <p>{user?.name || "Agency User"}</p>
             </div>
           </div>
           <button

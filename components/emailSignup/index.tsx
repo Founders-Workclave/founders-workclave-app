@@ -23,7 +23,7 @@ const EmailSignupComp = () => {
           <button className={styles.backBtn} onClick={() => router.back()}>
             <Back /> Back
           </button>
-          <SignupFormAgency userType="Agency" onSubmit={handleSignup} />
+          <SignupFormAgency onSubmit={handleSignup} />
           <div className={styles.dividerAlt}>
             <span>OR</span>
           </div>

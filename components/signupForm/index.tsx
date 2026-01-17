@@ -9,13 +9,16 @@ import ShowPassword from "@/svgs/showPassword";
 import HidePassword from "@/svgs/hidePassword";
 
 interface SignupFormProps {
-  userType?: "Agency";
   onSubmit?: (data: SignupFormData) => void;
 }
 
 const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
   const router = useRouter();
-  const { isLoading, error, success, signup, resetState } = useSignup();
+
+  // Pass userType to the signup hook
+  const { isLoading, error, success, signup, resetState } = useSignup({
+    userType: "agency",
+  });
 
   const [formData, setFormData] = useState<SignupFormData>({
     firstName: "",
@@ -28,19 +31,22 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
     agreedToTerms: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Handle successful registration
   useEffect(() => {
     if (success) {
+      console.log("✅ Agency signup successful, redirecting...");
+
       // Call parent onSubmit if provided
       if (onSubmit) {
         onSubmit(formData);
       }
 
-      // Redirect to dashboard or success page after 2 seconds
+      // Redirect to agency dashboard after short delay
       setTimeout(() => {
-        router.push("/dashboard"); // or '/welcome' or '/verify-email'
-      }, 2000);
+        router.push("/agency");
+      }, 1500);
     }
   }, [success, router, onSubmit, formData]);
 
@@ -49,9 +55,10 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
   ) => {
     const { name, value, type } = e.target;
 
-    // Clear error when user starts typing
-    if (error) {
+    // Clear errors when user starts typing
+    if (error || validationError) {
       resetState();
+      setValidationError(null);
     }
 
     if (type === "checkbox") {
@@ -65,20 +72,60 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Clear previous errors
+    setValidationError(null);
+    resetState();
+
     // Validation
-    if (!formData.agreedToTerms) {
-      alert("Please agree to the Terms of Service and Privacy Policy");
+    if (!formData.firstName.trim()) {
+      setValidationError("First name is required");
+      return;
+    }
+
+    if (!formData.lastName.trim()) {
+      setValidationError("Last name is required");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setValidationError("Email is required");
+      return;
+    }
+
+    if (!formData.companyName.trim()) {
+      setValidationError("Company name is required");
+      return;
+    }
+
+    if (!formData.phoneNumber.trim()) {
+      setValidationError("Phone number is required");
       return;
     }
 
     if (formData.password.length < 8) {
-      alert("Password must be at least 8 characters long");
+      setValidationError("Password must be at least 8 characters long");
       return;
     }
+
+    if (!formData.agreedToTerms) {
+      setValidationError(
+        "Please agree to the Terms of Service and Privacy Policy"
+      );
+      return;
+    }
+
+    console.log("🔐 Submitting agency signup:", {
+      email: formData.email,
+      companyName: formData.companyName,
+      userType: "agency",
+    });
 
     // Call signup function from hook
     await signup(formData);
   };
+
+  // Combine validation and API errors
+  const displayError = validationError || error;
 
   return (
     <div className={styles.container}>
@@ -86,12 +133,14 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
         {/* Success Message */}
         {success && (
           <div className={styles.successMessage}>
-            ✓ Account created successfully! Redirecting...
+            ✓ Agency account created successfully! Redirecting to dashboard...
           </div>
         )}
 
         {/* Error Message */}
-        {error && <div className={styles.errorMessage}>⚠ {error}</div>}
+        {displayError && (
+          <div className={styles.errorMessage}>⚠ {displayError}</div>
+        )}
 
         <div className={styles.inputGroup}>
           <div className={styles.nameInputs}>
@@ -141,10 +190,11 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            placeholder="Enter email address"
+            placeholder="agency@example.com"
             className={styles.input}
             required
             disabled={isLoading}
+            autoComplete="email"
           />
         </div>
 
@@ -216,6 +266,7 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
               minLength={8}
               required
               disabled={isLoading}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -257,7 +308,7 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
         <button
           type="submit"
           className={styles.submitButton}
-          disabled={isLoading}
+          disabled={isLoading || !formData.agreedToTerms}
         >
           {isLoading ? "Creating account..." : "Create account"}
           <svg

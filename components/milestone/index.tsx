@@ -55,7 +55,7 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({ projectId }) => {
     }
 
     return {
-      id: parseInt(apiMilestone.id, 10) || 0,
+      id: apiMilestone.id,
       number: apiMilestone.order,
       title: apiMilestone.title,
       price: apiMilestone.price,

@@ -9,13 +9,14 @@ import ShowPassword from "@/svgs/showPassword";
 import HidePassword from "@/svgs/hidePassword";
 
 interface SignupFormProps {
-  userType?: "Founder";
   onSubmit?: (data: SignupFounder) => void;
 }
 
 const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
   const router = useRouter();
-  const { isLoading, error, success, signup, resetState } = useSignup();
+  const { isLoading, error, success, signup, resetState } = useSignup({
+    userType: "founder",
+  });
 
   const [formData, setFormData] = useState<SignupFounder>({
     firstName: "",
@@ -27,19 +28,25 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
     agreedToTerms: false,
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
 
   // Handle successful registration
   useEffect(() => {
     if (success) {
+      console.log("✅ Founder signup successful, redirecting...");
+
       // Call parent onSubmit if provided
       if (onSubmit) {
         onSubmit(formData);
       }
 
-      // Redirect to dashboard or success page after 2 seconds
+      // Redirect to founder dashboard after short delay
       setTimeout(() => {
-        router.push("/dashboard"); // or '/welcome' or '/verify-email'
-      }, 2000);
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const username =
+          user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
+        router.push(`/${username || "dashboard"}`);
+      }, 1500);
     }
   }, [success, router, onSubmit, formData]);
 
@@ -48,9 +55,10 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
   ) => {
     const { name, value, type } = e.target;
 
-    // Clear error when user starts typing
-    if (error) {
+    // Clear errors when user starts typing
+    if (error || validationError) {
       resetState();
+      setValidationError(null);
     }
 
     if (type === "checkbox") {
@@ -64,32 +72,74 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Clear previous errors
+    setValidationError(null);
+    resetState();
+
     // Validation
+    if (!formData.firstName?.trim()) {
+      setValidationError("First name is required");
+      return;
+    }
+
+    if (!formData.lastName?.trim()) {
+      setValidationError("Last name is required");
+      return;
+    }
+
+    if (!formData.email?.trim()) {
+      setValidationError("Email is required");
+      return;
+    }
+
+    if (!formData.phoneNumber?.trim()) {
+      setValidationError("Phone number is required");
+      return;
+    }
+
+    if (!formData.password || formData.password.length < 8) {
+      setValidationError("Password must be at least 8 characters long");
+      return;
+    }
+
     if (!formData.agreedToTerms) {
-      alert("Please agree to the Terms of Service and Privacy Policy");
+      setValidationError(
+        "Please agree to the Terms of Service and Privacy Policy"
+      );
       return;
     }
 
-    if (formData.password.length < 8) {
-      alert("Password must be at least 8 characters long");
-      return;
-    }
+    console.log("🔐 Submitting founder signup:", {
+      email: formData.email,
+      userType: "founder",
+    });
 
+    // Call signup function
     await signup(formData);
   };
 
+  // Combine validation and API errors
+  const displayError = validationError || error;
+
   return (
     <div className={styles.container}>
+      <div className={styles.texts}>
+        <h2>Create Your Account 🚀</h2>
+        <p className={styles.subtitle}>Join our founder community</p>
+      </div>
+
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Success Message */}
         {success && (
           <div className={styles.successMessage}>
-            ✓ Account created successfully! Redirecting...
+            ✓ Account created successfully! Redirecting to dashboard...
           </div>
         )}
 
         {/* Error Message */}
-        {error && <div className={styles.errorMessage}>⚠ {error}</div>}
+        {displayError && (
+          <div className={styles.errorMessage}>⚠ {displayError}</div>
+        )}
 
         <div className={styles.inputGroup}>
           <div className={styles.nameInputs}>
@@ -143,6 +193,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
             className={styles.input}
             required
             disabled={isLoading}
+            autoComplete="email"
           />
         </div>
 
@@ -196,6 +247,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
               minLength={8}
               required
               disabled={isLoading}
+              autoComplete="new-password"
             />
             <button
               type="button"
@@ -237,7 +289,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
         <button
           type="submit"
           className={styles.submitButton}
-          disabled={isLoading}
+          disabled={isLoading || !formData.agreedToTerms}
         >
           {isLoading ? "Creating account..." : "Create account"}
           <svg
@@ -251,6 +303,13 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </button>
+
+        <div className={styles.loginText}>
+          Already have an account?{" "}
+          <Link href="/login" className={styles.loginLink}>
+            Login here
+          </Link>
+        </div>
       </form>
     </div>
   );

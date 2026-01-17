@@ -1,5 +1,3 @@
-// TYPES & INTERFACES
-
 interface RegisterPayload {
   firstName: string;
   lastName: string;
@@ -38,6 +36,7 @@ export interface UserInfo {
   firstName?: string;
   lastName?: string;
   phone?: string;
+  userType?: string; // ADDED: 'agency' | 'founder' | 'admin'
 }
 
 interface ApiUserData {
@@ -55,6 +54,7 @@ interface ApiUserData {
   username?: string;
   role?: string;
   userType?: string;
+  user_type?: string; // ADDED
   is_superuser?: boolean;
   is_staff?: boolean;
   phone?: string;
@@ -78,6 +78,8 @@ interface AuthResponse {
   name?: string;
   error?: string;
   errors?: Record<string, string[]>;
+  userType?: string; // ADDED
+  user_type?: string; // ADDED
 }
 
 // CONSTANTS
@@ -231,6 +233,34 @@ export const getCurrentUser = (): UserInfo | null => {
   return getUser();
 };
 
+// USER TYPE VALIDATION - NEW FUNCTIONS
+
+/**
+ * Check if current user matches the required user type
+ */
+export const isUserType = (requiredType: string): boolean => {
+  const user = getUser();
+  if (!user) return false;
+
+  // If no userType stored, assume founder (for backward compatibility)
+  const currentUserType = user.userType || "founder";
+  return currentUserType.toLowerCase() === requiredType.toLowerCase();
+};
+
+/**
+ * Check if current user is an agency user
+ */
+export const isAgencyUser = (): boolean => {
+  return isUserType("agency");
+};
+
+/**
+ * Check if current user is a founder
+ */
+export const isFounderUser = (): boolean => {
+  return isUserType("founder");
+};
+
 // USER DISPLAY UTILITIES
 
 /**
@@ -292,8 +322,6 @@ export const getUserInitials = (): string => {
   return "U";
 };
 
-// ROLE DETECTION HELPER
-
 /**
  * Determine if user should have admin role based on API response
  */
@@ -330,6 +358,31 @@ const determineAdminRole = (data: AuthResponse, email: string): boolean => {
   }
 
   return false;
+};
+
+/**
+ * Extract user type from API response
+ */
+const extractUserType = (
+  data: AuthResponse,
+  requestedUserType?: string
+): string => {
+  // Priority: API response > requested type > default to 'founder'
+  const apiUserType =
+    data.data?.userType ||
+    data.data?.user_type ||
+    data.userType ||
+    data.user_type;
+
+  if (apiUserType) {
+    return apiUserType.toLowerCase();
+  }
+
+  if (requestedUserType) {
+    return requestedUserType.toLowerCase();
+  }
+
+  return "founder"; // default
 };
 
 /**
@@ -455,6 +508,7 @@ export const authApi = {
         username: payload.email.split("@")[0],
         role: "user",
         phone: fullPhoneNumber,
+        userType: payload.userType?.toLowerCase() || "founder", // ADDED
       };
 
       setUser(userData);
@@ -480,14 +534,30 @@ export const authApi = {
     }
   },
 
-  login: async (payload: LoginPayload): Promise<AuthResponse> => {
+  /**
+   * Universal login method that supports different user types
+   * @param payload - Login credentials
+   * @param userType - Optional user type (e.g., 'agency', 'founder')
+   */
+  login: async (
+    payload: LoginPayload,
+    userType?: string
+  ): Promise<AuthResponse> => {
     try {
       const requestBody = {
         email: payload.email.trim().toLowerCase(),
         password: payload.password,
       };
 
-      const response = await fetch(`${API_BASE_URL}/login/`, {
+      // Build URL with optional user_type query parameter
+      const baseUrl = `${API_BASE_URL}/login/`;
+      const url = userType
+        ? `${baseUrl}?user_type=${encodeURIComponent(userType.toLowerCase())}`
+        : baseUrl;
+
+      console.log(`🔐 Logging in${userType ? ` as ${userType}` : ""}...`);
+
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -540,6 +610,7 @@ export const authApi = {
       console.log("🔑 Tokens extracted:", {
         hasAccess: !!accessToken,
         hasRefresh: !!refreshToken,
+        userType: userType || "default",
       });
 
       if (!accessToken) {
@@ -558,6 +629,9 @@ export const authApi = {
       const isAdminUser = determineAdminRole(data, requestBody.email);
       const role: "admin" | "user" = isAdminUser ? "admin" : "user";
 
+      // Extract user type from response
+      const detectedUserType = extractUserType(data, userType);
+
       // Extract name fields using the helper function
       const { firstName, lastName, displayName } = extractNameFields(
         data,
@@ -569,6 +643,7 @@ export const authApi = {
         lastName,
         displayName,
         role,
+        userType: detectedUserType,
         rawData: data.data,
       });
 
@@ -588,6 +663,7 @@ export const authApi = {
         finalLastName,
         finalDisplayName,
         hadExistingUser: !!existingUser,
+        detectedUserType,
       });
 
       // Create user object with all available data
@@ -607,11 +683,17 @@ export const authApi = {
         role: role,
         phone:
           data.data?.phone || data.data?.phoneNumber || existingUser?.phone,
+        userType: detectedUserType, // ADDED: Store the user type
       };
 
       setUser(userData);
 
-      console.log("✅ Login successful - User data saved:", userData);
+      console.log(
+        `✅ Login successful${
+          userType ? ` (${userType})` : ""
+        } - User data saved:`,
+        userData
+      );
 
       // Verify data was stored correctly
       const verification = getUser();
@@ -621,6 +703,7 @@ export const authApi = {
         lastName: verification?.lastName,
         name: verification?.name,
         role: verification?.role,
+        userType: verification?.userType,
       });
 
       if (!verification) {

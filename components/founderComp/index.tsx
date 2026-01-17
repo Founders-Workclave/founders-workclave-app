@@ -19,7 +19,7 @@ const FounderComp = () => {
           <button className={styles.backBtn} onClick={() => router.back()}>
             <Back /> Back
           </button>
-          <SignupFormFounder userType="Founder" onSubmit={handleSignup} />
+          <SignupFormFounder onSubmit={handleSignup} />
         </div>
       </div>
     </div>

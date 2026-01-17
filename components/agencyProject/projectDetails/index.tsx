@@ -14,6 +14,7 @@ import Budget from "@/svgs/budget";
 import Document from "@/svgs/document";
 import CheckPassive from "@/svgs/checkPassive";
 import CheckActive from "@/svgs/checkActive";
+import AdminMilestonesPage from "@/components/agencyMilestone/milestonePage";
 
 const ProjectDetailsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("overview");
@@ -178,103 +179,142 @@ const ProjectDetailsPage: React.FC = () => {
       {/* Content Area */}
       <div className={styles.contentGrid}>
         <div className={styles.mainContent}>
-          {/* Project Progress */}
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Project Progress</h2>
-            </div>
-            <div className={styles.overallGrid}>
-              <span className={styles.sectionSubtitle}>Overall Completion</span>
-              <span className={styles.completionBadge}>
-                {project.projectProgress.overallCompletion}%
-              </span>
-            </div>
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{
-                  width: `${project.projectProgress.overallCompletion}%`,
-                }}
-              />
-            </div>
+          {/* Overview Tab Content */}
+          {activeTab === "overview" && (
+            <div className={styles.overviewTab}>
+              <div className={styles.colOne}>
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>Project Progress</h2>
+                  </div>
+                  <div className={styles.overallGrid}>
+                    <span className={styles.sectionSubtitle}>
+                      Overall Completion
+                    </span>
+                    <span className={styles.completionBadge}>
+                      {project.projectProgress.overallCompletion}%
+                    </span>
+                  </div>
+                  <div className={styles.progressBar}>
+                    <div
+                      className={styles.progressFill}
+                      style={{
+                        width: `${project.projectProgress.overallCompletion}%`,
+                      }}
+                    />
+                  </div>
 
-            <div className={styles.milestonesList}>
-              {project.projectProgress.milestones.map((milestone) => (
-                <div
-                  key={milestone.id}
-                  className={`${styles.milestone} ${getMilestoneClass(
-                    milestone.status
-                  )}`}
-                >
-                  <span className={styles.milestoneIcon}>
-                    {getMilestoneIcon(milestone.status)}
-                  </span>
-                  <span className={styles.milestoneName}>{milestone.name}</span>
+                  <div className={styles.milestonesList}>
+                    {project.projectProgress.milestones.map((milestone) => (
+                      <div
+                        key={milestone.id}
+                        className={`${styles.milestone} ${getMilestoneClass(
+                          milestone.status
+                        )}`}
+                      >
+                        <span className={styles.milestoneIcon}>
+                          {getMilestoneIcon(milestone.status)}
+                        </span>
+                        <span className={styles.milestoneName}>
+                          {milestone.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Problem Statement */}
-          <div className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Problem Statement</h2>
-              <button className={styles.linkButton}>View Full PRD</button>
-            </div>
-            <p className={styles.problemText}>{project.problemStatement}</p>
-          </div>
-
-          {/* Key Features */}
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Key Features</h2>
-            <div className={styles.featuresGrid}>
-              {project.keyFeatures.map((feature) => (
-                <div key={feature.id} className={styles.featureItem}>
-                  <span className={styles.featureIcon}>
-                    <CheckPassive />
-                  </span>
-                  <span className={styles.featureName}>{feature.name}</span>
+                {/* Problem Statement */}
+                <div className={styles.section}>
+                  <div className={styles.sectionHeader}>
+                    <h2 className={styles.sectionTitle}>Problem Statement</h2>
+                    <button className={styles.linkButton}>View Full PRD</button>
+                  </div>
+                  <p className={styles.problemText}>
+                    {project.problemStatement}
+                  </p>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Sidebar */}
-        <div className={styles.sidebar}>
-          {/* Client Card */}
-          <div className={styles.card}>
-            <h3 className={styles.cardTitle}>Client</h3>
-            <div className={styles.userProfile}>
-              <div className={styles.avatar}>{project.client.initials}</div>
-              <span className={styles.userName}>{project.client.name}</span>
-            </div>
-            <button className={styles.messageClientButton}>
-              <MessageApp />
-              Message client
-            </button>
-          </div>
-
-          {/* Product Manager Card */}
-          {project.productManager && (
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>Product Manager</h3>
-              <div className={styles.userProfile}>
-                <div className={styles.avatar}>
-                  {project.productManager.initials}
+                {/* Key Features */}
+                <div className={styles.section}>
+                  <h2 className={styles.sectionTitle}>Key Features</h2>
+                  <div className={styles.featuresGrid}>
+                    {project.keyFeatures.map((feature) => (
+                      <div key={feature.id} className={styles.featureItem}>
+                        <span className={styles.featureIcon}>
+                          <CheckPassive />
+                        </span>
+                        <span className={styles.featureName}>
+                          {feature.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <span className={styles.userName}>
-                  {project.productManager.name}
-                </span>
               </div>
-              <button className={styles.messagePMButton}>
-                <MessageApp />
-                Message PM
-              </button>
-              <button className={styles.unassignButton}>Un-assign</button>
+              <div className={styles.sidebar}>
+                {/* Client Card */}
+                <div className={styles.card}>
+                  <h3 className={styles.cardTitle}>Client</h3>
+                  <div className={styles.userProfile}>
+                    <div className={styles.avatar}>
+                      {project.client.initials}
+                    </div>
+                    <span className={styles.userName}>
+                      {project.client.name}
+                    </span>
+                  </div>
+                  <button className={styles.messageClientButton}>
+                    <MessageApp />
+                    Message client
+                  </button>
+                </div>
+                <div className={styles.projectManager}>
+                  {project.productManager && (
+                    <div className={styles.card}>
+                      <h3 className={styles.cardTitle}>Product Manager</h3>
+                      <div className={styles.userProfile}>
+                        <div className={styles.avatar}>
+                          {project.productManager.initials}
+                        </div>
+                        <span className={styles.userName}>
+                          {project.productManager.name}
+                        </span>
+                      </div>
+                      <button className={styles.messagePMButton}>
+                        <MessageApp />
+                        Message PM
+                      </button>
+                      <button className={styles.unassignButton}>
+                        Un-assign
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Milestones Tab Content */}
+          {activeTab === "milestones" && <AdminMilestonesPage />}
+
+          {/* Documents Tab Content */}
+          {activeTab === "documents" && (
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Documents</h2>
+              <p>Documents content coming soon...</p>
+            </div>
+          )}
+
+          {/* Payment Tab Content */}
+          {activeTab === "payment" && (
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Payment</h2>
+              <p>Payment content coming soon...</p>
             </div>
           )}
         </div>
+
+        {/* Sidebar */}
       </div>
     </div>
   );

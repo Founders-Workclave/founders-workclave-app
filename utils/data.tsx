@@ -52,10 +52,10 @@ export const countryCodes = [
 ];
 
 export interface SignupFormData {
-  firstName: string | number | readonly string[] | undefined;
-  lastName: string | number | readonly string[] | undefined;
+  firstName: string;
+  lastName: string;
   email: string;
-  companyName: string;
+  companyName: string; // Optional for agency only
   phoneNumber: string;
   countryCode: string;
   password: string;
@@ -63,8 +63,8 @@ export interface SignupFormData {
 }
 
 export interface SignupFounder {
-  firstName: string | number | readonly string[] | undefined;
-  lastName: string | number | readonly string[] | undefined;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
   countryCode: string;
