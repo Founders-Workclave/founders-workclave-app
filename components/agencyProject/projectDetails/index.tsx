@@ -1,7 +1,6 @@
 "use client";
 import React, { JSX, useState } from "react";
-import { Project } from "@/types/agencyProjects";
-import mockData from "../../../mocks/agencyProjects.json";
+import { useParams, useRouter } from "next/navigation";
 import styles from "./styles.module.css";
 import BackBlack from "@/svgs/backBlack";
 import MessageApp from "@/svgs/messageApp";
@@ -15,13 +14,19 @@ import Document from "@/svgs/document";
 import CheckPassive from "@/svgs/checkPassive";
 import CheckActive from "@/svgs/checkActive";
 import AdminMilestonesPage from "@/components/agencyMilestone/milestonePage";
+import { useProjectDetails } from "@/hooks/useProjectDetails";
+import AllLoading from "@/layout/Loader";
+import AgencyDocuments from "@/components/agencyDocuments";
+import AgencyPayments from "@/components/agencyPayments";
 
 const ProjectDetailsPage: React.FC = () => {
+  const params = useParams();
+  const router = useRouter();
+  const projectId = params?.id as string;
+
+  const { project, isLoading, error, refetch } = useProjectDetails(projectId);
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [showActionsMenu, setShowActionsMenu] = useState<boolean>(false);
-
-  // In real app, get project by ID from params
-  const project: Project = mockData.projects[0] as Project;
 
   const formatCurrency = (amount: number): string => {
     return `$${amount.toLocaleString()}`;
@@ -39,11 +44,36 @@ const ProjectDetailsPage: React.FC = () => {
     return styles.milestonePending;
   };
 
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <AllLoading text="Loading Project..." />
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorContainer}>
+          <h2>Error loading project</h2>
+          <p>{error || "Project not found"}</p>
+          <button onClick={refetch} className={styles.retryButton}>
+            Retry
+          </button>
+          <button onClick={() => router.back()} className={styles.backButton}>
+            Go Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.container}>
       {/* Header */}
       <div className={styles.headerSection}>
-        <button className={styles.backButton} onClick={() => {}}>
+        <button className={styles.backButton} onClick={() => router.back()}>
           <BackBlack /> Back
         </button>
         <div className={styles.titleRow}>
@@ -91,7 +121,7 @@ const ProjectDetailsPage: React.FC = () => {
           </div>
         </div>
         <div className={styles.metaInfo}>
-          <span>Created on Sept 15, 2025</span>
+          <span>Created {project.startedAgo}</span>
           <span>•</span>
           <span>Last updated {project.lastUpdated}</span>
         </div>
@@ -134,7 +164,7 @@ const ProjectDetailsPage: React.FC = () => {
             </span>
             <span className={styles.statValue}>{project.documents}</span>
             <span className={styles.statSubtext}>
-              Last uploaded: {project.lastDocumentUpload}
+              {project.lastDocumentUpload}
             </span>
           </div>
         </div>
@@ -204,23 +234,25 @@ const ProjectDetailsPage: React.FC = () => {
                     />
                   </div>
 
-                  <div className={styles.milestonesList}>
-                    {project.projectProgress.milestones.map((milestone) => (
-                      <div
-                        key={milestone.id}
-                        className={`${styles.milestone} ${getMilestoneClass(
-                          milestone.status
-                        )}`}
-                      >
-                        <span className={styles.milestoneIcon}>
-                          {getMilestoneIcon(milestone.status)}
-                        </span>
-                        <span className={styles.milestoneName}>
-                          {milestone.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  {project.projectProgress.milestones.length > 0 && (
+                    <div className={styles.milestonesList}>
+                      {project.projectProgress.milestones.map((milestone) => (
+                        <div
+                          key={milestone.id}
+                          className={`${styles.milestone} ${getMilestoneClass(
+                            milestone.status
+                          )}`}
+                        >
+                          <span className={styles.milestoneIcon}>
+                            {getMilestoneIcon(milestone.status)}
+                          </span>
+                          <span className={styles.milestoneName}>
+                            {milestone.name}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Problem Statement */}
@@ -268,8 +300,9 @@ const ProjectDetailsPage: React.FC = () => {
                     Message client
                   </button>
                 </div>
-                <div className={styles.projectManager}>
-                  {project.productManager && (
+
+                {project.productManager && (
+                  <div className={styles.projectManager}>
                     <div className={styles.card}>
                       <h3 className={styles.cardTitle}>Product Manager</h3>
                       <div className={styles.userProfile}>
@@ -288,33 +321,25 @@ const ProjectDetailsPage: React.FC = () => {
                         Un-assign
                       </button>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* Milestones Tab Content */}
-          {activeTab === "milestones" && <AdminMilestonesPage />}
+          {activeTab === "milestones" && (
+            <AdminMilestonesPage projectId={projectId} />
+          )}
 
           {/* Documents Tab Content */}
           {activeTab === "documents" && (
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Documents</h2>
-              <p>Documents content coming soon...</p>
-            </div>
+            <AgencyDocuments projectId={projectId} />
           )}
 
           {/* Payment Tab Content */}
-          {activeTab === "payment" && (
-            <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Payment</h2>
-              <p>Payment content coming soon...</p>
-            </div>
-          )}
+          {activeTab === "payment" && <AgencyPayments />}
         </div>
-
-        {/* Sidebar */}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import styles from "./styles.module.css";
-import { Milestone } from "@/types/project";
+import type { Milestone } from "@/types/agencyMilestone";
 import Completed from "@/svgs/completed";
 import InProgress from "@/svgs/inProgress";
 import Pending from "@/svgs/pending";
@@ -13,8 +13,11 @@ import ListIcons from "@/svgs/listIcons";
 interface AdminMilestoneCardProps {
   milestone: Milestone;
   onEdit?: (milestone: Milestone) => void;
-  onMarkComplete?: (milestoneId: string | number) => void;
-  onUpdateProgress?: (milestoneId: string | number, progress: number) => void;
+  onMarkComplete?: (milestoneId: string | number) => Promise<void>;
+  onUpdateProgress?: (
+    milestoneId: string | number,
+    progress: number
+  ) => Promise<void>;
 }
 
 const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
@@ -23,8 +26,9 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
   onMarkComplete,
 }) => {
   const [showDeliverables, setShowDeliverables] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const status = milestone.status;
+  const status = milestone.status || "pending";
 
   const getStatusBadge = () => {
     switch (status) {
@@ -69,9 +73,16 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
     }
   };
 
-  const handleMarkComplete = () => {
-    if (onMarkComplete) {
-      onMarkComplete(milestone.id);
+  const handleMarkComplete = async () => {
+    if (onMarkComplete && !isLoading) {
+      setIsLoading(true);
+      try {
+        await onMarkComplete(milestone.id);
+      } catch (error) {
+        console.error("Failed to mark milestone as complete:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -86,7 +97,7 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <span className={styles.milestoneNumber}>
-              Milestone {milestone.number}
+              Milestone {milestone.number || milestone.order}
             </span>
             <span className={`${styles.statusBadge} ${statusBadge.class}`}>
               {statusBadge.text}
@@ -176,8 +187,9 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
               <button
                 onClick={handleMarkComplete}
                 className={styles.markCompleteButton}
+                disabled={isLoading}
               >
-                Mark as completed
+                {isLoading ? "Marking..." : "Mark as completed"}
               </button>
             </>
           )}
@@ -198,7 +210,7 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
               {milestone.deliverables.map((deliverable, index) => (
                 <li key={index} className={styles.deliverableItem}>
                   <ListIcons />
-                  <span>{deliverable}</span>
+                  <span>{deliverable.task}</span>
                 </li>
               ))}
             </ul>

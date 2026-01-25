@@ -1,0 +1,173 @@
+{
+  "prds": [
+    {
+      "id": "prd_1",
+      "prdDetails": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "id": "client_1"
+      },
+      "status": "In-Progress",
+      "createdAt": "2024-01-15T10:30:00Z",
+      "updatedAt": "2024-01-19T14:20:00Z"
+    },
+    {
+      "id": "prd_2",
+      "prdDetails": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "id": "client_1"
+      },
+      "status": "Completed",
+      "createdAt": "2024-01-10T09:15:00Z",
+      "updatedAt": "2024-01-18T16:45:00Z"
+    },
+    {
+      "id": "prd_3",
+      "prdDetails": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "id": "client_1"
+      },
+      "status": "Completed",
+      "createdAt": "2024-01-12T11:00:00Z",
+      "updatedAt": "2024-01-17T13:30:00Z"
+    },
+    {
+      "id": "prd_4",
+      "prdDetails": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "id": "client_1"
+      },
+      "status": "Completed",
+      "createdAt": "2024-01-08T08:45:00Z",
+      "updatedAt": "2024-01-16T10:15:00Z"
+    },
+    {
+      "id": "prd_5",
+      "prdDetails": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "id": "client_1"
+      },
+      "status": "Completed",
+      "createdAt": "2024-01-14T14:20:00Z",
+      "updatedAt": "2024-01-19T09:00:00Z"
+    },
+    {
+      "id": "prd_6",
+      "prdDetails": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "id": "client_1"
+      },
+      "status": "Completed",
+      "createdAt": "2024-01-11T12:30:00Z",
+      "updatedAt": "2024-01-18T15:45:00Z"
+    },
+    {
+      "id": "prd_7",
+      "prdDetails": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "id": "client_1"
+      },
+      "status": "In-Progress",
+      "createdAt": "2024-01-16T10:00:00Z",
+      "updatedAt": "2024-01-19T11:30:00Z"
+    },
+    {
+      "id": "prd_8",
+      "prdDetails": "E-commerce Mobile App",
+      "client": {
+        "name": "John Doe",
+        "id": "client_1"
+      },
+      "status": "In-Progress",
+      "createdAt": "2024-01-13T13:15:00Z",
+      "updatedAt": "2024-01-19T12:00:00Z"
+    },
+    {
+      "id": "prd_9",
+      "prdDetails": "Social Media Dashboard",
+      "client": {
+        "name": "Jane Smith",
+        "id": "client_2"
+      },
+      "status": "In-Progress",
+      "createdAt": "2024-01-17T09:30:00Z",
+      "updatedAt": "2024-01-19T10:45:00Z"
+    },
+    {
+      "id": "prd_10",
+      "prdDetails": "Booking Management System",
+      "client": {
+        "name": "Mike Johnson",
+        "id": "client_3"
+      },
+      "status": "Completed",
+      "createdAt": "2024-01-09T11:45:00Z",
+      "updatedAt": "2024-01-17T14:20:00Z"
+    },
+    {
+      "id": "prd_11",
+      "prdDetails": "Inventory Tracking App",
+      "client": {
+        "name": "Sarah Williams",
+        "id": "client_4"
+      },
+      "status": "In-Progress",
+      "createdAt": "2024-01-18T08:00:00Z",
+      "updatedAt": "2024-01-19T13:15:00Z"
+    },
+    {
+      "id": "prd_12",
+      "prdDetails": "Healthcare Portal",
+      "client": {
+        "name": "David Brown",
+        "id": "client_5"
+      },
+      "status": "Completed",
+      "createdAt": "2024-01-07T10:30:00Z",
+      "updatedAt": "2024-01-16T11:00:00Z"
+    },
+    {
+      "id": "prd_13",
+      "prdDetails": "Real Estate Platform",
+      "client": {
+        "name": "Emily Davis",
+        "id": "client_6"
+      },
+      "status": "In-Progress",
+      "createdAt": "2024-01-15T14:45:00Z",
+      "updatedAt": "2024-01-19T09:30:00Z"
+    },
+    {
+      "id": "prd_14",
+      "prdDetails": "Education Learning Platform",
+      "client": {
+        "name": "Robert Wilson",
+        "id": "client_7"
+      },
+      "status": "Completed",
+      "createdAt": "2024-01-06T09:00:00Z",
+      "updatedAt": "2024-01-15T16:30:00Z"
+    },
+    {
+      "id": "prd_15",
+      "prdDetails": "Financial Analytics Dashboard",
+      "client": {
+        "name": "Lisa Anderson",
+        "id": "client_8"
+      },
+      "status": "In-Progress",
+      "createdAt": "2024-01-19T07:30:00Z",
+      "updatedAt": "2024-01-19T14:00:00Z"
+    }
+  ],
+  "totalPages": 30,
+  "currentPage": 3,
+  "totalPRDs": 450,
+  "perPage": 15
+}

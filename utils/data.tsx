@@ -125,47 +125,47 @@ export const agencyMenuItems = [
   {
     icon: <Projects />,
     label: "All Projects",
-    link: `#`,
+    link: `/agency/projects`,
   },
   {
     icon: <Prd />,
     label: "All PRDs",
-    link: `#`,
+    link: `/agency/prds`,
   },
   {
     icon: <ClientsAdmin />,
     label: "Clients",
-    link: `#`,
+    link: `/agency/clients`,
   },
   {
     icon: <ClientsAdmin />,
     label: "Product Managers",
-    link: `#`,
+    link: `/agency/pm`,
   },
   {
     icon: <Messages />,
     label: "Messages",
-    link: `#`,
+    link: `/agency/messages`,
   },
   {
     icon: <CalenderAdmin />,
     label: "Calender",
-    link: `#`,
+    link: `/agency/calender`,
   },
   {
     icon: <Wallets />,
     label: "Wallet",
-    link: `#`,
+    link: `/agency/wallet`,
   },
   {
     icon: <Payments />,
     label: "Payments",
-    link: `#`,
+    link: `/agency/payments`,
   },
   {
     icon: <Settings />,
     label: "Settings",
-    link: `#`,
+    link: `/agency/settings`,
   },
   {
     icon: <Logout />,

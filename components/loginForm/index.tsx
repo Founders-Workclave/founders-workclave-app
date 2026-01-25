@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import styles from "./styles.module.css";
-import { useLogin } from "@/hooks/useAgencyLogin";
-import { getUser, isAdmin, isAuthenticated, clearUser } from "@/lib/api/auth";
+import { useLogin } from "@/hooks/useLogin";
+import { getUser, isAuthenticated, clearUser } from "@/lib/api/auth";
 import ShowPassword from "@/svgs/showPassword";
 import HidePassword from "@/svgs/hidePassword";
 import Google from "@/svgs/google";
@@ -15,16 +15,9 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   const router = useRouter();
-  const pathname = usePathname();
 
-  // Determine user type based on the current URL path
-  const isAgencyLogin = pathname?.includes("/agency");
-  const userType = isAgencyLogin ? "agency" : undefined;
-
-  // Pass userType to useLogin hook
-  const { isLoading, error, success, login, resetState } = useLogin({
-    userType,
-  });
+  // Don't specify userType - let the backend determine it
+  const { isLoading, error, success, login, resetState } = useLogin();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -32,106 +25,69 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     rememberMe: false,
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [userTypeError, setUserTypeError] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Redirect if already authenticated with correct user type
+  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated()) {
       const user = getUser();
-      const currentUserType = user?.userType?.toLowerCase();
+      console.log("👤 Already authenticated, redirecting...", user);
 
-      console.log("👤 Already authenticated, checking user type...", {
-        currentUserType,
-        isAgencyLogin,
-        expectedType: isAgencyLogin ? "agency" : "founder",
-      });
-
-      // If user type matches the login page, redirect to dashboard
-      if (isAgencyLogin && currentUserType === "agency") {
+      // Redirect based on user type
+      if (user?.userType?.toLowerCase() === "agency") {
         router.replace("/agency");
-      } else if (!isAgencyLogin && currentUserType !== "agency") {
-        if (user?.role === "admin") {
-          router.replace("/admin");
-        } else {
-          const username =
-            user?.username || user?.name.toLowerCase().replace(/\s+/g, ".");
-          router.replace(`/${username}`);
-        }
+      } else if (user?.role === "admin") {
+        router.replace("/admin");
+      } else {
+        const username =
+          user?.username || user?.name?.toLowerCase().replace(/\s+/g, ".");
+        router.replace(`/${username}`);
       }
-      // If user type doesn't match, let them log out and log in with correct account
     }
-  }, [isAgencyLogin, router]);
+  }, [router]);
 
-  // Handle successful login with user type validation
+  // Handle successful login - redirect based on user type from backend
   useEffect(() => {
     if (success) {
-      // Wait for localStorage to be updated
       const timer = setTimeout(() => {
         const user = getUser();
 
         if (!user) {
           console.error("❌ No user found after successful login");
-          setUserTypeError("Login failed. Please try again.");
-          return;
-        }
-
-        // CRITICAL: Validate user type matches the login page
-        const userUserType = user.userType?.toLowerCase() || "founder";
-        const expectedUserType = isAgencyLogin ? "agency" : "founder";
-
-        console.log("🔍 User type validation:", {
-          userUserType,
-          expectedUserType,
-          isAgencyLogin,
-          match: userUserType === expectedUserType,
-          fullUser: user,
-        });
-
-        // If user type doesn't match, show error and logout
-        if (userUserType !== expectedUserType) {
-          console.error("❌ Wrong user type for this login page");
-
-          const errorMessage = isAgencyLogin
-            ? "This account is not registered as an agency account."
-            : "This appears to be an agency account.";
-
-          setUserTypeError(errorMessage);
+          setLoginError("Login failed. Please try again.");
           clearUser();
           resetState();
           return;
         }
 
-        // Clear any previous user type errors
-        setUserTypeError(null);
-
-        // Verify localStorage has the data
-        const storedUser = localStorage.getItem("user");
-        console.log("💾 Stored user (raw):", storedUser);
-
-        console.log("🔄 Redirecting user:", {
+        console.log("✅ Login successful, user data:", {
           userId: user.id,
+          email: user.email,
           role: user.role,
           userType: user.userType,
-          isAdmin: isAdmin(),
-          isAgencyLogin,
         });
+
+        // Clear any errors
+        setLoginError(null);
 
         // Trigger onSubmit callback if provided
         if (onSubmit) {
           onSubmit(formData.email);
         }
 
-        // Redirect based on login type and role
-        if (isAgencyLogin) {
+        // Redirect based on user type returned from backend
+        const userType = user.userType?.toLowerCase();
+
+        if (userType === "agency") {
           console.log("✅ Redirecting to agency dashboard");
           window.location.href = "/agency";
         } else if (user.role === "admin") {
           console.log("✅ Redirecting to admin dashboard");
           window.location.href = "/admin";
         } else {
-          // Redirect regular user to their personal dashboard
+          // Regular founder/user
           const username =
-            user.username || user.name.toLowerCase().replace(/\s+/g, ".");
+            user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
           console.log("✅ Redirecting to user dashboard:", `/${username}`);
           window.location.href = `/${username}`;
         }
@@ -139,15 +95,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
 
       return () => clearTimeout(timer);
     }
-  }, [success, onSubmit, formData.email, isAgencyLogin, userType, resetState]);
+  }, [success, onSubmit, formData.email, resetState]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
 
     // Clear errors when user starts typing
-    if (error || userTypeError) {
+    if (error || loginError) {
       resetState();
-      setUserTypeError(null);
+      setLoginError(null);
     }
 
     if (type === "checkbox") {
@@ -161,26 +117,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     e.preventDefault();
 
     // Clear previous errors
-    setUserTypeError(null);
+    setLoginError(null);
     resetState();
 
     // Basic validation
     if (!formData.email.trim()) {
-      setUserTypeError("Please enter your email address");
+      setLoginError("Please enter your email address");
       return;
     }
 
     if (!formData.password) {
-      setUserTypeError("Please enter your password");
+      setLoginError("Please enter your password");
       return;
     }
 
-    console.log("🔐 Submitting login:", {
-      email: formData.email,
-      isAgencyLogin,
-      userType,
-      endpoint: userType ? `login/?user_type=${userType}` : "login/",
-    });
+    console.log("🔐 Submitting login for:", formData.email);
 
     await login({
       email: formData.email.trim(),
@@ -189,18 +140,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   };
 
   // Combine error messages
-  const displayError = userTypeError || error;
+  const displayError = loginError || error;
 
   return (
     <div className={styles.container}>
       <div className={styles.texts}>
-        <h2>Welcome back{isAgencyLogin ? " 🏢" : "👋"}</h2>
-        {isAgencyLogin && <p className={styles.subtitle}>Agency Portal</p>}
+        <h2>Welcome back 👋</h2>
+        <p className={styles.subtitle}>Sign in to your account</p>
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Success Message */}
-        {success && !userTypeError && (
+        {success && !loginError && (
           <div className={styles.successMessage}>
             ✓ Login successful! Redirecting...
           </div>
@@ -221,9 +172,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
             name="email"
             value={formData.email}
             onChange={handleInputChange}
-            placeholder={
-              isAgencyLogin ? "agency@example.com" : "Enter email address"
-            }
+            placeholder="Enter your email address"
             className={styles.input}
             required
             disabled={isLoading}
@@ -242,7 +191,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
               name="password"
               value={formData.password}
               onChange={handleInputChange}
-              placeholder="Enter password"
+              placeholder="Enter your password"
               className={styles.input}
               required
               disabled={isLoading}
@@ -262,10 +211,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
 
         <div className={styles.forgotPassword}>
           Forgot password?{" "}
-          <Link
-            href={isAgencyLogin ? "/agency/reset-password" : "/reset-password"}
-            className={styles.resetLink}
-          >
+          <Link href="/reset-password" className={styles.resetLink}>
             Reset it here
           </Link>
         </div>
@@ -288,7 +234,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
           </svg>
         </button>
 
-        {/* login buttons */}
+        {/* Social login */}
         <div className={styles.dividerAlt}>
           <span>OR</span>
         </div>
@@ -304,10 +250,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
         </div>
         <div className={styles.signupText}>
           Don&apos;t have an account?{" "}
-          <Link
-            href={isAgencyLogin ? "/sign-up/agency" : "/sign-up"}
-            className={styles.signupLink}
-          >
+          <Link href="/sign-up" className={styles.signupLink}>
             Sign up
           </Link>
         </div>

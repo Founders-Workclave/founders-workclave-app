@@ -253,8 +253,7 @@
   display: flex;
   gap: 32px;
   border-bottom: 2px solid #e5e7eb;
-  margin-bottom: 32px;
-  overflow-x: auto;
+  margin-bottom: 16px;
 }
 
 .tab {
@@ -281,13 +280,6 @@
   border-bottom: 4px solid #5865f2;
 }
 
-/* Content Grid */
-/* .contentGrid {
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 24px;
-} */
-
 .mainContent {
   display: flex;
   flex-direction: column;
@@ -299,6 +291,7 @@
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   padding: 24px;
+  margin-top: 16px;
 }
 
 .sectionHeader {
@@ -454,12 +447,12 @@
 .sidebar {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .card {
   background: white;
   border: 1px solid #e5e7eb;
+  margin-top: 16px;
   border-radius: 12px;
   font-family: "Inter", sans-serif;
   padding: 20px;

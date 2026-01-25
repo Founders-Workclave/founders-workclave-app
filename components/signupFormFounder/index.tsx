@@ -123,11 +123,6 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
 
   return (
     <div className={styles.container}>
-      <div className={styles.texts}>
-        <h2>Create Your Account 🚀</h2>
-        <p className={styles.subtitle}>Join our founder community</p>
-      </div>
-
       <form onSubmit={handleSubmit} className={styles.form}>
         {/* Success Message */}
         {success && (
@@ -303,13 +298,6 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </button>
-
-        <div className={styles.loginText}>
-          Already have an account?{" "}
-          <Link href="/login" className={styles.loginLink}>
-            Login here
-          </Link>
-        </div>
       </form>
     </div>
   );

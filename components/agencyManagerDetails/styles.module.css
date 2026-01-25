@@ -1,0 +1,315 @@
+.pageContainer {
+  padding: 24px;
+  font-family: "Inter", sans-serif;
+}
+
+.backButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: #111827;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 24px;
+  font-family: "Inter", sans-serif;
+  transition: color 0.2s;
+}
+
+.backButton:hover {
+  color: #6366f1;
+}
+
+.pageTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 24px 0;
+  font-family: "Inter", sans-serif;
+}
+
+.profileCard {
+  background: white;
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  padding: 32px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.profileLeft {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.avatarContainer {
+  position: relative;
+}
+
+.avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  background: #5865f2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+}
+
+.statusIndicator {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: #10b981;
+  border: 3px solid white;
+  border-radius: 50%;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.clientName {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+}
+
+.contactInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.email {
+  color: #8e98a8;
+  text-decoration: none;
+  font-family: "Inter", sans-serif;
+}
+
+.email:hover {
+  text-decoration: underline;
+}
+
+.separator {
+  color: #8e98a8;
+}
+
+.phone {
+  color: #8e98a8;
+  text-decoration: none;
+  font-family: "Inter", sans-serif;
+}
+
+.phone:hover {
+  text-decoration: underline;
+}
+
+.joinedDate {
+  font-size: 14px;
+  color: #a3a7ab;
+  font-family: "Inter", sans-serif;
+}
+
+.profileActions {
+  display: flex;
+  gap: 12px;
+}
+
+.messageButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  transition: all 0.2s;
+}
+
+.messageButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.assignButton {
+  padding: 10px 20px;
+  background: #5865f2;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  color: white;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  transition: background 0.2s;
+}
+
+.assignButton:hover {
+  background: #4f46e5;
+}
+
+.deactivateButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #ef4444;
+  cursor: pointer;
+  font-family: "Inter", sans-serif;
+  transition: all 0.2s;
+}
+
+.deactivateButton:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.projectsCard {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 48px 24px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+}
+
+.emptyIcon {
+  margin-bottom: 24px;
+}
+
+.emptyTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+  font-family: "Inter", sans-serif;
+}
+
+.emptyDescription {
+  font-size: 15px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  font-family: "Inter", sans-serif;
+}
+
+.assignProjectLink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: #6366f1;
+  cursor: pointer;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  transition: color 0.2s;
+}
+
+.assignProjectLink:hover {
+  color: #4f46e5;
+}
+
+.projectsList {
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .profileCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profileActions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .messageButton,
+  .assignButton,
+  .deactivateButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .pageContainer {
+    padding: 16px;
+  }
+
+  .profileCard {
+    padding: 20px;
+  }
+
+  .profileLeft {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 24px;
+  }
+
+  .clientName {
+    font-size: 18px;
+  }
+
+  .contactInfo {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .separator {
+    display: none;
+  }
+
+  .pageTitle {
+    font-size: 20px;
+  }
+}

@@ -1,32 +1,74 @@
 "use client";
-import React, { useState } from "react";
-import mockData from "../../../mocks/agencyProjects.json";
-import { ProjectListResponse } from "@/types/agencyProjects";
+import React, { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { Project } from "@/types/agencyProjectsNew";
 import styles from "./styles.module.css";
 import { ProjectRow } from "../projectRow";
 import { ProjectCard } from "../projectCard";
 import { Pagination } from "../pagination";
+import EmptyProjectIcon from "@/svgs/emptyProject";
+import Loader from "@/components/loader";
 
-const ProjectsPage: React.FC = () => {
+interface ProjectsPageProps {
+  initialProjects: Project[];
+  isLoading?: boolean;
+}
+
+const ProjectsPage: React.FC<ProjectsPageProps> = ({
+  initialProjects,
+  isLoading,
+}) => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(3);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 10;
 
-  const data = mockData as ProjectListResponse;
+  const filteredProjects = useMemo(() => {
+    return initialProjects.filter(
+      (project) =>
+        project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        project.client.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [initialProjects, searchQuery]);
 
-  const filteredProjects = data.projects.filter(
-    (project) =>
-      project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      project.client.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const totalPages = Math.ceil(filteredProjects.length / itemsPerPage);
+  const paginatedProjects = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredProjects.slice(start, start + itemsPerPage);
+  }, [filteredProjects, currentPage]);
 
   const handleSeeDetails = (projectId: string): void => {
-    console.log("Navigate to project:", projectId);
-    // Navigation logic here
+    router.push(`/agency/${projectId}`);
   };
 
   const handlePageChange = (page: number): void => {
     setCurrentPage(page);
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loadingContainer}>
+          <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
+          <p>Loading Dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (filteredProjects.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.emptyState}>
+          <EmptyProjectIcon />
+          <p>No projects yet</p>
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")}>Clear search</button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
@@ -59,7 +101,6 @@ const ProjectsPage: React.FC = () => {
         />
       </div>
 
-      {/* Desktop Table View */}
       <div className={styles.tableContainer}>
         <table className={styles.table}>
           <thead>
@@ -74,7 +115,7 @@ const ProjectsPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProjects.map((project) => (
+            {paginatedProjects.map((project) => (
               <ProjectRow
                 key={project.id}
                 project={project}
@@ -85,9 +126,8 @@ const ProjectsPage: React.FC = () => {
         </table>
       </div>
 
-      {/* Mobile Card View */}
       <div className={styles.cardsContainer}>
-        {filteredProjects.map((project) => (
+        {paginatedProjects.map((project) => (
           <ProjectCard
             key={project.id}
             project={project}
@@ -96,11 +136,13 @@ const ProjectsPage: React.FC = () => {
         ))}
       </div>
 
-      <Pagination
-        currentPage={currentPage}
-        totalPages={data.totalPages}
-        onPageChange={handlePageChange}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      )}
     </div>
   );
 };

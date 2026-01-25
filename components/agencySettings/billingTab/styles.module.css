@@ -1,0 +1,54 @@
+.subscriptionSection {
+  margin-bottom: 48px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.sectionSubtitle {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.noSubscription {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  border: 1px solid #e4e4e4;
+}
+
+.crownIcon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 16px;
+}
+
+.noSubTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.noSubText {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.plansSection {
+  border-top: 1px solid #e1e1e1;
+  padding-top: 40px;
+}
+
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}

@@ -15,7 +15,6 @@ interface SignupFormProps {
 const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
   const router = useRouter();
 
-  // Pass userType to the signup hook
   const { isLoading, error, success, signup, resetState } = useSignup({
     userType: "agency",
   });

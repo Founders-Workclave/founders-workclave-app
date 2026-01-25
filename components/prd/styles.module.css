@@ -1,5 +1,5 @@
 .container {
-  padding: 24px;
+  padding: 0px 24px;
 }
 
 .header {
@@ -88,13 +88,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 16px;
   justify-content: center;
   padding: 80px 24px;
   text-align: center;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 16px;
-  margin-top: 24px;
 }
 
 .emptyIconWrapper {
@@ -114,25 +114,27 @@
 
 .emptyTitle {
   font-size: 24px;
+  font-family: "inter", sans-serif;
   font-weight: 700;
   color: #111827;
-  margin: 0 0 8px 0;
+  margin: 8px 0 0 0;
 }
 
 .emptyText {
-  font-size: 16px;
-  color: #6b7280;
-  margin: 0 0 24px 0;
+  font-family: "inter", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #8e98a8;
 }
 
 .startButton {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 24px;
+  font-family: "inter", sans-serif;
   background: white;
-  color: #6366f1;
-  border: 1.5px solid #6366f1;
+  color: #5865f2;
+  border: none;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
@@ -141,10 +143,8 @@
 }
 
 .startButton:hover {
-  background: #6366f1;
-  color: white;
+  color: #5865f2;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .loadingContainer {

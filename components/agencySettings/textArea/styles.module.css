@@ -1,0 +1,37 @@
+.container {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  font-family: "Inter", sans-serif;
+  margin-bottom: 8px;
+}
+
+.textarea {
+  width: 100%;
+  font-family: "Inter", sans-serif;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  font-family: inherit;
+  resize: vertical;
+  transition: all 0.2s;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.textarea::placeholder {
+  color: #9ca3af;
+  font-family: "Inter", sans-serif;
+}
+
+.textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}

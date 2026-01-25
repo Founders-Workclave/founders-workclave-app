@@ -1,0 +1,57 @@
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 40px 24px;
+  border: 1px solid #e4e4e4;
+  display: flex;
+  flex-direction: column;
+}
+
+.price {
+  font-size: 34px;
+  font-weight: 700;
+  color: #020202;
+  text-align: center;
+  margin: 0 0 16px 0;
+}
+
+.planName {
+  font-size: 14px;
+  color: #020202;
+  text-align: center;
+  margin: 0 0 24px 0;
+}
+
+.features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  flex: 1;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+  font-family: "inter", sans-serif;
+  color: #8e98a8;
+}
+
+.chooseButton {
+  width: 100%;
+  padding: 12px 24px;
+  background-color: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chooseButton:hover {
+  background-color: #4f46e5;
+}

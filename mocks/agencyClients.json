@@ -1,0 +1,143 @@
+{
+  "clients": [
+    {
+      "id": "client_1",
+      "name": "John Doe",
+      "email": "jackson.graham@example.com",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "client_2",
+      "name": "John Doe",
+      "email": "jackson.graham@example.com",
+      "phoneNumber": null,
+      "joinedDate": "2025-04-23",
+      "status": "Inactive",
+      "avatar": null
+    },
+    {
+      "id": "client_3",
+      "name": "John Doe",
+      "email": "jackson.graham@example.com",
+      "phoneNumber": null,
+      "joinedDate": "2025-04-23",
+      "status": "Inactive",
+      "avatar": null
+    },
+    {
+      "id": "client_4",
+      "name": "John Doe",
+      "email": "jackson.graham@example.com",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Inactive",
+      "avatar": null
+    },
+    {
+      "id": "client_5",
+      "name": "John Doe",
+      "email": "jackson.graham@example.com",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "client_6",
+      "name": "John Doe",
+      "email": "jackson.graham@example.com",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "client_7",
+      "name": "Jane Smith",
+      "email": "jane.smith@example.com",
+      "phoneNumber": "08095747384",
+      "joinedDate": "2025-03-15",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "client_8",
+      "name": "Mike Johnson",
+      "email": "mike.johnson@example.com",
+      "phoneNumber": "08095747385",
+      "joinedDate": "2025-02-10",
+      "status": "Inactive",
+      "avatar": null
+    },
+    {
+      "id": "client_9",
+      "name": "Sarah Williams",
+      "email": "sarah.williams@example.com",
+      "phoneNumber": null,
+      "joinedDate": "2025-01-20",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "client_10",
+      "name": "David Brown",
+      "email": "david.brown@example.com",
+      "phoneNumber": "08095747386",
+      "joinedDate": "2024-12-05",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "client_11",
+      "name": "Emily Davis",
+      "email": "emily.davis@example.com",
+      "phoneNumber": "08095747387",
+      "joinedDate": "2024-11-18",
+      "status": "Inactive",
+      "avatar": null
+    },
+    {
+      "id": "client_12",
+      "name": "Robert Wilson",
+      "email": "robert.wilson@example.com",
+      "phoneNumber": null,
+      "joinedDate": "2024-10-25",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "client_13",
+      "name": "Lisa Anderson",
+      "email": "lisa.anderson@example.com",
+      "phoneNumber": "08095747388",
+      "joinedDate": "2024-09-30",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "client_14",
+      "name": "Thomas Martinez",
+      "email": "thomas.martinez@example.com",
+      "phoneNumber": "08095747389",
+      "joinedDate": "2024-08-12",
+      "status": "Inactive",
+      "avatar": null
+    },
+    {
+      "id": "client_15",
+      "name": "Jennifer Taylor",
+      "email": "jennifer.taylor@example.com",
+      "phoneNumber": null,
+      "joinedDate": "2024-07-08",
+      "status": "Active",
+      "avatar": null
+    }
+  ],
+  "totalPages": 30,
+  "currentPage": 3,
+  "totalClients": 450,
+  "perPage": 15
+}

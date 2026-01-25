@@ -6,7 +6,11 @@ interface LoginPayload {
   password: string;
 }
 
-export const useLogin = () => {
+interface UseLoginOptions {
+  userType?: string; // Optional - if not provided, backend determines user type
+}
+
+export const useLogin = (options?: UseLoginOptions) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -17,19 +21,27 @@ export const useLogin = () => {
     setSuccess(false);
 
     try {
-      const response = await authApi.login(payload);
+      console.log("🔐 useLogin: Attempting login", {
+        email: payload.email,
+        userType: options?.userType || "auto-detect",
+      });
+
+      // Call API - it will auto-detect user type if not specified
+      const response = await authApi.login(payload, options?.userType);
 
       if (response.success) {
+        console.log("✅ useLogin: Login successful");
         setSuccess(true);
         setError(null);
         return response;
       } else {
+        console.error("❌ useLogin: Login failed:", response.message);
         setError(response.message || "Login failed");
         setSuccess(false);
         return response;
       }
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("❌ useLogin: Exception occurred:", err);
       const errorMessage =
         err instanceof Error
           ? err.message

@@ -1,44 +1,57 @@
 import { useState } from "react";
 import { authApi } from "@/lib/api/auth";
 
-interface LoginPayload {
+interface RegisterPayload {
+  firstName: string;
+  lastName: string;
   email: string;
+  phoneNumber: string;
+  countryCode: string;
   password: string;
-}
-
-interface UseLoginOptions {
   userType?: string;
 }
 
-export const useLogin = (options?: UseLoginOptions) => {
+interface UseRegisterOptions {
+  userType?: string;
+}
+
+export const useRegister = (options?: UseRegisterOptions) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const login = async (payload: LoginPayload) => {
+  const register = async (payload: Omit<RegisterPayload, "userType">) => {
     setIsLoading(true);
     setError(null);
     setSuccess(false);
 
     try {
-      console.log("🔐 useLogin: Calling API with userType:", options?.userType);
+      console.log(
+        "📝 useRegister: Calling API with userType:",
+        options?.userType
+      );
 
-      // CRITICAL: Pass userType to the API call
-      const response = await authApi.login(payload, options?.userType);
+      // Add userType to the payload
+      const fullPayload: RegisterPayload = {
+        ...payload,
+        userType: options?.userType,
+      };
+
+      const response = await authApi.register(fullPayload);
 
       if (response.success) {
-        console.log("✅ useLogin: Login successful");
+        console.log("✅ useRegister: Registration successful");
         setSuccess(true);
         setError(null);
         return response;
       } else {
-        console.error("❌ useLogin: Login failed:", response.message);
-        setError(response.message || "Login failed");
+        console.error("❌ useRegister: Registration failed:", response.message);
+        setError(response.message || "Registration failed");
         setSuccess(false);
         return response;
       }
     } catch (err) {
-      console.error("❌ useLogin: Exception occurred:", err);
+      console.error("❌ useRegister: Exception occurred:", err);
       const errorMessage =
         err instanceof Error
           ? err.message
@@ -66,15 +79,16 @@ export const useLogin = (options?: UseLoginOptions) => {
     isLoading,
     error,
     success,
-    login,
+    register,
     resetState,
   };
 };
 
-export const useAgencyLogin = () => {
-  return useLogin({ userType: "agency" });
+// Specialized hooks for different user types
+export const useAgencyRegister = () => {
+  return useRegister({ userType: "agency" });
 };
 
-export const useFounderLogin = () => {
-  return useLogin({ userType: "founder" });
+export const useFounderRegister = () => {
+  return useRegister({ userType: "founder" });
 };

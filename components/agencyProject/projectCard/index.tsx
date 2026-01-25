@@ -1,5 +1,5 @@
 import React from "react";
-import { Project } from "@/types/agencyProjects";
+import { Project } from "@/types/agencyProjectsNew";
 import styles from "./styles.module.css";
 
 interface ProjectCardProps {
@@ -26,6 +26,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       default:
         return styles.statusPending;
     }
+  };
+
+  const calculateProgress = () => {
+    if (!project.progress || project.progress.total === 0) return 0;
+    return (project.progress.current / project.progress.total) * 100;
   };
 
   return (
@@ -63,16 +68,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         <span className={styles.label}>Progress</span>
         <div className={styles.progressContainer}>
           <span className={styles.value}>
-            {project.progress.current}/{project.progress.total} Milestones
+            {project.progress?.current || 0}/{project.progress?.total || 0}{" "}
+            Milestones
           </span>
           <div className={styles.progressBar}>
             <div
               className={styles.progressFill}
-              style={{
-                width: `${
-                  (project.progress.current / project.progress.total) * 100
-                }%`,
-              }}
+              style={{ width: `${calculateProgress()}%` }}
             />
           </div>
         </div>

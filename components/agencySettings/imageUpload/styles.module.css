@@ -1,0 +1,73 @@
+.container {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.avatarWrapper {
+  position: relative;
+  width: fit-content;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  font-family: "Inter", sans-serif;
+  background-color: #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initials {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  font-family: "Inter", sans-serif;
+}
+
+.uploadButton {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #a5b4fc;
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.uploadButton:hover {
+  background-color: #818cf8;
+}
+
+.uploadButton svg {
+  color: white;
+  width: 16px;
+  height: 16px;
+}
+
+.hiddenInput {
+  display: none;
+}

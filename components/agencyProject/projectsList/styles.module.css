@@ -81,6 +81,25 @@
   display: none;
 }
 
+.loadingContainer {
+  padding: 60px 0px;
+  gap: 20px;
+  font-family: "inter", sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-items: center;
+}
+
+.emptyState {
+  padding: 60px 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
 @media (max-width: 767px) {
   .container {
     padding: 16px;

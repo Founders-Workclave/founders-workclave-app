@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import projectDataRaw from "../../mocks/project.json";
 import styles from "./styles.module.css";
 import ProjectComponet from "../projectComp";
+import EmptyProjectIcon from "@/svgs/emptyProject";
 
 interface Project {
   id: number;
@@ -86,17 +87,7 @@ const MyProjects = () => {
         <ProjectComponet />
       ) : (
         <div className={styles.emptyState}>
-          <svg
-            width="64"
-            height="64"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.35-4.35" />
-          </svg>
+          <EmptyProjectIcon />
           <p className={styles.emptyText}>
             {searchQuery
               ? `No projects found matching "${searchQuery}"`

@@ -1,0 +1,98 @@
+.container {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 400;
+  color: #090202;
+  margin-bottom: 8px;
+  font-family: "inter", sans-serif;
+}
+
+.inputWrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.countrySelector {
+  display: flex;
+  align-items: center;
+  font-family: "inter", sans-serif;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.countrySelector:hover {
+  background-color: #f9fafb;
+}
+
+.flag {
+  font-size: 18px;
+}
+
+.code {
+  font-size: 14px;
+  font-weight: 500;
+  font-family: "inter", sans-serif;
+  color: #111827;
+}
+
+.input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  font-family: "inter", sans-serif;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* components/Settings/SelectInput.module.css */
+.container {
+  margin-bottom: 20px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #111827;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+.select:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}

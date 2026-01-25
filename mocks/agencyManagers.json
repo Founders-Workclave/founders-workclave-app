@@ -1,0 +1,143 @@
+{
+  "productManagers": [
+    {
+      "id": "pm_1",
+      "name": "John Doe",
+      "email": "John Doe",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "pm_2",
+      "name": "John Doe",
+      "email": "John Doe",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Pending",
+      "avatar": null
+    },
+    {
+      "id": "pm_3",
+      "name": "John Doe",
+      "email": "John Doe",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "pm_4",
+      "name": "John Doe",
+      "email": "John Doe",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Pending",
+      "avatar": null
+    },
+    {
+      "id": "pm_5",
+      "name": "John Doe",
+      "email": "John Doe",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Pending",
+      "avatar": null
+    },
+    {
+      "id": "pm_6",
+      "name": "John Doe",
+      "email": "John Doe",
+      "phoneNumber": "08095747383",
+      "joinedDate": "2025-04-23",
+      "status": "Pending",
+      "avatar": null
+    },
+    {
+      "id": "pm_7",
+      "name": "Jane Smith",
+      "email": "Jane Smith",
+      "phoneNumber": "08095747384",
+      "joinedDate": "2025-03-15",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "pm_8",
+      "name": "Mike Johnson",
+      "email": "Mike Johnson",
+      "phoneNumber": "08095747385",
+      "joinedDate": "2025-02-10",
+      "status": "Pending",
+      "avatar": null
+    },
+    {
+      "id": "pm_9",
+      "name": "Sarah Williams",
+      "email": "Sarah Williams",
+      "phoneNumber": "08095747386",
+      "joinedDate": "2025-01-20",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "pm_10",
+      "name": "David Brown",
+      "email": "David Brown",
+      "phoneNumber": "08095747387",
+      "joinedDate": "2024-12-05",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "pm_11",
+      "name": "Emily Davis",
+      "email": "Emily Davis",
+      "phoneNumber": "08095747388",
+      "joinedDate": "2024-11-18",
+      "status": "Pending",
+      "avatar": null
+    },
+    {
+      "id": "pm_12",
+      "name": "Robert Wilson",
+      "email": "Robert Wilson",
+      "phoneNumber": "08095747389",
+      "joinedDate": "2024-10-25",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "pm_13",
+      "name": "Lisa Anderson",
+      "email": "Lisa Anderson",
+      "phoneNumber": "08095747390",
+      "joinedDate": "2024-09-30",
+      "status": "Active",
+      "avatar": null
+    },
+    {
+      "id": "pm_14",
+      "name": "Thomas Martinez",
+      "email": "Thomas Martinez",
+      "phoneNumber": "08095747391",
+      "joinedDate": "2024-08-12",
+      "status": "Pending",
+      "avatar": null
+    },
+    {
+      "id": "pm_15",
+      "name": "Jennifer Taylor",
+      "email": "Jennifer Taylor",
+      "phoneNumber": "08095747392",
+      "joinedDate": "2024-07-08",
+      "status": "Active",
+      "avatar": null
+    }
+  ],
+  "totalPages": 30,
+  "currentPage": 3,
+  "totalPMs": 450,
+  "perPage": 15
+}
