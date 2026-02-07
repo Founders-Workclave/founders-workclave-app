@@ -1,5 +1,6 @@
 import React from "react";
 import { Project } from "@/types/agencyProjectsNew";
+import { formatCurrency, formatStatus } from "@/utils/formatters";
 import styles from "./styles.module.css";
 
 interface ProjectCardProps {
@@ -11,18 +12,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   onSeeDetails,
 }) => {
-  const formatCurrency = (amount: number): string => {
-    return `$${amount.toLocaleString()}`;
-  };
-
   const getStatusClass = (status: string): string => {
-    switch (status) {
+    const formattedStatus = formatStatus(status);
+    switch (formattedStatus) {
       case "Completed":
         return styles.statusCompleted;
-      case "In-Progress":
+      case "In Progress":
+      case "Ongoing":
         return styles.statusInProgress;
-      case "On-Hold":
+      case "On Hold":
+      case "Paused":
         return styles.statusOnHold;
+      case "Terminated":
+        return styles.statusTerminated;
       default:
         return styles.statusPending;
     }
@@ -85,7 +87,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         <span
           className={`${styles.statusBadge} ${getStatusClass(project.status)}`}
         >
-          {project.status}
+          {formatStatus(project.status)}
         </span>
       </div>
 

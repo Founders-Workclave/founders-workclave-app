@@ -194,23 +194,14 @@
   border-color: #fecaca;
 }
 
-.projectsCard {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 48px 24px;
-  min-height: 400px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .emptyState {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 400px;
+  border: 1px solid #e4e4e4;
+  padding: 92px 24px;
+  border-radius: 12px;
 }
 
 .emptyIcon {
@@ -252,7 +243,122 @@
 }
 
 .projectsList {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.projectItem {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0;
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+}
+
+.projectItem:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.projectHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+}
+
+.projectContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.projectTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.projectName {
+  font-size: 16px;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+  flex: 1;
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 400;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.statusCompleted {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusOngoing,
+.statusInProgress {
+  background: #ffefcb;
+  color: #7b580c;
+}
+
+.statusDefault {
+  background: #e1ffed;
+  color: #00b049;
+}
+
+.projectMilestone {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.progressSection {
+  margin-top: 16px;
+}
+
+.progressLabel {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.progressBarContainer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progressBar {
+  flex: 1;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #5865f2;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progressPercentage {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+  min-width: 40px;
+  text-align: right;
 }
 
 @media (max-width: 1024px) {

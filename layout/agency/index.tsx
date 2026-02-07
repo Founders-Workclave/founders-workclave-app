@@ -10,6 +10,7 @@ import {
   getCurrentUser,
   isAuthenticated,
   getUserInitials,
+  getUserProfileImage,
 } from "@/lib/api/auth";
 import Loader from "@/components/loader";
 
@@ -32,8 +33,30 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(getCurrentUser());
+  const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  // Protection: Check authentication and user type on mount and route changes
+  useEffect(() => {
+    const refreshProfile = () => {
+      const currentUser = getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        setProfileImage(getUserProfileImage());
+      }
+    };
+
+    const handleProfileUpdate = () => {
+      console.log("📸 Profile updated, refreshing display...");
+      refreshProfile();
+    };
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    window.addEventListener("storage", refreshProfile);
+
+    return () => {
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+      window.removeEventListener("storage", refreshProfile);
+    };
+  }, []);
   useEffect(() => {
     const checkAuth = () => {
       // First check if user is authenticated
@@ -82,6 +105,7 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
 
       // User is authenticated and is an agency user
       setUser(currentUser);
+      setProfileImage(getUserProfileImage());
       setIsLoading(false);
 
       console.log("✅ Agency layout: User authenticated and validated", {
@@ -219,9 +243,21 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
           <div className={styles.otherNavItems}>
             <HeaderNotification />
             <div className={styles.profileSection}>
-              <div className={styles.profilePlaceholder}>
-                {getUserInitials()}
-              </div>
+              {profileImage ? (
+                <div className={styles.profileImageWrapper}>
+                  <Image
+                    src={profileImage}
+                    width={40}
+                    height={40}
+                    alt={user?.name || "Profile"}
+                    className={styles.profileImage}
+                  />
+                </div>
+              ) : (
+                <div className={styles.profilePlaceholder}>
+                  {getUserInitials()}
+                </div>
+              )}
               <p>{user?.name || "Agency User"}</p>
             </div>
           </div>

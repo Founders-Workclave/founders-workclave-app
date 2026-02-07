@@ -1,10 +1,10 @@
-import AllPayments from "@/components/allPayments";
+import AllAgencyPayments from "@/components/allAgencyPayments";
 import AgencyLayout from "@/layout/agency";
 
 const AgencyPaymentsPage = () => {
   return (
     <AgencyLayout pageTitle="Payments" pageText="">
-      <AllPayments />
+      <AllAgencyPayments />
     </AgencyLayout>
   );
 };

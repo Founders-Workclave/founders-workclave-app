@@ -1,7 +1,7 @@
 "use client";
-
 import { useState } from "react";
-import AddClientModal, { ClientFormData } from ".";
+import AddClientModal from ".";
+import toast from "react-hot-toast";
 
 type CreateButtonProps = {
   buttonName?: string;
@@ -10,33 +10,13 @@ type CreateButtonProps = {
 export default function CreateButton({ buttonName }: CreateButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleCreateClient = async (data: ClientFormData) => {
-    try {
-      const response = await fetch("/api/clients", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: `${data.countryCode}${data.phoneNumber}`,
-          password: data.password,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create client");
-      }
-
-      const result = await response.json();
-      console.log("Client created successfully:", result);
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("Error creating client:", error);
-      throw error;
-    }
+  const handleSuccess = () => {
+    console.log("Client registered successfully!");
+    setIsModalOpen(false);
+    window.location.reload();
+    toast.success("Client registered successfully!");
+    toast.error("Error registering client!", { id: "registerClient" });
+    toast.loading("Registering client...", { id: "registerClient" });
   };
 
   return (
@@ -60,7 +40,7 @@ export default function CreateButton({ buttonName }: CreateButtonProps) {
       <AddClientModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateClient}
+        onSuccess={handleSuccess}
       />
     </main>
   );

@@ -1,0 +1,68 @@
+.container {
+  margin-bottom: 32px;
+  padding: 24px 24px 0px 24px;
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  gap: 12px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  transition: all 0.2s;
+}
+
+.statCard:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.statContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statLabel {
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+}
+
+.statValue {
+  color: #111827;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+}
+
+.statSubtext {
+  color: #9ca3af;
+  font-size: 12px;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+}
+
+@media (max-width: 768px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,5 +1,3 @@
-// src/services/managerService.ts
-
 import {
   ManagersListResponse,
   PMDetailResponse,
@@ -14,6 +12,21 @@ export class ApiError extends Error {
     super(message);
     this.name = "ApiError";
   }
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  description: string;
+  progressPercentage: number;
+  status: string;
+  latest_milestone: string;
+}
+
+export interface ManagerProjectsResponse {
+  message: string;
+  manager: Manager;
+  projects: Project[];
 }
 
 export const managerService = {
@@ -32,11 +45,14 @@ export const managerService = {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(`${API_BASE_URL}/agency/managers-list/`, {
-        method: "GET",
-        headers,
-        cache: "no-store", // Next.js 13+ fresh data
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/agency/managers-dashboard/`,
+        {
+          method: "GET",
+          headers,
+          cache: "no-store",
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
@@ -96,9 +112,57 @@ export const managerService = {
 
       const data: PMDetailResponse = await response.json();
 
-      // Find the manager with the matching ID
       const manager = data.managers.find((m) => m.id === id);
       return manager || null;
+    } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
+
+      if (error instanceof Error) {
+        throw new ApiError(`Network error: ${error.message}`);
+      }
+
+      throw new ApiError("An unknown error occurred");
+    }
+  },
+
+  /**
+   * Fetches projects for a specific manager
+   */
+  async getManagerProjects(
+    managerId: string
+  ): Promise<ManagerProjectsResponse> {
+    try {
+      const token = getAuthToken();
+
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/agency/manager/${managerId}/projects/`,
+        {
+          method: "GET",
+          headers,
+          cache: "no-store",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new ApiError(
+          "Failed to fetch manager projects",
+          response.status,
+          errorData
+        );
+      }
+
+      return await response.json();
     } catch (error) {
       if (error instanceof ApiError) {
         throw error;

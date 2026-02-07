@@ -1,4 +1,3 @@
-// lib/api/agencyService/clientService.ts
 import {
   ClientsListResponse,
   ClientProjectsResponse,

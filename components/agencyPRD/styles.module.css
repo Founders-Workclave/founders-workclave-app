@@ -219,6 +219,15 @@
   border-top: 1px solid #f3f4f6;
 }
 
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+  padding: 96px 24px;
+}
+
 @media (max-width: 767px) {
   .tabsContainer {
     gap: 24px;

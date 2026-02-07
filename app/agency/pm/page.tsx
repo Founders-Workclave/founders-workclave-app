@@ -1,7 +1,7 @@
 import AgencyLayout from "@/layout/agency";
 import styles from "./styles.module.css";
 import AllProductManagersPage from "@/components/agencyManager";
-import CreateButton from "@/components/addClientModal/openButton";
+import CreateButton from "@/components/addPMModal/openButton";
 
 const AdminPM = () => {
   return (

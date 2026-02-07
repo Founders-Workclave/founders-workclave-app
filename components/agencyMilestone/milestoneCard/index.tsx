@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import styles from "./styles.module.css";
 import type { Milestone } from "@/types/agencyMilestone";
+import { formatStatus } from "@/utils/formatters";
 import Completed from "@/svgs/completed";
 import InProgress from "@/svgs/inProgress";
 import Pending from "@/svgs/pending";
@@ -29,30 +30,36 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const status = milestone.status || "pending";
+  const normalizedStatus = status.toLowerCase();
 
-  const getStatusBadge = () => {
-    switch (status) {
+  const getStatusClass = (): string => {
+    switch (normalizedStatus) {
       case "completed":
-        return { text: "Completed", class: styles.statusCompleted };
+        return styles.statusCompleted;
       case "in-progress":
-        return { text: "In-Progress", class: styles.statusInProgress };
+      case "in_progress":
+      case "ongoing":
+        return styles.statusInProgress;
       case "pending":
-        return { text: "Pending", class: styles.statusPending };
+        return styles.statusPending;
+      default:
+        return styles.statusDefault;
     }
   };
 
   const getStatusIcon = () => {
-    switch (status) {
+    switch (normalizedStatus) {
       case "completed":
         return <Completed />;
       case "in-progress":
+      case "in_progress":
+      case "ongoing":
         return <InProgress />;
       case "pending":
+      default:
         return <Pending />;
     }
   };
-
-  const statusBadge = getStatusBadge();
 
   const parsePrice = (priceStr: string): number => {
     return parseFloat(priceStr.replace(/,/g, ""));
@@ -99,8 +106,8 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
             <span className={styles.milestoneNumber}>
               Milestone {milestone.number || milestone.order}
             </span>
-            <span className={`${styles.statusBadge} ${statusBadge.class}`}>
-              {statusBadge.text}
+            <span className={`${styles.statusBadge} ${getStatusClass()}`}>
+              {formatStatus(status)}
             </span>
           </div>
         </div>
@@ -129,22 +136,23 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
           )}
         </div>
 
-        {status === "in-progress" && milestone.progress !== undefined && (
-          <div className={styles.progressSection}>
-            <div className={styles.progressHeader}>
-              <span className={styles.progressLabel}>Progress</span>
-              <span className={styles.progressPercentage}>
-                {milestone.progress}%
-              </span>
+        {normalizedStatus === "in-progress" &&
+          milestone.progress !== undefined && (
+            <div className={styles.progressSection}>
+              <div className={styles.progressHeader}>
+                <span className={styles.progressLabel}>Progress</span>
+                <span className={styles.progressPercentage}>
+                  {milestone.progress}%
+                </span>
+              </div>
+              <div className={styles.progressBar}>
+                <div
+                  className={styles.progressFill}
+                  style={{ width: `${milestone.progress}%` }}
+                />
+              </div>
             </div>
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${milestone.progress}%` }}
-              />
-            </div>
-          </div>
-        )}
+          )}
 
         {milestone.note && (
           <div className={styles.note}>
@@ -154,7 +162,8 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
 
         {/* Admin Action Buttons */}
         <div className={styles.actions}>
-          {status === "completed" && milestone.deliverables.length > 0 && (
+          {/* View deliverables — shows on all statuses */}
+          {milestone.deliverables.length > 0 && (
             <button
               onClick={() => setShowDeliverables(!showDeliverables)}
               className={styles.viewDeliverablesButton}
@@ -176,7 +185,7 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
             </button>
           )}
 
-          {status === "in-progress" && (
+          {normalizedStatus === "in-progress" && (
             <>
               <button
                 onClick={handleEditClick}
@@ -194,7 +203,7 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
             </>
           )}
 
-          {status === "pending" && (
+          {normalizedStatus === "pending" && (
             <button
               onClick={handleEditClick}
               className={styles.editMilestoneButton}

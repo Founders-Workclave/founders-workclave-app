@@ -9,7 +9,6 @@ export default function CreateProjectButton() {
 
   const handleCreateProject = (data: ProjectFormData) => {
     console.log("Project Data:", data);
-    alert("Project created successfully!");
   };
 
   return (

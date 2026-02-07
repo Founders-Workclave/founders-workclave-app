@@ -18,6 +18,14 @@ import { useProjectDetails } from "@/hooks/useProjectDetails";
 import AllLoading from "@/layout/Loader";
 import AgencyDocuments from "@/components/agencyDocuments";
 import AgencyPayments from "@/components/agencyPayments";
+import CreateProjectModal from "@/components/createProject";
+import { transformApiProjectToFormData } from "@/utils/createProjectTransformers";
+import { ProjectFormData } from "@/types/createPrjects";
+import { agencyService } from "@/lib/api/agencyService/agencyService";
+import { agencyPauseService } from "@/lib/api/agencyService/pauseService";
+import { agencyTerminateService } from "@/lib/api/agencyService/terminateService";
+import { formatStatus, formatCurrency } from "@/utils/formatters";
+import toast from "react-hot-toast";
 
 const ProjectDetailsPage: React.FC = () => {
   const params = useParams();
@@ -27,9 +35,43 @@ const ProjectDetailsPage: React.FC = () => {
   const { project, isLoading, error, refetch } = useProjectDetails(projectId);
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [showActionsMenu, setShowActionsMenu] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [editFormData, setEditFormData] = useState<ProjectFormData | null>(
+    null
+  );
+  const [isLoadingEditData, setIsLoadingEditData] = useState<boolean>(false);
+  const [isPausingProject, setIsPausingProject] = useState<boolean>(false);
+  const [isTerminatingProject, setIsTerminatingProject] =
+    useState<boolean>(false);
+  const [showTerminateConfirm, setShowTerminateConfirm] =
+    useState<boolean>(false);
 
-  const formatCurrency = (amount: number): string => {
-    return `$${amount.toLocaleString()}`;
+  const getStatusClass = (status: string | undefined): string => {
+    if (!status) return styles.statusDefault;
+
+    const normalizedStatus = status.toLowerCase();
+
+    switch (normalizedStatus) {
+      case "completed":
+        return styles.statusCompleted;
+      case "ongoing":
+      case "in-progress":
+      case "in_progress":
+      case "active":
+        return styles.statusInProgress;
+      case "paused":
+      case "on-hold":
+      case "on_hold":
+        return styles.statusPaused;
+      case "terminated":
+      case "cancelled":
+      case "canceled":
+        return styles.statusTerminated;
+      case "pending":
+        return styles.statusPending;
+      default:
+        return styles.statusDefault;
+    }
   };
 
   const getMilestoneIcon = (status: string): JSX.Element => {
@@ -42,6 +84,111 @@ const ProjectDetailsPage: React.FC = () => {
     if (status === "completed") return styles.milestoneCompleted;
     if (status === "in-progress") return styles.milestoneInProgress;
     return styles.milestonePending;
+  };
+
+  const handleEditProject = async () => {
+    try {
+      setIsLoadingEditData(true);
+
+      // Fetch complete milestones with deliverables
+      const milestonesData = await agencyService.getProjectMilestones(
+        projectId
+      );
+
+      // Combine current project data with full milestone data
+      const combinedData = {
+        ...project,
+        milestones: milestonesData.milestones || [],
+        productManager: project?.productManager ?? undefined,
+      };
+
+      // Transform to form data
+      const formData = transformApiProjectToFormData(combinedData);
+
+      setEditFormData(formData);
+      setIsEditModalOpen(true);
+    } catch (err) {
+      console.error("Error loading project for editing:", err);
+      toast.error("Failed to load project data for editing");
+    } finally {
+      setIsLoadingEditData(false);
+    }
+  };
+
+  const handlePauseProject = async () => {
+    try {
+      setIsPausingProject(true);
+      setShowActionsMenu(false);
+
+      // Check if project is already paused
+      const isPaused = project?.status?.toLowerCase() === "paused";
+
+      if (isPaused) {
+        toast.loading("Resuming");
+        await agencyPauseService.resumeProject(projectId);
+        toast.success("Project resumed!");
+      } else {
+        toast.loading("Pausing...");
+        await agencyPauseService.pauseProject(projectId);
+        toast.success("Project paused!");
+      }
+
+      // Attempt one refetch (in case backend updates quickly)
+      setTimeout(() => {
+        refetch();
+      }, 1000);
+    } catch (err) {
+      console.error("Error toggling project pause state:", err);
+      if (err instanceof Error) {
+        toast.error(err.message);
+      } else {
+        toast.error("Failed to update project status");
+      }
+    } finally {
+      setIsPausingProject(false);
+    }
+  };
+
+  const handleTerminateProject = async () => {
+    try {
+      setIsTerminatingProject(true);
+      setShowActionsMenu(false);
+      setShowTerminateConfirm(false);
+
+      const loadingToast = toast.loading("Terminating project...");
+
+      await agencyTerminateService.terminateProject(projectId);
+
+      toast.dismiss(loadingToast);
+      toast.success("Project terminated successfully!");
+
+      // Redirect to projects list after a short delay
+      setTimeout(() => {
+        router.push("/agency"); // Adjust this path to your projects list route
+      }, 1500);
+    } catch (err) {
+      console.error("Error terminating project:", err);
+
+      let errorMessage = "Failed to terminate project";
+
+      if (err instanceof Error) {
+        errorMessage = err.message;
+
+        // Check if it's a network error
+        if (err.message.includes("Failed to fetch")) {
+          errorMessage =
+            "Network error: Unable to reach the server. Please check your connection and try again.";
+        }
+      }
+
+      toast.error(errorMessage);
+      setIsTerminatingProject(false);
+    }
+  };
+
+  const handleEditSubmit = (data: ProjectFormData) => {
+    console.log("Project updated:", data);
+    refetch();
   };
 
   if (isLoading) {
@@ -69,6 +216,8 @@ const ProjectDetailsPage: React.FC = () => {
     );
   }
 
+  const isPaused = project?.status?.toLowerCase() === "paused";
+
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -79,7 +228,13 @@ const ProjectDetailsPage: React.FC = () => {
         <div className={styles.titleRow}>
           <div className={styles.titleContainer}>
             <h1 className={styles.title}>{project.projectName}</h1>
-            <span className={styles.statusBadge}>{project.status}</span>
+            <span
+              className={`${styles.statusBadge} ${getStatusClass(
+                project.status
+              )}`}
+            >
+              {formatStatus(project.status)}
+            </span>
           </div>
 
           <div className={styles.actionButtons}>
@@ -88,9 +243,13 @@ const ProjectDetailsPage: React.FC = () => {
               Message client
             </button>
 
-            <button className={styles.editButton}>
+            <button
+              className={styles.editButton}
+              onClick={handleEditProject}
+              disabled={isLoadingEditData}
+            >
               <EditProject />
-              Edit project
+              {isLoadingEditData ? "Loading..." : "Edit project"}
             </button>
 
             <button
@@ -106,12 +265,22 @@ const ProjectDetailsPage: React.FC = () => {
                   <span>+</span>
                   Add new service
                 </button>
-                <button className={styles.menuItem}>
+                <button
+                  className={styles.menuItem}
+                  onClick={handlePauseProject}
+                  disabled={isPausingProject}
+                >
                   <Pause />
-                  Pause project
+                  {isPausingProject
+                    ? "Processing..."
+                    : isPaused
+                    ? "Resume project"
+                    : "Pause project"}
                 </button>
                 <button
                   className={`${styles.menuItem} ${styles.menuItemDanger}`}
+                  onClick={() => setShowTerminateConfirm(true)}
+                  disabled={isTerminatingProject}
                 >
                   <DeleteUser />
                   Terminate project
@@ -338,9 +507,59 @@ const ProjectDetailsPage: React.FC = () => {
           )}
 
           {/* Payment Tab Content */}
-          {activeTab === "payment" && <AgencyPayments />}
+          {activeTab === "payment" && <AgencyPayments projectId={projectId} />}
         </div>
       </div>
+
+      {/* Edit Project Modal */}
+      {editFormData && (
+        <CreateProjectModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditFormData(null);
+          }}
+          onSubmit={handleEditSubmit}
+          mode="edit"
+          projectId={projectId}
+          initialData={editFormData}
+        />
+      )}
+
+      {/* Terminate Confirmation Modal */}
+      {showTerminateConfirm && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setShowTerminateConfirm(false)}
+        >
+          <div
+            className={styles.confirmModal}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className={styles.confirmTitle}>Terminate Project?</h3>
+            <p className={styles.confirmMessage}>
+              Are you sure you want to terminate this project? This action
+              cannot be undone.
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                className={styles.cancelButton}
+                onClick={() => setShowTerminateConfirm(false)}
+                disabled={isTerminatingProject}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.confirmButton}
+                onClick={handleTerminateProject}
+                disabled={isTerminatingProject}
+              >
+                {isTerminatingProject ? "Terminating..." : "Yes, Terminate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

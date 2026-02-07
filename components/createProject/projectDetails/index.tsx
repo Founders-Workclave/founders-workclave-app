@@ -23,16 +23,46 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({
   const handleFeatureChange = (index: number, value: string) => {
     const newFeatures = [...formData.coreFeatures];
     newFeatures[index] = value;
-    onUpdate({ coreFeatures: newFeatures });
+
+    // CRITICAL: Keep featureIds in sync with coreFeatures
+    if (formData.featureIds && formData.featureIds[index]) {
+      const newFeatureIds = [...formData.featureIds];
+      newFeatureIds[index] = {
+        ...newFeatureIds[index],
+        name: value, // Update the name while preserving the database ID
+      };
+      onUpdate({ coreFeatures: newFeatures, featureIds: newFeatureIds });
+    } else {
+      // No featureIds array (create mode) - just update features
+      onUpdate({ coreFeatures: newFeatures });
+    }
   };
 
   const handleAddFeature = () => {
-    onUpdate({ coreFeatures: [...formData.coreFeatures, ""] });
+    const newFeatures = [...formData.coreFeatures, ""];
+
+    // CRITICAL: Add a corresponding featureId entry
+    if (formData.featureIds) {
+      const newFeatureIds = [
+        ...formData.featureIds,
+        { id: `temp-${Date.now()}`, name: "" }, // Temporary ID for new features
+      ];
+      onUpdate({ coreFeatures: newFeatures, featureIds: newFeatureIds });
+    } else {
+      onUpdate({ coreFeatures: newFeatures });
+    }
   };
 
   const handleRemoveFeature = (index: number) => {
     const newFeatures = formData.coreFeatures.filter((_, i) => i !== index);
-    onUpdate({ coreFeatures: newFeatures });
+
+    // CRITICAL: Remove the corresponding featureId entry
+    if (formData.featureIds) {
+      const newFeatureIds = formData.featureIds.filter((_, i) => i !== index);
+      onUpdate({ coreFeatures: newFeatures, featureIds: newFeatureIds });
+    } else {
+      onUpdate({ coreFeatures: newFeatures });
+    }
   };
 
   const handleDrag = (e: React.DragEvent) => {

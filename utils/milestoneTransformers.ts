@@ -13,15 +13,14 @@ interface ApiMilestone {
   completedDate?: string;
   progress?: number;
   note?: string;
+  status?: string; // Add status from API if it exists
 }
 
 /**
  * Determines milestone status based on completion state and progress
+ * Only used as fallback if API doesn't provide status
  */
-const getMilestoneStatus = (
-  completed: boolean,
-  progress?: number
-): "pending" | "in-progress" | "completed" => {
+const getMilestoneStatus = (completed: boolean, progress?: number): string => {
   if (completed) return "completed";
   if (progress !== undefined && progress > 0) return "in-progress";
   return "pending";
@@ -34,10 +33,10 @@ export const transformMilestone = (
   apiMilestone: ApiMilestone,
   index?: number
 ): Milestone => {
-  const status = getMilestoneStatus(
-    apiMilestone.completed,
-    apiMilestone.progress
-  );
+  // Use API status if available, otherwise determine from completion/progress
+  const status =
+    apiMilestone.status ||
+    getMilestoneStatus(apiMilestone.completed, apiMilestone.progress);
 
   return {
     id: apiMilestone.id,
@@ -50,7 +49,7 @@ export const transformMilestone = (
     order: apiMilestone.order,
     number: index !== undefined ? index + 1 : apiMilestone.order,
     deliverables: apiMilestone.deliverables.map((d) => ({ task: d.task })),
-    status,
+    status, // Pass through raw status
     completedDate: apiMilestone.completedDate,
     progress: apiMilestone.progress,
     note: apiMilestone.note,

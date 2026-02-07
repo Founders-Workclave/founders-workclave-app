@@ -2,12 +2,15 @@
 import React, { useState } from "react";
 import styles from "./styles.module.css";
 import { MilestoneFormData, Deliverable } from "@/types/createPrjects";
+import EditMilestoneModal from "../editMilestoneModal";
 
 interface MilestonesPaymentsProps {
   milestones: MilestoneFormData[];
   onUpdate: (milestones: MilestoneFormData[]) => void;
   onNext: () => void;
   onBack: () => void;
+  mode?: "create" | "edit";
+  onRefresh?: () => void; // Optional callback to refresh data after edit
 }
 
 const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
@@ -15,10 +18,17 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
   onUpdate,
   onNext,
   onBack,
+  mode = "create",
+  onRefresh,
 }) => {
   const [expandedMilestone, setExpandedMilestone] = useState<string | null>(
     null
   );
+  const [editingMilestone, setEditingMilestone] =
+    useState<MilestoneFormData | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const isReadOnly = mode === "edit";
 
   const toggleMilestone = (milestoneId: string) => {
     setExpandedMilestone(
@@ -30,13 +40,32 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
     milestoneId: string,
     updates: Partial<MilestoneFormData>
   ) => {
+    if (isReadOnly) return;
     const updated = milestones.map((m) =>
       m.id === milestoneId ? { ...m, ...updates } : m
     );
     onUpdate(updated);
   };
 
+  const handleEditMilestone = (milestone: MilestoneFormData) => {
+    setEditingMilestone(milestone);
+    setIsEditModalOpen(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditingMilestone(null);
+  };
+
+  const handleEditSuccess = () => {
+    // Refresh data if callback provided
+    if (onRefresh) {
+      onRefresh();
+    }
+  };
+
   const addDeliverable = (milestoneId: string) => {
+    if (isReadOnly) return;
     const milestone = milestones.find((m) => m.id === milestoneId);
     if (milestone) {
       const newDeliverable: Deliverable = {
@@ -54,6 +83,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
     deliverableId: string,
     task: string
   ) => {
+    if (isReadOnly) return;
     const milestone = milestones.find((m) => m.id === milestoneId);
     if (milestone) {
       const updatedDeliverables = milestone.deliverables.map((d) =>
@@ -64,6 +94,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
   };
 
   const removeDeliverable = (milestoneId: string, deliverableId: string) => {
+    if (isReadOnly) return;
     const milestone = milestones.find((m) => m.id === milestoneId);
     if (milestone) {
       const updatedDeliverables = milestone.deliverables.filter(
@@ -74,6 +105,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
   };
 
   const addMilestone = () => {
+    if (isReadOnly) return;
     const newMilestone: MilestoneFormData = {
       id: `${Date.now()}`,
       number: milestones.length + 1,
@@ -87,6 +119,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
   };
 
   const deleteMilestone = (milestoneId: string) => {
+    if (isReadOnly) return;
     const filtered = milestones.filter((m) => m.id !== milestoneId);
     const renumbered = filtered.map((m, index) => ({
       ...m,
@@ -95,18 +128,77 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
     onUpdate(renumbered);
   };
 
+  const getDeliverableTask = (deliverable: Deliverable | unknown): string => {
+    if (typeof deliverable === "string") {
+      return deliverable;
+    }
+    if (
+      deliverable &&
+      typeof deliverable === "object" &&
+      "task" in deliverable
+    ) {
+      const d = deliverable as Deliverable;
+      return typeof d.task === "string" ? d.task : "";
+    }
+    console.warn("Unexpected deliverable format:", deliverable);
+    return "";
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h3 className={styles.title}>Milestones & payments</h3>
+        <div className={styles.headerWithBadge}>
+          <h3 className={styles.title}>Milestones & payments</h3>
+          {isReadOnly && (
+            <div className={styles.readOnlyBadge}>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              Read-only
+            </div>
+          )}
+        </div>
         <p className={styles.subtitle}>
-          Customize milestones and payment at each stage
+          {isReadOnly
+            ? "Review milestones and payments (click edit button to modify)"
+            : "Customize milestones and payment at each stage"}
         </p>
       </div>
 
+      {isReadOnly && (
+        <div className={styles.infoMessage}>
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#3b82f6"
+            strokeWidth="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+          <p>Click the Edit button on any milestone card to make changes.</p>
+        </div>
+      )}
+
       <div className={styles.milestonesList}>
         {milestones.map((milestone, index) => (
-          <div key={milestone.id} className={styles.milestoneCard}>
+          <div
+            key={milestone.id}
+            className={`${styles.milestoneCard} ${
+              isReadOnly ? styles.readOnlyCard : ""
+            }`}
+          >
             <div
               className={styles.milestoneHeader}
               onClick={() => toggleMilestone(milestone.id)}
@@ -133,19 +225,44 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                 )}
                 <span className={styles.milestoneTitle}>{milestone.title}</span>
               </div>
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className={`${styles.chevron} ${
-                  expandedMilestone === milestone.id ? styles.chevronUp : ""
-                }`}
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
+
+              <div className={styles.milestoneHeaderRight}>
+                {isReadOnly && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditMilestone(milestone);
+                    }}
+                    className={styles.editButton}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Edit
+                  </button>
+                )}
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={`${styles.chevron} ${
+                    expandedMilestone === milestone.id ? styles.chevronUp : ""
+                  }`}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </div>
             </div>
 
             {expandedMilestone === milestone.id && (
@@ -160,6 +277,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                     }
                     className={styles.input}
                     placeholder={milestone.title}
+                    disabled={isReadOnly}
                   />
                 </div>
 
@@ -175,6 +293,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                     className={styles.textarea}
                     placeholder="What does this milestone cover?"
                     rows={3}
+                    disabled={isReadOnly}
                   />
                 </div>
 
@@ -191,6 +310,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                       }
                       className={styles.input}
                       placeholder="Enter amount"
+                      disabled={isReadOnly}
                     />
                   </div>
 
@@ -206,6 +326,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                           })
                         }
                         className={styles.dateInput}
+                        disabled={isReadOnly}
                       />
                       <svg
                         width="20"
@@ -238,7 +359,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                     <div key={deliverable.id} className={styles.deliverableRow}>
                       <input
                         type="text"
-                        value={deliverable.task}
+                        value={getDeliverableTask(deliverable)}
                         onChange={(e) =>
                           updateDeliverable(
                             milestone.id,
@@ -248,31 +369,56 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                         }
                         className={styles.input}
                         placeholder="Enter deliverables"
+                        disabled={isReadOnly}
                       />
-                      <button
-                        onClick={() =>
-                          removeDeliverable(milestone.id, deliverable.id)
-                        }
-                        className={styles.removeButton}
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
+                      {!isReadOnly && (
+                        <button
+                          onClick={() =>
+                            removeDeliverable(milestone.id, deliverable.id)
+                          }
+                          className={styles.removeButton}
                         >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <line x1="18" y1="6" x2="6" y2="18" />
+                            <line x1="6" y1="6" x2="18" y2="18" />
+                          </svg>
+                        </button>
+                      )}
                     </div>
                   ))}
 
+                  {!isReadOnly && (
+                    <button
+                      onClick={() => addDeliverable(milestone.id)}
+                      className={styles.addButton}
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                      Add another deliverable
+                    </button>
+                  )}
+                </div>
+
+                {!isReadOnly && (
                   <button
-                    onClick={() => addDeliverable(milestone.id)}
-                    className={styles.addButton}
+                    onClick={() => deleteMilestone(milestone.id)}
+                    className={styles.deleteButton}
                   >
                     <svg
                       width="16"
@@ -282,59 +428,53 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                       stroke="currentColor"
                       strokeWidth="2"
                     >
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                     </svg>
-                    Add another deliverable
+                    Delete milestone
                   </button>
-                </div>
-
-                <button
-                  onClick={() => deleteMilestone(milestone.id)}
-                  className={styles.deleteButton}
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <polyline points="3 6 5 6 21 6" />
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                  </svg>
-                  Delete milestone
-                </button>
+                )}
               </div>
             )}
           </div>
         ))}
       </div>
 
-      <button onClick={addMilestone} className={styles.addMilestoneButton}>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Add another milestone
-      </button>
+      {!isReadOnly && (
+        <button onClick={addMilestone} className={styles.addMilestoneButton}>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+          Add another milestone
+        </button>
+      )}
 
       <div className={styles.footer}>
         <button onClick={onBack} className={styles.backButton}>
           Back
         </button>
         <button onClick={onNext} className={styles.proceedButton}>
-          Proceed
+          {isReadOnly ? "Next" : "Proceed"}
         </button>
       </div>
+
+      {/* Edit Milestone Modal */}
+      {editingMilestone && (
+        <EditMilestoneModal
+          milestone={editingMilestone}
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onSuccess={handleEditSuccess}
+        />
+      )}
     </div>
   );
 };

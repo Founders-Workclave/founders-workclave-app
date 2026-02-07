@@ -1,11 +1,17 @@
 "use client";
 import { useState } from "react";
 import styles from "./styles.module.css";
+import {
+  clientService,
+  ApiError,
+} from "@/lib/api/agencyCreateUsers/clientService";
+import type { RegisterClientRequest } from "@/types/createClientsApi";
 
 interface AddClientModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: ClientFormData) => Promise<void> | void;
+  onSubmit?: (data: ClientFormData) => Promise<void> | void;
+  onSuccess?: () => void; // Callback after successful registration
 }
 
 export interface ClientFormData {
@@ -22,6 +28,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
+  onSuccess,
 }) => {
   const [formData, setFormData] = useState<ClientFormData>({
     firstName: "",
@@ -34,7 +41,7 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
   });
 
   const [errors, setErrors] = useState<
-    Partial<Record<keyof ClientFormData, string>>
+    Partial<Record<keyof ClientFormData | "api", string>>
   >({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -47,6 +54,10 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+    // Clear API error when user makes changes
+    if (errors.api) {
+      setErrors((prev) => ({ ...prev, api: "" }));
     }
   };
 
@@ -86,10 +97,26 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setErrors({}); // Clear all errors
 
     try {
-      // Call the onSubmit handler passed from parent
-      await onSubmit(formData);
+      // If custom onSubmit is provided, use it
+      if (onSubmit) {
+        await onSubmit(formData);
+      } else {
+        // Otherwise, use the default API call
+        // Map form data to API request format
+        // Note: Backend expects 'phone' not 'phoneNumber'
+        const requestData: RegisterClientRequest = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: `${formData.countryCode}${formData.phoneNumber}`, // Combine country code and phone number
+          password: formData.password,
+        };
+
+        await clientService.registerClient(requestData);
+      }
 
       // Reset form on success
       setFormData({
@@ -104,9 +131,54 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
       setErrors({});
       setShowPassword(false);
       setShowConfirmPassword(false);
+
+      // Call success callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      // Close modal
+      onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
-      // You can set a general error message here if needed
+
+      // Handle API errors
+      if (error instanceof ApiError) {
+        // Try to map error to specific fields
+        const errorMsg = error.message.toLowerCase();
+
+        // Check for field-specific errors
+        if (errorMsg.includes("email")) {
+          setErrors({ email: error.message });
+        } else if (errorMsg.includes("phone")) {
+          setErrors({ phoneNumber: error.message });
+        } else if (errorMsg.includes("password")) {
+          setErrors({ password: error.message });
+        } else if (errorMsg.includes("first name")) {
+          setErrors({ firstName: error.message });
+        } else if (errorMsg.includes("last name")) {
+          setErrors({ lastName: error.message });
+        }
+        // Handle duplicate/conflict errors (409)
+        else if (
+          error.status === 409 ||
+          errorMsg.includes("already exists") ||
+          errorMsg.includes("duplicate")
+        ) {
+          // Default to email for duplicate errors since that's most common
+          setErrors({
+            api: error.message,
+            email: "This email may already be registered",
+          });
+        } else {
+          // Show as general API error if can't map to specific field
+          setErrors({ api: error.message });
+        }
+      } else if (error instanceof Error) {
+        setErrors({ api: error.message });
+      } else {
+        setErrors({ api: "An unexpected error occurred" });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -141,6 +213,22 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
         </div>
 
         <form className={styles.form} onSubmit={handleSubmit}>
+          {/* API Error Message */}
+          {errors.api && (
+            <div className={styles.apiError}>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M8 1.33334V8.00001M8 10.6667H8.00667M14.6667 8.00001C14.6667 11.6819 11.6819 14.6667 8 14.6667C4.31811 14.6667 1.33334 11.6819 1.33334 8.00001C1.33334 4.31811 4.31811 1.33334 8 1.33334C11.6819 1.33334 14.6667 4.31811 14.6667 8.00001Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <span>{errors.api}</span>
+            </div>
+          )}
+
           {/* First Name */}
           <div className={styles.inputGroup}>
             <label className={styles.label}>First name</label>

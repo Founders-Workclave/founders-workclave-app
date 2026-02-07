@@ -12,11 +12,13 @@ import Loader from "@/components/loader";
 interface ProjectsPageProps {
   initialProjects: Project[];
   isLoading?: boolean;
+  header: string;
 }
 
 const ProjectsPage: React.FC<ProjectsPageProps> = ({
   initialProjects,
   isLoading,
+  header,
 }) => {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -50,7 +52,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({
       <div className={styles.container}>
         <div className={styles.loadingContainer}>
           <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
-          <p>Loading Dashboard...</p>
+          <p>Loading...</p>
         </div>
       </div>
     );
@@ -73,7 +75,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1 className={styles.title}>Recent projects</h1>
+        <h1 className={styles.title}>{header}</h1>
       </div>
 
       <div className={styles.searchContainer}>

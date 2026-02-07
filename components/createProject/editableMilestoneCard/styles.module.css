@@ -1,0 +1,368 @@
+.milestoneCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+.milestoneCard:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.statusCompleted {
+  border-left: 4px solid #22c55e;
+}
+
+.statusInProgress {
+  border-left: 4px solid #f59e0b;
+}
+
+.statusPending {
+  border-left: 4px solid #94a3b8;
+}
+
+/* Header */
+.milestoneHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.milestoneHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.milestoneHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.milestoneIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.milestoneTitleSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.milestoneTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.statusBadge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.statusBadge.statusCompleted {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.statusBadge.statusInProgress {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.statusBadge.statusPending {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+/* Buttons */
+.editButton,
+.completeButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.editButton:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.completeButton {
+  background: #22c55e;
+  color: white;
+  border-color: #22c55e;
+}
+
+.completeButton:hover:not(:disabled) {
+  background: #16a34a;
+  border-color: #16a34a;
+}
+
+.completeButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.expandButton:hover {
+  color: #374151;
+}
+
+.chevron {
+  transition: transform 0.2s ease;
+}
+
+.chevronUp {
+  transform: rotate(180deg);
+}
+
+/* Content Area */
+.milestoneContent {
+  padding: 0 20px 20px;
+  border-top: 1px solid #f3f4f6;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Form Elements */
+.formGroup {
+  margin-top: 16px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1f2937;
+  transition: all 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.description {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.amount,
+.dueDate {
+  margin: 0;
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+/* Deliverables */
+.deliverableRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.deliverableRow .input {
+  flex: 1;
+}
+
+.removeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  background: white;
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.removeButton:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px dashed #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.addButton:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
+.deliverablesList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.deliverableItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.deliverableItem svg {
+  flex-shrink: 0;
+  color: #22c55e;
+}
+
+/* Edit Actions */
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton {
+  border: 1px solid #d1d5db;
+  background: white;
+  color: #6b7280;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.saveButton {
+  border: none;
+  background: #3b82f6;
+  color: white;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.cancelButton:disabled,
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .milestoneHeaderRight {
+    flex-wrap: wrap;
+  }
+
+  .editButton,
+  .completeButton {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}

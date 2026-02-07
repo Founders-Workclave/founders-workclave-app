@@ -6,19 +6,14 @@ import BackBlack from "@/svgs/backBlack";
 import MessageApp from "@/svgs/messageApp";
 import DeleteUser from "@/svgs/deleteUser";
 import EmptyProjectIcon from "@/svgs/emptyProject";
-import { managerService, ApiError } from "@/lib/api/agencyService/pmService";
+import {
+  managerService,
+  ApiError,
+  Project,
+} from "@/lib/api/agencyService/pmService";
 import { Manager } from "@/types/agencyPm";
 import AllLoading from "@/layout/Loader";
-
-interface PMProject {
-  id: string;
-  projectName: string;
-  status: string;
-  progress: {
-    current: number;
-    total: number;
-  };
-}
+import AdminIconProject from "@/svgs/adminIconProject";
 
 interface PMDetailProps {
   params?: {
@@ -32,12 +27,12 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
   const router = useRouter();
 
   const [pm, setPm] = useState<Manager | null>(null);
-  const [projects] = useState<PMProject[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchManager = async () => {
+    const fetchManagerData = async () => {
       if (!id) {
         setError("No manager ID provided");
         setIsLoading(false);
@@ -47,13 +42,23 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
       try {
         setIsLoading(true);
         setError(null);
+
+        // Fetch manager details
         const manager = await managerService.getPMById(id);
 
         if (!manager) {
           setError("Manager not found");
-        } else {
-          setPm(manager);
+          setIsLoading(false);
+          return;
         }
+
+        setPm(manager);
+
+        // Fetch manager projects using managerID
+        const projectsData = await managerService.getManagerProjects(
+          manager.managerID
+        );
+        setProjects(projectsData.projects || []);
       } catch (err) {
         if (err instanceof ApiError) {
           setError(err.message);
@@ -66,7 +71,7 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
       }
     };
 
-    fetchManager();
+    fetchManagerData();
   }, [id]);
 
   const handleBack = () => {
@@ -106,6 +111,20 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
       day: "numeric",
       year: "numeric",
     });
+  };
+
+  const getStatusBadgeClass = (status: string): string => {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case "completed":
+        return styles.statusCompleted;
+      case "ongoing":
+        return styles.statusOngoing;
+      case "in-progress":
+        return styles.statusInProgress;
+      default:
+        return styles.statusDefault;
+    }
   };
 
   if (isLoading) {
@@ -215,7 +234,44 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
           </div>
         ) : (
           <div className={styles.projectsList}>
-            {/* Projects will be displayed here when available */}
+            {projects.map((project) => (
+              <div key={project.id} className={styles.projectItem}>
+                <div className={styles.projectHeader}>
+                  <AdminIconProject />
+                  <div className={styles.projectContent}>
+                    <div className={styles.projectTitleRow}>
+                      <h4 className={styles.projectName}>{project.name}</h4>
+                      <span
+                        className={`${styles.statusBadge} ${getStatusBadgeClass(
+                          project.status
+                        )}`}
+                      >
+                        {project.status === "ongoing"
+                          ? "In-Progress"
+                          : project.status}
+                      </span>
+                    </div>
+                    <p className={styles.projectMilestone}>
+                      {project.latest_milestone}
+                    </p>
+                    <div className={styles.progressSection}>
+                      <div className={styles.progressLabel}>Progress</div>
+                      <div className={styles.progressBarContainer}>
+                        <div className={styles.progressBar}>
+                          <div
+                            className={styles.progressFill}
+                            style={{ width: `${project.progressPercentage}%` }}
+                          />
+                        </div>
+                        <span className={styles.progressPercentage}>
+                          {project.progressPercentage}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

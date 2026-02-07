@@ -1,51 +1,52 @@
 "use client";
-import React, { useState } from "react";
-import mockData from "../../mocks/agencyPrd.json";
+import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
 import { Pagination } from "../agencyProject/pagination";
 import PrdView from "@/svgs/prdView";
 import PrdDownload from "@/svgs/prdDownload";
 import PrdDelete from "@/svgs/prdDelete";
 import DownloadPrd from "@/svgs/downloadPrd";
+import { agencyService } from "@/lib/api/agencyService/agencyService";
+import type { PRD } from "@/types/allAgencyPrd";
+import AllLoading from "@/layout/Loader";
+import EmptyPrd from "@/svgs/emptyprd";
 
 type FilterTab = "all" | "in-progress" | "completed";
 
-interface Client {
-  name: string;
-  id: string;
-}
-
-interface PRD {
-  id: string;
-  prdDetails: string;
-  client: Client;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface PRDListResponse {
-  prds: PRD[];
-  totalPages: number;
-  currentPage: number;
-  totalPRDs: number;
-  perPage: number;
-}
-
 const AllPRDsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState<number>(3);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [filterTab, setFilterTab] = useState<FilterTab>("all");
+  const [prds, setPrds] = useState<PRD[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const data = mockData as PRDListResponse;
+  const itemsPerPage = 10;
 
-  const filteredPRDs = data.prds.filter((prd) => {
+  useEffect(() => {
+    const fetchPRDs = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await agencyService.getAllPRDs();
+        setPrds(response.prds);
+      } catch (err) {
+        console.error("Error fetching PRDs:", err);
+        setError("Failed to load PRDs");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPRDs();
+  }, []);
+
+  const filteredPRDs = prds.filter((prd) => {
     const matchesSearch =
-      prd.prdDetails.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prd.client.name.toLowerCase().includes(searchQuery.toLowerCase());
+      prd.project.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      prd.client.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Convert status to lowercase string for comparison
-    const statusLower = String(prd.status).toLowerCase();
+    const statusLower = prd.status.toLowerCase();
 
     const matchesFilter =
       filterTab === "all" ||
@@ -56,31 +57,61 @@ const AllPRDsPage: React.FC = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const handleView = (prdId: string): void => {
-    console.log("View PRD:", prdId);
-    // Navigation logic here
+  // Pagination
+  const totalPages = Math.ceil(filteredPRDs.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentPRDs = filteredPRDs.slice(startIndex, endIndex);
+
+  const handleView = (documentUrl: string): void => {
+    window.open(documentUrl, "_blank");
   };
 
-  const handleDownload = (prdId: string): void => {
-    console.log("Download PRD:", prdId);
-    // Download logic here
+  const handleDownload = (documentUrl: string, projectName: string): void => {
+    const link = document.createElement("a");
+    link.href = documentUrl;
+    link.download = `${projectName}_PRD.pdf`;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
-  const handleDelete = (prdId: string): void => {
-    console.log("Delete PRD:", prdId);
-    // Delete logic here
+  const handleDelete = (prd: PRD): void => {
+    console.log("Delete PRD:", prd);
   };
 
   const handlePageChange = (page: number): void => {
     setCurrentPage(page);
   };
 
+  if (isLoading) {
+    return (
+      <div className={styles.pageWrapper}>
+        <AllLoading text="Loading PRDs..." />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.pageWrapper}>
+        <div className={styles.errorContainer}>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.pageWrapper}>
-      {/* Filter Tabs */}
       <div className={styles.tabsContainer}>
         <button
-          onClick={() => setFilterTab("all")}
+          onClick={() => {
+            setFilterTab("all");
+            setCurrentPage(1);
+          }}
           className={`${styles.tab} ${
             filterTab === "all" ? styles.tabActive : ""
           }`}
@@ -88,7 +119,10 @@ const AllPRDsPage: React.FC = () => {
           All
         </button>
         <button
-          onClick={() => setFilterTab("in-progress")}
+          onClick={() => {
+            setFilterTab("in-progress");
+            setCurrentPage(1);
+          }}
           className={`${styles.tab} ${
             filterTab === "in-progress" ? styles.tabActive : ""
           }`}
@@ -96,7 +130,10 @@ const AllPRDsPage: React.FC = () => {
           In-Progress
         </button>
         <button
-          onClick={() => setFilterTab("completed")}
+          onClick={() => {
+            setFilterTab("completed");
+            setCurrentPage(1);
+          }}
           className={`${styles.tab} ${
             filterTab === "completed" ? styles.tabActive : ""
           }`}
@@ -129,127 +166,153 @@ const AllPRDsPage: React.FC = () => {
           </svg>
           <input
             type="text"
-            placeholder="Search"
+            placeholder="Search by project or client name"
             className={styles.searchInput}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
 
-        {/* Desktop Table View */}
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr className={styles.tableHeader}>
-                <th className={styles.tableHeaderCell}>PRD details</th>
-                <th className={styles.tableHeaderCell}>Client</th>
-                <th className={styles.tableHeaderCell}>Status</th>
-                <th className={styles.tableHeaderCell}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPRDs.map((prd) => (
-                <tr key={prd.id} className={styles.tableRow}>
-                  <td className={styles.tableCell}>{prd.prdDetails}</td>
-                  <td className={styles.tableCell}>{prd.client.name}</td>
-                  <td className={styles.tableCell}>
+        {currentPRDs.length === 0 ? (
+          <div className={styles.emptyState}>
+            <EmptyPrd />
+            <p>No PRDs found</p>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
+            <div className={styles.tableContainer}>
+              <table className={styles.table}>
+                <thead>
+                  <tr className={styles.tableHeader}>
+                    <th className={styles.tableHeaderCell}>Project</th>
+                    <th className={styles.tableHeaderCell}>Client</th>
+                    <th className={styles.tableHeaderCell}>Status</th>
+                    <th className={styles.tableHeaderCell}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentPRDs.map((prd, index) => (
+                    <tr
+                      key={`${prd.project}-${index}`}
+                      className={styles.tableRow}
+                    >
+                      <td className={styles.tableCell}>{prd.project}</td>
+                      <td className={styles.tableCell}>{prd.client}</td>
+                      <td className={styles.tableCell}>
+                        <span
+                          className={`${styles.statusBadge} ${
+                            prd.status.toLowerCase() === "completed"
+                              ? styles.statusCompleted
+                              : styles.statusInProgress
+                          }`}
+                        >
+                          {prd.status === "in-progress"
+                            ? "In-Progress"
+                            : "Completed"}
+                        </span>
+                      </td>
+                      <td className={styles.tableCell}>
+                        <div className={styles.actionsContainer}>
+                          <button
+                            onClick={() => handleView(prd.document)}
+                            className={styles.actionButton}
+                            aria-label="View PRD"
+                            title="View PRD"
+                          >
+                            <PrdView />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleDownload(prd.document, prd.project)
+                            }
+                            className={styles.actionButton}
+                            aria-label="Download PRD"
+                            title="Download PRD"
+                          >
+                            <DownloadPrd />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(prd)}
+                            className={styles.actionButton}
+                            aria-label="Delete PRD"
+                            title="Delete PRD"
+                          >
+                            <PrdDelete />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className={styles.cardsContainer}>
+              {currentPRDs.map((prd, index) => (
+                <div key={`${prd.project}-${index}`} className={styles.card}>
+                  <div className={styles.cardRow}>
+                    <span className={styles.cardLabel}>Project</span>
+                    <span className={styles.cardValue}>{prd.project}</span>
+                  </div>
+                  <div className={styles.cardRow}>
+                    <span className={styles.cardLabel}>Client</span>
+                    <span className={styles.cardValue}>{prd.client}</span>
+                  </div>
+                  <div className={styles.cardRow}>
+                    <span className={styles.cardLabel}>Status</span>
                     <span
                       className={`${styles.statusBadge} ${
-                        prd.status === "In-Progress"
-                          ? styles.statusInProgress
-                          : styles.statusCompleted
+                        prd.status.toLowerCase() === "completed"
+                          ? styles.statusCompleted
+                          : styles.statusInProgress
                       }`}
                     >
-                      {prd.status}
+                      {prd.status === "in-progress"
+                        ? "In-Progress"
+                        : "Completed"}
                     </span>
-                  </td>
-                  <td className={styles.tableCell}>
-                    <div className={styles.actionsContainer}>
-                      <button
-                        onClick={() => handleView(prd.id)}
-                        className={styles.actionButton}
-                        aria-label="View PRD"
-                      >
-                        <PrdView />
-                      </button>
-                      <button
-                        onClick={() => handleDownload(prd.id)}
-                        className={styles.actionButton}
-                        aria-label="Download PRD"
-                      >
-                        <DownloadPrd />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(prd.id)}
-                        className={styles.actionButton}
-                        aria-label="Delete PRD"
-                      >
-                        <PrdDelete />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                  </div>
+                  <div className={styles.cardActions}>
+                    <button
+                      onClick={() => handleView(prd.document)}
+                      className={styles.actionButton}
+                      aria-label="View PRD"
+                    >
+                      <PrdView />
+                    </button>
+                    <button
+                      onClick={() => handleDownload(prd.document, prd.project)}
+                      className={styles.actionButton}
+                      aria-label="Download PRD"
+                    >
+                      <PrdDownload />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(prd)}
+                      className={styles.actionButton}
+                      aria-label="Delete PRD"
+                    >
+                      <PrdDelete />
+                    </button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Card View */}
-        <div className={styles.cardsContainer}>
-          {filteredPRDs.map((prd) => (
-            <div key={prd.id} className={styles.card}>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>PRD details</span>
-                <span className={styles.cardValue}>{prd.prdDetails}</span>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Client</span>
-                <span className={styles.cardValue}>{prd.client.name}</span>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Status</span>
-                <span
-                  className={`${styles.statusBadge} ${
-                    prd.status === "In-Progress"
-                      ? styles.statusInProgress
-                      : styles.statusCompleted
-                  }`}
-                >
-                  {prd.status}
-                </span>
-              </div>
-              <div className={styles.cardActions}>
-                <button
-                  onClick={() => handleView(prd.id)}
-                  className={styles.actionButton}
-                  aria-label="View PRD"
-                >
-                  <PrdView />
-                </button>
-                <button
-                  onClick={() => handleDownload(prd.id)}
-                  className={styles.actionButton}
-                  aria-label="Download PRD"
-                >
-                  <PrdDownload />
-                </button>
-                <button
-                  onClick={() => handleDelete(prd.id)}
-                  className={styles.actionButton}
-                  aria-label="Delete PRD"
-                >
-                  <PrdDelete />
-                </button>
-              </div>
             </div>
-          ))}
-        </div>
 
-        <Pagination
-          currentPage={currentPage}
-          totalPages={data.totalPages}
-          onPageChange={handlePageChange}
-        />
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
+        )}
       </div>
     </div>
   );

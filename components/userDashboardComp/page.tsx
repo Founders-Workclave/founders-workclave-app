@@ -16,6 +16,27 @@ const UserDashboard = ({ params }: { params: { username: string } }) => {
       router.push("/login");
       return;
     }
+    const RESERVED_ROUTES = [
+      "client",
+      "clients",
+      "agency",
+      "admin",
+      "pm",
+      "manager",
+    ];
+
+    if (
+      params.username &&
+      RESERVED_ROUTES.includes(params.username.toLowerCase())
+    ) {
+      console.log("🚫 Reserved route detected in [username]:", params.username);
+      console.log("Current user:", {
+        username: currentUser.username,
+        role: currentUser.role,
+        userType: currentUser.userType,
+      });
+      return;
+    }
     if (!currentUser.username) {
       router.push("/login");
       return;
@@ -24,6 +45,10 @@ const UserDashboard = ({ params }: { params: { username: string } }) => {
     const userSlug = currentUser.username.toLowerCase().replace(/\s+/g, ".");
 
     if (params.username !== userSlug) {
+      console.log("Username mismatch - redirecting:", {
+        paramsUsername: params.username,
+        userSlug,
+      });
       router.push(`/${userSlug}`);
       return;
     }

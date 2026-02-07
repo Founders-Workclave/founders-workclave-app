@@ -26,11 +26,11 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
 }
 
 .image {
   width: 100%;
+  border-radius: 100px;
   height: 100%;
   object-fit: cover;
 }
@@ -46,11 +46,9 @@
   position: absolute;
   bottom: 0;
   right: 0;
-  width: 32px;
-  height: 32px;
   border-radius: 50%;
   background-color: #a5b4fc;
-  border: 3px solid white;
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -64,8 +62,8 @@
 
 .uploadButton svg {
   color: white;
-  width: 16px;
-  height: 16px;
+  width: 30px;
+  height: 30px;
 }
 
 .hiddenInput {

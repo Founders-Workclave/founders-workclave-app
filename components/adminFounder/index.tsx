@@ -15,7 +15,7 @@ import Loader from "../loader";
 const AdminFounderComp: React.FC = () => {
   const [currentView, setCurrentView] = useState<"table" | "profile">("table");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedUserData, setSelectedUserData] = useState<any>(null);
+  const [selectedUserData, setSelectedUserData] = useState<unknown>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [founders, setFounders] = useState<Founder[]>([]);
@@ -38,7 +38,13 @@ const AdminFounderComp: React.FC = () => {
       });
 
       if (result.success) {
-        setFounders(result.founders);
+        const validFounders = result.founders.map((founder) => ({
+          ...founder,
+          status: (["Active", "Inactive", "Suspended"].includes(founder.status)
+            ? founder.status
+            : "Inactive") as "Active" | "Inactive" | "Suspended",
+        }));
+        setFounders(validFounders);
         setTotalPages(result.totalPages);
       } else {
         setError(result.message);

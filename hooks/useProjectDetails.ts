@@ -1,4 +1,3 @@
-// hooks/useProjectDetails.ts
 import { useState, useEffect, useCallback } from "react";
 import { agencyService } from "@/lib/api/agencyService/agencyService";
 import { transformProjectDetail } from "@/utils/projectTransformers";

@@ -1,21 +1,32 @@
-// api/services/agencyService.ts
 import { apiClient } from "../client";
 import type {
   AgencyDashboardResponse,
   ProjectListResponse,
+  ProjectDetailResponse,
 } from "@/types/agencyProjectsNew";
 import type {
   MilestonesResponse,
   UpdateMilestonePayload,
 } from "@/types/agencyMilestone";
-import type { PRDsResponse, UploadPRDPayload } from "@/types/agencyPrd";
-import type { ProjectDetailResponse } from "@/types/agencyProjectsNew";
+import type {
+  PRDsResponse,
+  UploadPRDPayload,
+  AllPRDsResponse,
+} from "@/types/agencyPrd";
+import type { ProjectPaymentsResponse } from "@/types/agencyPayments";
+import type { CreateProjectRequest } from "@/types/projectApi";
 
 export const agencyService = {
+  /**
+   * Fetches the agency dashboard data
+   */
   async getDashboard(): Promise<AgencyDashboardResponse> {
     return apiClient.get("/agency/");
   },
 
+  /**
+   * Fetches paginated list of projects
+   */
   async getProjects(
     page: number = 1,
     limit: number = 10
@@ -24,6 +35,7 @@ export const agencyService = {
   },
 
   /**
+   * Fetches a single project by ID
    * 🚨 Backend requires TRAILING SLASH
    */
   async getProjectById(projectId: string): Promise<ProjectDetailResponse> {
@@ -32,12 +44,47 @@ export const agencyService = {
     return apiClient.get(`/agency/project/${id}/`);
   },
 
+  /**
+   * Updates/edits an existing project
+   * 🚨 Backend requires TRAILING SLASH
+   */
+  async updateProject(
+    projectId: string,
+    payload: CreateProjectRequest,
+    prdFile?: File
+  ): Promise<{ message: string; projectId: string }> {
+    const id = projectId.trim();
+    console.log("✏️ Updating project:", id);
+
+    // If there's a PRD file, send as FormData (same as create)
+    if (prdFile) {
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(payload));
+      formData.append("document", prdFile);
+
+      return apiClient.patch(`/agency/project/${id}/edit/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    }
+
+    // Otherwise, send as JSON
+    return apiClient.patch(`/agency/project/${id}/edit/`, payload);
+  },
+
+  /**
+   * Fetches milestones for a specific project
+   */
   async getProjectMilestones(projectId: string): Promise<MilestonesResponse> {
     const id = projectId.trim();
     console.log("📋 Fetching milestones for project:", id);
     return apiClient.get(`/agency/project/${id}/milestones/`);
   },
 
+  /**
+   * Updates a specific milestone
+   */
   async updateMilestone(
     projectId: string,
     milestoneId: string,
@@ -52,12 +99,18 @@ export const agencyService = {
     );
   },
 
+  /**
+   * Fetches PRDs for a specific project
+   */
   async getProjectPRDs(projectId: string): Promise<PRDsResponse> {
     const id = projectId.trim();
     console.log("📋 Fetching PRDs for project:", id);
     return apiClient.get(`/agency/project/${id}/prds/`);
   },
 
+  /**
+   * Uploads a PRD for a specific project
+   */
   async uploadPRD(
     projectId: string,
     payload: UploadPRDPayload
@@ -67,6 +120,9 @@ export const agencyService = {
     return apiClient.post(`/agency/project/${id}/prds/`, payload);
   },
 
+  /**
+   * Deletes a PRD from a specific project
+   */
   async deletePRD(
     projectId: string,
     prdId: number
@@ -76,7 +132,29 @@ export const agencyService = {
     return apiClient.delete(`/agency/project/${id}/prds/${prdId}/`);
   },
 
+  /**
+   * Searches projects by query string
+   */
   async searchProjects(query: string): Promise<unknown> {
     return apiClient.get("/agency/projects/search/", { params: { q: query } });
+  },
+
+  /**
+   * Fetches all PRDs across all projects
+   */
+  async getAllPRDs(): Promise<AllPRDsResponse> {
+    console.log("📋 Fetching all PRDs");
+    return apiClient.get("/agency/prds/");
+  },
+
+  /**
+   * Fetches payment history for a specific project
+   */
+  async getProjectPayments(
+    projectId: string
+  ): Promise<ProjectPaymentsResponse> {
+    const id = projectId.trim();
+    console.log("💰 Fetching payment history for project:", id);
+    return apiClient.get(`/agency/project/${id}/payments/`);
   },
 };

@@ -19,8 +19,6 @@ export interface ProductManager {
   avatar: string | null;
 }
 
-// src/types/manager.types.ts
-
 export interface Manager {
   managerID: string;
   id: string;

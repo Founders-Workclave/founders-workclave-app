@@ -18,3 +18,8 @@ export interface UploadPRDPayload {
   description?: string;
   documentUrl: string;
 }
+
+export interface AllPRDsResponse {
+  message: string;
+  prds: never;
+}

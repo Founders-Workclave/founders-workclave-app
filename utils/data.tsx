@@ -211,3 +211,69 @@ export const superAdminMenuItems = [
     link: "/login",
   },
 ];
+
+export const pmMenuItems = [
+  {
+    icon: <Projects />,
+    label: "All Projects",
+    link: "/pm",
+  },
+  {
+    icon: <Messages />,
+    label: "Messages",
+    link: "/pm/messages",
+  },
+  {
+    icon: <Wallets />,
+    label: "Wallets",
+    link: "/pm/wallets",
+  },
+  {
+    icon: <Payments />,
+    label: "Payments",
+    link: "/pm/payments",
+  },
+  {
+    icon: <Settings />,
+    label: "Settings",
+    link: "/pm/settings",
+  },
+  {
+    icon: <Logout />,
+    label: "",
+    link: "/login",
+  },
+];
+
+export const clientMenuItems = [
+  {
+    icon: <Projects />,
+    label: "All Projects",
+    link: "/clients",
+  },
+  {
+    icon: <Messages />,
+    label: "Messages",
+    link: "/clients/messages",
+  },
+  {
+    icon: <Wallets />,
+    label: "Wallets",
+    link: "/clients/wallets",
+  },
+  {
+    icon: <Payments />,
+    label: "Payments",
+    link: "/clients/payments",
+  },
+  {
+    icon: <Settings />,
+    label: "Settings",
+    link: "/clients/settings",
+  },
+  {
+    icon: <Logout />,
+    label: "",
+    link: "/login",
+  },
+];

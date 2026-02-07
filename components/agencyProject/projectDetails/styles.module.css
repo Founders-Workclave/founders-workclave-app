@@ -52,12 +52,40 @@
 
 .statusBadge {
   padding: 4px 10px;
-  background: #fef3c7;
-  color: #92400e;
   border-radius: 100px;
   font-family: "inter", sans-serif;
   font-size: 12px;
   font-weight: 400;
+}
+
+.statusCompleted {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.statusInProgress {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.statusPaused {
+  background-color: #e0e7ff;
+  color: #3730a3;
+}
+
+.statusTerminated {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.statusPending {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.statusDefault {
+  background-color: #f9fafb;
+  color: #6b7280;
 }
 
 .actionButtons {
@@ -579,4 +607,91 @@
   .editButton {
     flex: 1;
   }
+}
+
+/* Terminate Confirmation Modal Styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.confirmModal {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.confirmTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 16px 0;
+}
+
+.confirmMessage {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  line-height: 1.5;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirmButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #dc2626;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirmButton:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.confirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

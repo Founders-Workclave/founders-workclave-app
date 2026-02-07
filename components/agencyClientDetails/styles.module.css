@@ -214,7 +214,10 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  max-width: 400px;
+  border: 1px solid #e4e4e4;
+  width: 100%;
+  padding: 92px 24px;
+  border-radius: 12px;
 }
 
 .emptyIcon {

@@ -7,7 +7,7 @@ interface LoginPayload {
 }
 
 interface UseLoginOptions {
-  userType?: string; // Optional - if not provided, backend determines user type
+  userType?: string;
 }
 
 export const useLogin = (options?: UseLoginOptions) => {

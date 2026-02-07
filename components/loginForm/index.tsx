@@ -15,8 +15,6 @@ interface LoginFormProps {
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   const router = useRouter();
-
-  // Don't specify userType - let the backend determine it
   const { isLoading, error, success, login, resetState } = useLogin();
 
   const [formData, setFormData] = useState({
@@ -27,30 +25,52 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated()) {
       const user = getUser();
-      console.log("👤 Already authenticated, redirecting...", user);
+      console.log("=== ALREADY AUTHENTICATED CHECK ===");
+      console.log("User object:", JSON.stringify(user, null, 2));
 
-      // Redirect based on user type
-      if (user?.userType?.toLowerCase() === "agency") {
+      const userType = user?.userType?.toLowerCase();
+      const role = user?.role?.toLowerCase();
+
+      console.log("Detected values:", {
+        userType,
+        role,
+      });
+
+      // Check userType first, then role
+      if (userType === "agency") {
+        console.log("→ Redirecting to /agency");
         router.replace("/agency");
-      } else if (user?.role === "admin") {
+      } else if (userType === "manager" || userType === "pm" || role === "pm") {
+        console.log("→ Redirecting to /pm");
+        router.replace("/pm");
+      } else if (userType === "client" || role === "client") {
+        console.log("→ Redirecting to /clients");
+        router.replace("/clients");
+      } else if (role === "admin") {
+        console.log("→ Redirecting to /admin");
         router.replace("/admin");
       } else {
+        // Only founders/regular users should go to /[username]
         const username =
           user?.username || user?.name?.toLowerCase().replace(/\s+/g, ".");
+        console.log("→ Redirecting to /" + username);
         router.replace(`/${username}`);
       }
     }
   }, [router]);
 
-  // Handle successful login - redirect based on user type from backend
+  // Handle successful login
   useEffect(() => {
     if (success) {
+      console.log("=== LOGIN SUCCESS - STARTING REDIRECT ===");
+
       const timer = setTimeout(() => {
         const user = getUser();
+
+        console.log("User from localStorage:", JSON.stringify(user, null, 2));
 
         if (!user) {
           console.error("❌ No user found after successful login");
@@ -60,37 +80,52 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
           return;
         }
 
-        console.log("✅ Login successful, user data:", {
-          userId: user.id,
-          email: user.email,
-          role: user.role,
-          userType: user.userType,
-        });
+        const userType = user.userType?.toLowerCase();
+        const role = user.role?.toLowerCase();
 
-        // Clear any errors
+        console.log("=== REDIRECT DECISION ===");
+        console.log("userType:", userType);
+        console.log("role:", role);
+
         setLoginError(null);
 
-        // Trigger onSubmit callback if provided
         if (onSubmit) {
           onSubmit(formData.email);
         }
 
-        // Redirect based on user type returned from backend
-        const userType = user.userType?.toLowerCase();
+        let redirectUrl = "";
 
+        // Check userType first, then role
         if (userType === "agency") {
-          console.log("✅ Redirecting to agency dashboard");
-          window.location.href = "/agency";
-        } else if (user.role === "admin") {
-          console.log("✅ Redirecting to admin dashboard");
-          window.location.href = "/admin";
+          redirectUrl = "/agency";
+          console.log("✅ DECISION: Redirecting to /agency");
+        } else if (
+          userType === "manager" ||
+          userType === "pm" ||
+          role === "pm"
+        ) {
+          redirectUrl = "/pm";
+          console.log("✅ DECISION: Redirecting to /pm");
+        } else if (userType === "client" || role === "client") {
+          redirectUrl = "/clients";
+          console.log("✅ DECISION: Redirecting to /clients");
+        } else if (role === "admin") {
+          redirectUrl = "/admin";
+          console.log("✅ DECISION: Redirecting to /admin");
         } else {
-          // Regular founder/user
+          // Only founders/regular users
           const username =
             user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
-          console.log("✅ Redirecting to user dashboard:", `/${username}`);
-          window.location.href = `/${username}`;
+          redirectUrl = `/${username}`;
+          console.log("✅ DECISION: Redirecting to", redirectUrl);
         }
+
+        console.log("=== EXECUTING REDIRECT TO:", redirectUrl, "===");
+        console.log("Timestamp:", new Date().toISOString());
+
+        window.location.href = redirectUrl;
+
+        console.log("=== REDIRECT COMMAND SENT ===");
       }, 800);
 
       return () => clearTimeout(timer);
@@ -100,7 +135,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
 
-    // Clear errors when user starts typing
     if (error || loginError) {
       resetState();
       setLoginError(null);
@@ -116,11 +150,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Clear previous errors
     setLoginError(null);
     resetState();
 
-    // Basic validation
     if (!formData.email.trim()) {
       setLoginError("Please enter your email address");
       return;
@@ -139,7 +171,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
     });
   };
 
-  // Combine error messages
   const displayError = loginError || error;
 
   return (
@@ -150,14 +181,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
       </div>
 
       <form onSubmit={handleSubmit} className={styles.form}>
-        {/* Success Message */}
         {success && !loginError && (
           <div className={styles.successMessage}>
             ✓ Login successful! Redirecting...
           </div>
         )}
 
-        {/* Error Message */}
         {displayError && (
           <div className={styles.errorMessage}>⚠ {displayError}</div>
         )}
@@ -234,7 +263,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
           </svg>
         </button>
 
-        {/* Social login */}
         <div className={styles.dividerAlt}>
           <span>OR</span>
         </div>

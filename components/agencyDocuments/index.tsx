@@ -7,13 +7,16 @@ import {
   getGoogleDriveDownloadUrl,
   getGoogleDrivePreviewUrl,
 } from "@/utils/prdTransformer";
+import AllLoading from "@/layout/Loader";
+import AgencyUploadPRDModal from "./agencyUpload";
 
 interface AgencyDocumentsProps {
   projectId: string;
 }
 
 const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
-  const { prds, isLoading, error, deletePRD } = usePRDs({ projectId });
+  const { prds, isLoading, error, deletePRD, refetch } = usePRDs({ projectId });
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -67,7 +70,7 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
           <h2>Documents</h2>
         </div>
         <div className={styles.emptyState}>
-          <p>Loading documents...</p>
+          <AllLoading text="Loading PRDs..." />
         </div>
       </div>
     );
@@ -108,7 +111,10 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
       {/* Header */}
       <div className={styles.header}>
         <h2>Documents</h2>
-        <button className={styles.uploadBtn} onClick={handleUpload}>
+        <button
+          className={styles.uploadBtn}
+          onClick={() => setIsUploadModalOpen(true)}
+        >
           <Plus size={18} />
           Upload document
         </button>
@@ -165,6 +171,12 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
           </div>
         ))}
       </div>
+      <AgencyUploadPRDModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onSuccess={refetch}
+        projectId={projectId}
+      />
     </div>
   );
 };

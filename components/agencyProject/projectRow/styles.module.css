@@ -89,14 +89,15 @@
   color: #92400e;
 }
 
-.statusOnHold {
+.statusTerminated {
   background: #fee2e2;
   color: #991b1b;
 }
 
-.statusPending {
-  background: #e5e7eb;
-  color: #374151;
+.statusPending,
+.statusOnHold {
+  background-color: #e0e7ff;
+  color: #3730a3;
 }
 
 .detailsButton {

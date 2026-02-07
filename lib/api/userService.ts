@@ -9,15 +9,6 @@ export interface UserProfile {
   avatar?: string;
 }
 
-interface PasswordChangeRequest {
-  currentPassword: string;
-  newPassword: string;
-}
-
-interface PasswordChangeResponse {
-  message: string;
-}
-
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
 
@@ -149,66 +140,6 @@ export class UserService {
       return data;
     } catch (error) {
       console.error("Error in updateUserProfile:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Change user password
-   * @param passwordData - Current and new password
-   * @returns Promise with response message
-   */
-  static async changePassword(
-    passwordData: PasswordChangeRequest
-  ): Promise<PasswordChangeResponse> {
-    const token = getAuthToken();
-
-    if (!token) {
-      throw new Error("No authentication token found. Please log in.");
-    }
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/change-password/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          oldPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        }),
-      });
-
-      if (response.status === 401) {
-        this.clearAuth();
-        throw new Error("Unauthorized. Please log in again.");
-      }
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-
-        // Handle specific field errors
-        if (errorData.oldPassword) {
-          throw new Error(
-            errorData.oldPassword[0] || "Old password is incorrect"
-          );
-        }
-        if (errorData.newPassword) {
-          throw new Error(errorData.newPassword[0] || "Invalid new password");
-        }
-
-        throw new Error(
-          errorData.message ||
-            errorData.detail ||
-            `Failed to change password: ${response.statusText}`
-        );
-      }
-
-      const data: PasswordChangeResponse = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error in changePassword:", error);
       throw error;
     }
   }

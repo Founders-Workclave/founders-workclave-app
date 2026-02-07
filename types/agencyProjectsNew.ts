@@ -1,5 +1,3 @@
-// types/agencyProjects.ts
-
 export interface AgencyDashboardResponse {
   message: string;
   activeProject: number;
@@ -16,7 +14,7 @@ export interface ApiProject {
   projectValue: string;
   paidBalance: string;
   progress: string; // "0/2" format
-  status: "ongoing" | "completed" | "on-hold" | "pending";
+  status: string; // Changed from union type to string
 }
 
 // Transformed types for UI components
@@ -34,7 +32,7 @@ export interface Project {
     current: number;
     total: number;
   };
-  status: "Completed" | "In-Progress" | "On-Hold" | "Pending";
+  status: string; // Changed from union type to string
 }
 
 export interface ProjectListResponse {
@@ -51,6 +49,7 @@ export interface DashboardStats {
   icon: string;
   bgColor: string;
 }
+
 export interface ProjectFeature {
   feature: string;
 }
@@ -89,7 +88,7 @@ export interface ProjectDetail {
   id: string;
   projectName: string;
   description: string;
-  status: "Completed" | "In-Progress" | "On-Hold" | "Pending";
+  status: string; // Already updated
   client: {
     id: string;
     name: string;
@@ -113,7 +112,7 @@ export interface ProjectDetail {
     milestones: Array<{
       id: string;
       name: string;
-      status: "completed" | "in-progress" | "pending";
+      status: string; // Changed from "completed" | "in-progress" | "pending" to string
     }>;
   };
   problemStatement: string;

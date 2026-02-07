@@ -18,13 +18,6 @@ export const transformProject = (apiProject: ApiProject): Project => {
     .split("/")
     .map((num) => parseInt(num.trim(), 10));
 
-  const statusMap: Record<string, Project["status"]> = {
-    ongoing: "In-Progress",
-    completed: "Completed",
-    "on-hold": "On-Hold",
-    pending: "Pending",
-  };
-
   return {
     id: apiProject.id,
     projectName: apiProject.name,
@@ -39,7 +32,8 @@ export const transformProject = (apiProject: ApiProject): Project => {
       current,
       total,
     },
-    status: statusMap[apiProject.status] || "Pending",
+    // Pass through the raw status - let formatStatus handle display formatting
+    status: apiProject.status,
   };
 };
 

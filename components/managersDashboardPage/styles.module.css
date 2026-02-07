@@ -1,0 +1,91 @@
+.container {
+  min-height: 100vh;
+  background: #fafafa;
+}
+
+.header {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.headerTitle {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0b0a0a;
+  margin: 0 0 4px 0;
+  font-family: "Inter", sans-serif;
+}
+
+.headerSubtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  font-family: "Inter", sans-serif;
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 24px;
+}
+
+.errorContent {
+  background: white;
+  border: 1px solid #fee2e2;
+  border-radius: 12px;
+  padding: 48px;
+  text-align: center;
+  max-width: 500px;
+}
+
+.errorContent h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #dc2626;
+  margin: 0 0 8px 0;
+  font-family: "Inter", sans-serif;
+}
+
+.errorContent p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+  font-family: "Inter", sans-serif;
+}
+
+.retryButton {
+  padding: 12px 24px;
+  background: #5865f2;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: "Inter", sans-serif;
+}
+
+.retryButton:hover {
+  background: #4f46e5;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .headerTitle {
+    font-size: 24px;
+  }
+
+  .headerSubtitle {
+    font-size: 13px;
+  }
+}

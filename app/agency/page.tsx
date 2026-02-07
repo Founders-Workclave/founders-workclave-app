@@ -37,7 +37,11 @@ const AdminFounders = () => {
 
       <AgencyDashboard stats={stats} isLoading={isLoading} />
 
-      <ProjectsPage initialProjects={projects} isLoading={isLoading} />
+      <ProjectsPage
+        initialProjects={projects}
+        isLoading={isLoading}
+        header="Recent Projects"
+      />
     </AgencyLayout>
   );
 };

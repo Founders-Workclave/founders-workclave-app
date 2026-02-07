@@ -16,6 +16,7 @@ import type {
   ClientProject,
   ApiProject,
 } from "@/types/agencyClients";
+import AllLoading from "@/layout/Loader";
 
 interface ClientDetailProps {
   params?: {
@@ -133,7 +134,7 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
   if (loading) {
     return (
       <div className={styles.pageContainer}>
-        <div className={styles.loadingState}>Loading client information...</div>
+        <AllLoading text="Loading client information..." />
       </div>
     );
   }

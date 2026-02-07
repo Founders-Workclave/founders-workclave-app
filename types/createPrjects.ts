@@ -53,4 +53,29 @@ export interface CreateProjectProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: ProjectFormData) => void;
+  mode?: "create" | "edit";
+  projectId?: string;
+  initialData?: ProjectFormData;
+}
+
+export interface ProjectFormData {
+  clientId: string;
+  projectName: string;
+  problemStatement: string;
+  expectedTimeline: string;
+  coreFeatures: string[];
+  featureIds?: Array<{ id: string; name: string }>;
+  prdFile: File | null;
+  milestones: MilestoneFormData[];
+  productManagerId: string;
+}
+
+export interface CreateProjectProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: ProjectFormData) => void;
+  mode?: "create" | "edit";
+  projectId?: string;
+  initialData?: ProjectFormData;
+  initialStep?: CreateProjectStep; // NEW: Add this line
 }

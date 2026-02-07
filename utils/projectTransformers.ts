@@ -1,4 +1,3 @@
-// utils/projectTransformers.ts
 import type {
   ApiProjectDetail,
   ProjectDetail,
@@ -51,19 +50,6 @@ const formatDate = (dateString: string | null): string => {
 };
 
 /**
- * Map API status to UI status
- */
-const mapStatus = (status: string): ProjectDetail["status"] => {
-  const statusMap: Record<string, ProjectDetail["status"]> = {
-    ongoing: "In-Progress",
-    completed: "Completed",
-    "on-hold": "On-Hold",
-    pending: "Pending",
-  };
-  return statusMap[status] || "Pending";
-};
-
-/**
  * Get last document upload text
  */
 const getLastDocumentUploadText = (documentCount: number): string => {
@@ -86,7 +72,8 @@ export const transformProjectDetail = (
     id: apiProject.id,
     projectName: apiProject.name,
     description: apiProject.description,
-    status: mapStatus(apiProject.status),
+    // Pass through raw status - let formatStatus handle display formatting
+    status: apiProject.status,
     client: {
       id: apiProject.client,
       name: apiProject.clientName,
@@ -114,7 +101,7 @@ export const transformProjectDetail = (
     },
     problemStatement: apiProject.description,
     keyFeatures: apiProject.projectFeatures.map((f, index) => ({
-      id: `feature-${index}`,
+      id: f.id?.toString() || `feature-${index}`,
       name: f.feature,
     })),
   };

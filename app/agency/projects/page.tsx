@@ -1,9 +1,12 @@
+"use client";
 import AgencyLayout from "@/layout/agency";
 import styles from "./styles.module.css";
 import CreateProjectButton from "@/components/createProjectButton";
-import AllProjectsPage from "@/components/allAgenciesProject";
+import ProjectsPage from "@/components/agencyProject/projectsList";
+import { useAgencyData } from "@/hooks/useAgencyData";
 
 const AdminProjects = () => {
+  const { projects, isLoading } = useAgencyData();
   return (
     <>
       <AgencyLayout pageTitle="" pageText="">
@@ -13,7 +16,11 @@ const AdminProjects = () => {
           </div>
           <CreateProjectButton />
         </div>
-        <AllProjectsPage />
+        <ProjectsPage
+          initialProjects={projects}
+          isLoading={isLoading}
+          header="All Projects"
+        />
       </AgencyLayout>
     </>
   );

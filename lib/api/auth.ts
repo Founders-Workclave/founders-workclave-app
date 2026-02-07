@@ -32,11 +32,12 @@ export interface UserInfo {
   name: string;
   email: string;
   username: string;
-  role: "admin" | "user";
+  role: "admin" | "user" | "clients" | "manager";
   firstName?: string;
   lastName?: string;
   phone?: string;
   userType?: string;
+  profileImage?: string; // ADDED for profile image support
 }
 
 interface ApiUserData {
@@ -189,6 +190,13 @@ export const setUser = (user: UserInfo): void => {
 
   try {
     localStorage.setItem(USER_KEY, JSON.stringify(user));
+
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(
+      new CustomEvent("profileUpdated", {
+        detail: user,
+      })
+    );
   } catch (error) {
     console.error("Failed to store user data:", error);
   }
@@ -239,23 +247,120 @@ export const isUserType = (requiredType: string): boolean => {
   const user = getUser();
   if (!user) return false;
 
-  // If no userType stored, assume founder (for backward compatibility)
-  const currentUserType = user.userType || "founder";
-  return currentUserType.toLowerCase() === requiredType.toLowerCase();
+  const requiredLower = requiredType.toLowerCase();
+
+  // Check both userType and role fields
+  const userTypeLower = user.userType?.toLowerCase() || "founder";
+  const roleLower = user.role?.toLowerCase();
+
+  // Match if either userType or role matches
+  return userTypeLower === requiredLower || roleLower === requiredLower;
+};
+
+/**
+ * Check if current user is a Client
+ * Checks BOTH role and userType fields
+ */
+export const isClientUser = (): boolean => {
+  const user = getUser();
+  if (!user) return false;
+
+  console.log("🔍 isClientUser check:", {
+    role: user.role,
+    userType: user.userType,
+    result:
+      user.role?.toLowerCase() === "client" ||
+      user.userType?.toLowerCase() === "client",
+  });
+
+  // Check both role and userType
+  return (
+    user.role?.toLowerCase() === "client" ||
+    user.userType?.toLowerCase() === "client"
+  );
+};
+
+/**
+ * Check if current user is a PM (Product Manager)
+ * Checks BOTH role and userType fields
+ */
+export const isPMUser = (): boolean => {
+  const user = getUser();
+  if (!user) return false;
+
+  return (
+    user.role?.toLowerCase() === "manager" ||
+    user.userType?.toLowerCase() === "manager"
+  );
 };
 
 /**
  * Check if current user is an agency user
+ * Checks BOTH role and userType fields
  */
 export const isAgencyUser = (): boolean => {
-  return isUserType("agency");
+  const user = getUser();
+  if (!user) return false;
+
+  return (
+    user.role?.toLowerCase() === "agency" ||
+    user.userType?.toLowerCase() === "agency"
+  );
 };
 
 /**
  * Check if current user is a founder
+ * Checks BOTH role and userType fields
  */
 export const isFounderUser = (): boolean => {
-  return isUserType("founder");
+  const user = getUser();
+  if (!user) return false;
+
+  const userTypeLower = user.userType?.toLowerCase() || "founder";
+  const roleLower = user.role?.toLowerCase();
+
+  return (
+    userTypeLower === "founder" ||
+    roleLower === "founder" ||
+    (roleLower === "user" && userTypeLower === "founder")
+  );
+};
+
+export const getUserRedirectPath = (): string => {
+  const user = getUser();
+  if (!user) return "/login";
+
+  const userType = user.userType?.toLowerCase();
+  const role = user.role?.toLowerCase();
+
+  // Check userType first
+  switch (userType) {
+    case "agency":
+      return "/agency";
+    case "manager":
+    case "pm":
+      return "/pm";
+    case "client":
+      return "/clients";
+    case "founder":
+      const username =
+        user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
+      return `/${username}`;
+    default:
+      // Check role if userType doesn't match
+      if (role === "admin") {
+        return "/admin";
+      } else if (role === "pm") {
+        return "/pm";
+      } else if (role === "client") {
+        return "/clients";
+      }
+
+      // Default to founder path for regular users
+      const defaultUsername =
+        user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
+      return `/${defaultUsername}`;
+  }
 };
 
 // USER DISPLAY UTILITIES
@@ -318,6 +423,103 @@ export const getUserInitials = (): string => {
 
   return "U";
 };
+
+// ========== NEW SESSION TIMEOUT & PROFILE IMAGE FUNCTIONS ==========
+
+/**
+ * Get user profile image URL
+ */
+export const getUserProfileImage = (): string | null => {
+  const user = getUser();
+  return user?.profileImage || null;
+};
+
+/**
+ * Update user profile in localStorage
+ */
+export const updateUserProfile = (updates: Partial<UserInfo>): void => {
+  if (typeof window === "undefined") return;
+
+  try {
+    const currentUser = getUser();
+    if (!currentUser) {
+      throw new Error("No user profile found");
+    }
+
+    const updatedUser = { ...currentUser, ...updates };
+    localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(
+      new CustomEvent("profileUpdated", {
+        detail: updates,
+      })
+    );
+
+    console.log("✅ User profile updated in localStorage");
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    throw error;
+  }
+};
+
+/**
+ * Logout user and clear all session data
+ */
+export const logout = (): void => {
+  if (typeof window === "undefined") return;
+
+  try {
+    // Clear all auth-related data
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+
+    console.log("✅ User logged out successfully");
+  } catch (error) {
+    console.error("Error during logout:", error);
+  }
+};
+
+/**
+ * Handle session timeout or authentication errors
+ * Logs out user and redirects to login
+ */
+export const handleSessionTimeout = (redirectUrl: string = "/login"): void => {
+  console.log("🚫 Session timeout detected, logging out...");
+  logout();
+
+  if (typeof window !== "undefined") {
+    window.location.href = redirectUrl;
+  }
+};
+
+/**
+ * Check if error is an authentication error (401 or 403)
+ */
+export const isAuthError = (status?: number): boolean => {
+  return status === 401 || status === 403;
+};
+
+/**
+ * Set authentication data (used during login/register)
+ */
+export const setAuthData = (token: string, user: UserInfo): void => {
+  if (typeof window === "undefined") return;
+
+  try {
+    setAuthTokens(token);
+    setUser(user);
+    console.log("✅ Authentication data stored");
+  } catch (error) {
+    console.error("Error setting auth data:", error);
+    throw error;
+  }
+};
+
+// ========== END NEW FUNCTIONS ==========
 
 /**
  * Determine if user should have admin role based on API response
@@ -480,7 +682,7 @@ export const authApi = {
         username: payload.email.split("@")[0],
         role: "user",
         phone: fullPhoneNumber,
-        userType: payload.userType?.toLowerCase() || "founder", // ADDED
+        userType: payload.userType?.toLowerCase() || "founder",
       };
 
       setUser(userData);
@@ -505,13 +707,6 @@ export const authApi = {
       };
     }
   },
-
-  /**
-   * Universal login method that supports different user types
-   * @param payload - Login credentials
-   * @param userType - Optional user type (e.g., 'agency', 'founder')
-   */
-  // Add this updated login method to your authApi object in auth.ts
 
   login: async (
     payload: LoginPayload,
@@ -555,7 +750,6 @@ export const authApi = {
 
       const data: AuthResponse = await response.json();
 
-      // ADD DETAILED LOGGING TO SEE WHAT THE API RETURNS
       console.log("🔍 Full API Login Response:", {
         status: response.status,
         success: response.ok,
@@ -612,17 +806,16 @@ export const authApi = {
       // Store tokens
       setAuthTokens(accessToken, refreshToken);
 
-      // Extract user type from response - THIS IS CRITICAL
-      // Try multiple possible locations where userType might be
+      // Extract user type from response
       const detectedUserType =
-        data.user?.toLowerCase() || // API returns "user": "Agency" or "user": "Founder"
+        data.user?.toLowerCase() ||
         data.data?.user?.toLowerCase() ||
         data.data?.userType?.toLowerCase() ||
         data.data?.user_type?.toLowerCase() ||
         data.userType?.toLowerCase() ||
         data.user_type?.toLowerCase() ||
-        userType?.toLowerCase() || // Use requested type as fallback
-        "founder"; // Ultimate fallback
+        userType?.toLowerCase() ||
+        "founder";
 
       console.log("🎯 Detected user type:", detectedUserType, "from:", {
         directUser: data.user,
@@ -669,7 +862,8 @@ export const authApi = {
         role: role,
         phone:
           data.data?.phone || data.data?.phoneNumber || existingUser?.phone,
-        userType: detectedUserType, // CRITICAL: Store the detected user type
+        userType: detectedUserType,
+        profileImage: existingUser?.profileImage, // Preserve existing profile image
       };
 
       setUser(userData);
