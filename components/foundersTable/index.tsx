@@ -49,6 +49,11 @@ const FoundersTable: React.FC<FoundersTableProps> = ({
     }
   };
 
+  // Helper function to safely get founder ID
+  const getFounderId = (founder: Founder): string => {
+    return founder.id || founder.founderID || founder.email || "";
+  };
+
   const toggleCard = (founderId: string) => {
     setExpandedCardId(expandedCardId === founderId ? null : founderId);
     setOpenActionMenuId(null);
@@ -56,30 +61,52 @@ const FoundersTable: React.FC<FoundersTableProps> = ({
 
   const toggleActionMenu = (founderId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setOpenActionMenuId(openActionMenuId === founderId ? null : founderId);
+
+    if (openActionMenuId === founderId) {
+      setOpenActionMenuId(null);
+    } else {
+      setOpenActionMenuId(founderId);
+
+      // Position the menu above the button
+      setTimeout(() => {
+        const button = e.currentTarget as HTMLElement;
+        const menu = button.parentElement?.querySelector(
+          `.${styles.actionMenu}`
+        ) as HTMLElement;
+
+        if (menu && button) {
+          const buttonRect = button.getBoundingClientRect();
+          menu.style.top = `${buttonRect.top - menu.offsetHeight - 8}px`;
+          menu.style.left = `${
+            buttonRect.left - menu.offsetWidth + button.offsetWidth
+          }px`;
+        }
+      }, 0);
+    }
   };
 
   const handleAction = (action: string, founder: Founder) => {
-    console.log(`${action} founder:`, founder.id);
+    const founderId = getFounderId(founder);
+    console.log(`${action} founder:`, founderId);
     setOpenActionMenuId(null);
 
     switch (action) {
       case "See Details":
         if (onFounderSelect) {
-          onFounderSelect(founder.id);
+          onFounderSelect(founderId);
         }
         break;
 
       case "Deactivate":
       case "Reactivate":
         if (onStatusUpdate) {
-          onStatusUpdate(founder.id, founder.status);
+          onStatusUpdate(founderId, founder.status);
         }
         break;
 
       case "Delete":
         if (onDelete) {
-          onDelete(founder.id);
+          onDelete(founderId);
         }
         break;
 
@@ -187,165 +214,42 @@ const FoundersTable: React.FC<FoundersTableProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {founders.map((founder) => (
-                  <tr key={founder.id}>
-                    <td>
-                      <div className={styles.userCell}>
-                        <div className={styles.avatar}>
-                          {founder.avatar ? (
-                            <Image
-                              src={founder.avatar}
-                              alt={founder.name}
-                              width={40}
-                              height={40}
-                            />
-                          ) : (
-                            <span>
-                              {founder.firstName?.[0] || founder.name.charAt(0)}
-                            </span>
-                          )}
-                        </div>
-                        <div>
-                          <p className={styles.userName}>{founder.name}</p>
-                          <p className={styles.userEmail}>{founder.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td>{founder.phone}</td>
-                    <td>{founder.projectsCount || 0}</td>
-                    <td>{founder.joinedDate}</td>
-                    <td>
-                      <span
-                        className={styles.statusBadge}
-                        style={{
-                          backgroundColor: `${getStatusColor(
-                            founder.status
-                          )}20`,
-                          color: getStatusColor(founder.status),
-                        }}
-                      >
-                        {founder.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div className={styles.actionWrapper}>
-                        <button
-                          className={styles.actionButton}
-                          onClick={(e) => toggleActionMenu(founder.id, e)}
-                        >
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                          >
-                            <circle cx="12" cy="12" r="2" />
-                            <circle cx="12" cy="5" r="2" />
-                            <circle cx="12" cy="19" r="2" />
-                          </svg>
-                        </button>
-
-                        {openActionMenuId === founder.id && (
-                          <div className={styles.actionMenu}>
-                            <button
-                              onClick={() =>
-                                handleAction("See Details", founder)
-                              }
-                            >
-                              See Details
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleAction(
-                                  founder.status === "Active"
-                                    ? "Deactivate"
-                                    : "Reactivate",
-                                  founder
-                                )
-                              }
-                            >
-                              {founder.status === "Active"
-                                ? "Deactivate Founder"
-                                : "Reactivate Founder"}
-                            </button>
-                            <button
-                              onClick={() => handleAction("Delete", founder)}
-                              className={styles.deleteAction}
-                            >
-                              Delete Founder
-                            </button>
+                {founders.map((founder) => {
+                  const founderId = getFounderId(founder);
+                  return (
+                    <tr key={founderId}>
+                      <td>
+                        <div className={styles.userCell}>
+                          <div className={styles.avatar}>
+                            {founder.avatar ? (
+                              <Image
+                                src={founder.avatar}
+                                alt={founder.name}
+                                width={40}
+                                height={40}
+                              />
+                            ) : (
+                              <span>
+                                {founder.firstName?.[0] ||
+                                  founder.name?.charAt(0) ||
+                                  "F"}
+                              </span>
+                            )}
                           </div>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Mobile Card View */}
-            <div className={styles.mobileCards}>
-              {founders.map((founder) => (
-                <div key={founder.id} className={styles.mobileCard}>
-                  <div
-                    className={styles.mobileCardHeader}
-                    onClick={() => toggleCard(founder.id)}
-                  >
-                    <div className={styles.avatar}>
-                      {founder.avatar ? (
-                        <Image
-                          src={founder.avatar}
-                          alt={founder.name}
-                          width={48}
-                          height={48}
-                        />
-                      ) : (
-                        <span>
-                          {founder.firstName?.[0] || founder.name.charAt(0)}
-                        </span>
-                      )}
-                    </div>
-                    <div className={styles.mobileCardContent}>
-                      <h4 className={styles.mobileCardName}>{founder.name}</h4>
-                      <p className={styles.mobileCardEmail}>{founder.email}</p>
-                    </div>
-                    <svg
-                      className={`${styles.expandIcon} ${
-                        expandedCardId === founder.id ? styles.expanded : ""
-                      }`}
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
-                  </div>
-
-                  {expandedCardId === founder.id && (
-                    <div className={styles.mobileCardDetails}>
-                      <div className={styles.detailRow}>
-                        <span className={styles.detailLabel}>Phone Number</span>
-                        <span className={styles.detailValue}>
-                          {founder.phone}
-                        </span>
-                      </div>
-                      <div className={styles.detailRow}>
-                        <span className={styles.detailLabel}>Projects</span>
-                        <span className={styles.detailValue}>
-                          {founder.projectsCount || 0}
-                        </span>
-                      </div>
-                      <div className={styles.detailRow}>
-                        <span className={styles.detailLabel}>Joined Date</span>
-                        <span className={styles.detailValue}>
-                          {founder.joinedDate}
-                        </span>
-                      </div>
-                      <div className={styles.detailRow}>
-                        <span className={styles.detailLabel}>Status</span>
+                          <div>
+                            <p className={styles.userName}>
+                              {founder.name || "N/A"}
+                            </p>
+                            <p className={styles.userEmail}>
+                              {founder.email || "N/A"}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td>{founder.phone || "N/A"}</td>
+                      <td>{founder.projectsCount || 0}</td>
+                      <td>{founder.joinedDate || "N/A"}</td>
+                      <td>
                         <span
                           className={styles.statusBadge}
                           style={{
@@ -357,72 +261,217 @@ const FoundersTable: React.FC<FoundersTableProps> = ({
                         >
                           {founder.status}
                         </span>
-                      </div>
+                      </td>
+                      <td>
+                        <div className={styles.actionWrapper}>
+                          <button
+                            className={styles.actionButton}
+                            onClick={(e) => toggleActionMenu(founderId, e)}
+                          >
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                            >
+                              <circle cx="12" cy="12" r="2" />
+                              <circle cx="12" cy="5" r="2" />
+                              <circle cx="12" cy="19" r="2" />
+                            </svg>
+                          </button>
 
-                      <div className={styles.mobileActions}>
-                        <button
-                          className={styles.mobileActionButton}
-                          onClick={() => handleAction("See Details", founder)}
-                        >
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <circle cx="12" cy="12" r="10" />
-                            <circle cx="12" cy="12" r="3" />
-                          </svg>
-                          Details
-                        </button>
-                        <button
-                          className={styles.mobileActionButton}
-                          onClick={() =>
-                            handleAction(
-                              founder.status === "Active"
-                                ? "Deactivate"
-                                : "Reactivate",
-                              founder
-                            )
-                          }
-                        >
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M3 3l18 18M6 6v12a2 2 0 002 2h8a2 2 0 002-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
-                          </svg>
-                          {founder.status === "Active"
-                            ? "Deactivate"
-                            : "Reactivate"}
-                        </button>
-                        <button
-                          className={`${styles.mobileActionButton} ${styles.deleteButton}`}
-                          onClick={() => handleAction("Delete", founder)}
-                        >
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                          >
-                            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" />
-                          </svg>
-                          Delete
-                        </button>
+                          {openActionMenuId === founderId && (
+                            <div className={styles.actionMenu}>
+                              <button
+                                onClick={() =>
+                                  handleAction("See Details", founder)
+                                }
+                              >
+                                See Details
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleAction(
+                                    founder.status === "Active"
+                                      ? "Deactivate"
+                                      : "Reactivate",
+                                    founder
+                                  )
+                                }
+                              >
+                                {founder.status === "Active"
+                                  ? "Deactivate Founder"
+                                  : "Reactivate Founder"}
+                              </button>
+                              <button
+                                onClick={() => handleAction("Delete", founder)}
+                                className={styles.deleteAction}
+                              >
+                                Delete Founder
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {/* Mobile Card View */}
+            <div className={styles.mobileCards}>
+              {founders.map((founder) => {
+                const founderId = getFounderId(founder);
+                return (
+                  <div key={founderId} className={styles.mobileCard}>
+                    <div
+                      className={styles.mobileCardHeader}
+                      onClick={() => toggleCard(founderId)}
+                    >
+                      <div className={styles.avatar}>
+                        {founder.avatar ? (
+                          <Image
+                            src={founder.avatar}
+                            alt={founder.name}
+                            width={48}
+                            height={48}
+                          />
+                        ) : (
+                          <span>
+                            {founder.firstName?.[0] ||
+                              founder.name?.charAt(0) ||
+                              "F"}
+                          </span>
+                        )}
                       </div>
+                      <div className={styles.mobileCardContent}>
+                        <h4 className={styles.mobileCardName}>
+                          {founder.name || "N/A"}
+                        </h4>
+                        <p className={styles.mobileCardEmail}>
+                          {founder.email || "N/A"}
+                        </p>
+                      </div>
+                      <svg
+                        className={`${styles.expandIcon} ${
+                          expandedCardId === founderId ? styles.expanded : ""
+                        }`}
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {expandedCardId === founderId && (
+                      <div className={styles.mobileCardDetails}>
+                        <div className={styles.detailRow}>
+                          <span className={styles.detailLabel}>
+                            Phone Number
+                          </span>
+                          <span className={styles.detailValue}>
+                            {founder.phone || "N/A"}
+                          </span>
+                        </div>
+                        <div className={styles.detailRow}>
+                          <span className={styles.detailLabel}>Projects</span>
+                          <span className={styles.detailValue}>
+                            {founder.projectsCount || 0}
+                          </span>
+                        </div>
+                        <div className={styles.detailRow}>
+                          <span className={styles.detailLabel}>
+                            Joined Date
+                          </span>
+                          <span className={styles.detailValue}>
+                            {founder.joinedDate || "N/A"}
+                          </span>
+                        </div>
+                        <div className={styles.detailRow}>
+                          <span className={styles.detailLabel}>Status</span>
+                          <span
+                            className={styles.statusBadge}
+                            style={{
+                              backgroundColor: `${getStatusColor(
+                                founder.status
+                              )}20`,
+                              color: getStatusColor(founder.status),
+                            }}
+                          >
+                            {founder.status}
+                          </span>
+                        </div>
+
+                        <div className={styles.mobileActions}>
+                          <button
+                            className={styles.mobileActionButton}
+                            onClick={() => handleAction("See Details", founder)}
+                          >
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <circle cx="12" cy="12" r="10" />
+                              <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            Details
+                          </button>
+                          <button
+                            className={styles.mobileActionButton}
+                            onClick={() =>
+                              handleAction(
+                                founder.status === "Active"
+                                  ? "Deactivate"
+                                  : "Reactivate",
+                                founder
+                              )
+                            }
+                          >
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d="M3 3l18 18M6 6v12a2 2 0 002 2h8a2 2 0 002-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                            </svg>
+                            {founder.status === "Active"
+                              ? "Deactivate"
+                              : "Reactivate"}
+                          </button>
+                          <button
+                            className={`${styles.mobileActionButton} ${styles.deleteButton}`}
+                            onClick={() => handleAction("Delete", founder)}
+                          >
+                            <svg
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" />
+                            </svg>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

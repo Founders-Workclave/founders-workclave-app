@@ -7,11 +7,11 @@ import {
   UserProfile,
   ApiError,
 } from "@/lib/api/clientsService/clientsProfile";
-import ImageUpload from "../agencySettings/imageUpload";
 import FormInput from "../agencySettings/formInput";
 import PhoneNumberInput from "../agencySettings/phoneNumberInput";
 import AllLoading from "@/layout/Loader";
 import PasswordChangeComponent from "../changePassword";
+import ProfileUploadWithService from "../agencySettings/imageUpload/profileUpload";
 
 interface ProfileData {
   companyName: string;
@@ -33,11 +33,9 @@ const ManagersProfileTab: React.FC = () => {
   });
 
   const [profileImage, setProfileImage] = useState<string>("");
-  const [, setPendingImageFile] = useState<File | null>(null);
   const [userInfo, setUserInfo] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -124,80 +122,6 @@ const ManagersProfileTab: React.FC = () => {
     setSuccessMessage(null);
   };
 
-  const handleImageUpload = async (imageDataUrl: string) => {
-    try {
-      setIsUploadingLogo(true);
-      setError(null);
-      setSuccessMessage(null);
-
-      console.log("🎨 Starting image upload...");
-
-      // Convert base64 data URL to File object
-      const file = await dataURLtoFile(imageDataUrl, "logo.png");
-      setPendingImageFile(file);
-
-      // Update preview immediately (optimistic update)
-      setProfileImage(imageDataUrl);
-
-      // Upload to API
-      console.log("📤 Uploading to API...");
-      const response = await profileService.uploadLogo(file);
-      console.log("📥 Upload response:", response);
-
-      if (response.logoUrl) {
-        console.log("✅ Logo URL received:", response.logoUrl);
-        setProfileImage(response.logoUrl);
-        setSuccessMessage("Logo uploaded successfully!");
-      } else {
-        console.log("✅ Upload successful but no URL returned");
-        setSuccessMessage(response.message || "Logo uploaded successfully!");
-      }
-
-      // IMPORTANT: Refetch profile to get the updated image from server
-      console.log("🔄 Refetching profile to confirm upload...");
-      const updatedUser = await profileService.fetchUserProfile();
-      console.log("👤 Updated user profile:", updatedUser);
-
-      if (updatedUser.profileImage) {
-        setProfileImage(updatedUser.profileImage);
-        console.log(
-          "✅ Profile image updated from server:",
-          updatedUser.profileImage
-        );
-      } else {
-        console.warn("⚠️ No profile image in updated user data");
-      }
-
-      setPendingImageFile(null);
-    } catch (err) {
-      console.error("❌ Error in handleImageUpload:", err);
-
-      // Revert preview on error
-      const user = profileService.getUserProfile();
-      setProfileImage(user?.profileImage || "");
-
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Failed to upload logo");
-      }
-    } finally {
-      setIsUploadingLogo(false);
-    }
-  };
-
-  // Helper function to convert data URL to File
-  const dataURLtoFile = async (
-    dataUrl: string,
-    filename: string
-  ): Promise<File> => {
-    const res = await fetch(dataUrl);
-    const blob = await res.blob();
-    return new File([blob], filename, { type: blob.type });
-  };
-
   const handleSave = async () => {
     try {
       setIsSaving(true);
@@ -272,18 +196,23 @@ const ManagersProfileTab: React.FC = () => {
           <div className={styles.successMessage}>{successMessage}</div>
         )}
 
-        <ImageUpload
+        <ProfileUploadWithService
           currentImage={profileImage}
-          onImageUpload={handleImageUpload}
           userName={userInfo.name}
+          onUploadSuccess={(imageUrl) => {
+            setProfileImage(imageUrl);
+            setSuccessMessage("Profile image updated!");
+            setTimeout(() => setSuccessMessage(null), 3000);
+          }}
+          onUploadError={(errorMsg) => {
+            setError(errorMsg);
+            setTimeout(() => setError(null), 5000);
+          }}
+          onUploadStart={() => {
+            setError(null);
+            setSuccessMessage(null);
+          }}
         />
-
-        {isUploadingLogo && (
-          <div className={styles.uploadingIndicator}>
-            <span className={styles.spinner}></span>
-            <span>Uploading logo...</span>
-          </div>
-        )}
 
         <div className={styles.userInfo}>
           <h3 className={styles.userName}>{userInfo.name}</h3>
@@ -327,7 +256,7 @@ const ManagersProfileTab: React.FC = () => {
         <button
           className={styles.saveButton}
           onClick={handleSave}
-          disabled={isSaving || isUploadingLogo}
+          disabled={isSaving}
         >
           {isSaving ? "Saving..." : "Save Changes"}
         </button>

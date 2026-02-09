@@ -49,12 +49,14 @@
 
 .tableWrapper {
   overflow-x: auto;
+  width: 100%;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   font-family: "inter", sans-serif;
+  min-width: 900px;
 }
 
 .table th {
@@ -65,6 +67,7 @@
   font-weight: 700;
   color: #8e98a8;
   background: #fafafa;
+  white-space: nowrap;
 }
 
 .table td {
@@ -72,12 +75,14 @@
   border-bottom: 1px solid #e4e4e4;
   font-size: 14px;
   color: #111827;
+  position: relative;
 }
 
 .userCell {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 200px;
 }
 
 .avatar {
@@ -92,6 +97,7 @@
   font-weight: 600;
   font-family: "inter", sans-serif;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .avatar img {
@@ -129,38 +135,47 @@
   border-radius: 12px;
   font-size: 12px;
   font-weight: 400;
+  white-space: nowrap;
 }
 
 .actionButton {
   background: none;
-  border: none;
-  color: #8e98a8;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 8px;
+  border-radius: 6px;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  position: relative;
 }
 
 .actionButton:hover {
   background: #f3f4f6;
+  border-color: #d1d5db;
 }
 
 .actionWrapper {
   position: relative;
+  display: flex;
+  justify-content: center;
 }
 
 .actionMenu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  margin-top: 4px;
+  position: fixed;
   background: white;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  min-width: 180px;
-  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1000;
   overflow: hidden;
+  transform: translateY(-100%);
+  margin-top: -8px;
 }
 
 .actionMenu button {
@@ -174,6 +189,7 @@
   cursor: pointer;
   transition: background 0.2s;
   border-bottom: 1px solid #f3f4f6;
+  white-space: nowrap;
 }
 
 .actionMenu button:last-child {
@@ -199,6 +215,7 @@
   font-family: "inter", sans-serif;
   margin-top: 24px;
   gap: 16px;
+  flex-wrap: wrap;
 }
 
 .pageInfo {
@@ -209,6 +226,7 @@
 .pageButtons {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .pageButton {
@@ -236,7 +254,7 @@
 
 .navButtons {
   display: flex;
-  gap: 1px;
+  gap: 8px;
 }
 
 .navButton {
@@ -262,40 +280,51 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 768px) {
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 16px;
-  }
+.loadingOverlay {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 20px;
+}
 
-  .searchWrapper {
-    width: 100%;
-  }
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
-  .tableWrapper {
-    overflow: visible;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
 
-  .table {
-    display: none;
-  }
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
 
-  /* Mobile Card View */
-  .mobileCards {
-    display: block;
-  }
+.emptyState svg {
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
 
-  .pagination {
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+.emptyState p {
+  font-size: 16px;
+  color: #6b7280;
+  margin: 8px 0;
+}
 
-  .pageInfo {
-    width: 100%;
-    text-align: center;
-    margin-bottom: 12px;
-  }
+.emptySubtext {
+  font-size: 14px;
+  color: #9ca3af;
 }
 
 /* Mobile Card Styles */
@@ -321,7 +350,7 @@
 }
 
 .mobileCardHeader:hover {
-  background: #ffffff;
+  background: #fafafa;
 }
 
 .mobileCard .avatar {
@@ -411,23 +440,27 @@
 
 .mobileActions {
   display: flex;
-  gap: 20px;
+  gap: 12px;
   margin-top: 16px;
   padding-top: 16px;
+  border-top: 1px solid #f3f4f6;
 }
 
 .mobileActionButton {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 10px 12px;
   background: white;
-  border: 0px;
+  border: 1px solid #e5e7eb;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   color: #6b7280;
   cursor: pointer;
   transition: all 0.2s;
+  font-family: "inter", sans-serif;
 }
 
 .mobileActionButton:hover {
@@ -445,12 +478,61 @@
   border-color: #fca5a5;
 }
 
+/* Tablet adjustments */
+@media (max-width: 1024px) {
+  .container {
+    margin: 16px;
+    padding: 16px;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 6px;
+    font-size: 13px;
+  }
+
+  .userName,
+  .userEmail {
+    font-size: 13px;
+  }
+}
+
+/* Mobile view */
 @media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .searchWrapper {
+    width: 100%;
+  }
+
+  .tableWrapper {
+    overflow: visible;
+  }
+
   .table {
     display: none;
   }
 
   .mobileCards {
     display: block;
+  }
+
+  .pagination {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .pageInfo {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .pageButtons {
+    justify-content: center;
   }
 }

@@ -42,25 +42,14 @@ export function useCreateProject(): UseCreateProjectReturn {
         return false;
       }
 
-      // Upload PRD file if exists
-      let documentLink: string | undefined;
-      if (formData.prdFile) {
-        try {
-          documentLink = await projectService.uploadDocument(formData.prdFile);
-        } catch (uploadError) {
-          console.error("Error uploading document:", uploadError);
-          // Continue even if upload fails
-        }
-      }
-
       // Transform form data to API request format
-      const apiRequest = transformProjectFormToApiRequest(
-        formData,
-        documentLink
-      );
+      const apiRequest = transformProjectFormToApiRequest(formData);
 
-      // Submit project
-      await projectService.createProject(apiRequest);
+      // Submit project with PRD file if exists
+      await projectService.createProject(
+        apiRequest,
+        formData.prdFile || undefined
+      );
 
       return true;
     } catch (err) {

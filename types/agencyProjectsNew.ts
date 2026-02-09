@@ -51,6 +51,7 @@ export interface DashboardStats {
 }
 
 export interface ProjectFeature {
+  id: unknown;
   feature: string;
 }
 

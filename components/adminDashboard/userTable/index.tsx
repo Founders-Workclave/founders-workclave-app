@@ -22,9 +22,11 @@ interface UsersTableProps {
   totalPages: number;
   onPageChange: (page: number) => void;
   onSearch: (query: string) => void;
-  onUserSelect?: (userId: string) => void; // New prop for handling user selection
+  onUserSelect?: (userId: string) => void;
   title: string;
 }
+
+const USERS_PER_PAGE = 10;
 
 const UsersTable: React.FC<UsersTableProps> = ({
   users,
@@ -71,35 +73,27 @@ const UsersTable: React.FC<UsersTableProps> = ({
     console.log(`${action} user:`, userId);
     setOpenActionMenuId(null);
 
-    // Handle different actions
     switch (action) {
       case "See Details":
-        // Navigate to user profile
         if (onUserSelect) {
           onUserSelect(userId);
         }
         break;
 
       case "Deactivate":
-        // Handle deactivation logic
         console.log("Deactivating user:", userId);
-        // You can add API call here
         break;
 
       case "Reactivate":
-        // Handle reactivation logic
         console.log("Reactivating user:", userId);
-        // You can add API call here
         break;
 
       case "Delete":
-        // Handle deletion logic with confirmation
         const confirmDelete = window.confirm(
           "Are you sure you want to delete this user?"
         );
         if (confirmDelete) {
           console.log("Deleting user:", userId);
-          // You can add API call here
         }
         break;
 
@@ -107,6 +101,11 @@ const UsersTable: React.FC<UsersTableProps> = ({
         console.log("Unknown action:", action);
     }
   };
+
+  // Calculate pagination
+  const startIndex = (currentPage - 1) * USERS_PER_PAGE;
+  const endIndex = startIndex + USERS_PER_PAGE;
+  const paginatedUsers = users.slice(startIndex, endIndex);
 
   const renderPageNumbers = () => {
     const pages = [];
@@ -178,7 +177,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
             </tr>
           </thead>
           <tbody>
-            {users.map((user) => (
+            {paginatedUsers.map((user) => (
               <tr key={user.id}>
                 <td>
                   <div className={styles.userCell}>
@@ -238,11 +237,6 @@ const UsersTable: React.FC<UsersTableProps> = ({
                     {openActionMenuId === user.id && (
                       <div className={styles.actionMenu}>
                         <button
-                          onClick={() => handleAction("See Details", user.id)}
-                        >
-                          See Details
-                        </button>
-                        <button
                           onClick={() =>
                             handleAction(
                               user.status === "Active"
@@ -273,7 +267,7 @@ const UsersTable: React.FC<UsersTableProps> = ({
 
         {/* Mobile Card View */}
         <div className={styles.mobileCards}>
-          {users.map((user) => (
+          {paginatedUsers.map((user) => (
             <div key={user.id} className={styles.mobileCard}>
               <div
                 className={styles.mobileCardHeader}

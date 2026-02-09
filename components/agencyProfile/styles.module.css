@@ -245,15 +245,14 @@
 /* Tabs */
 .tabsContainer {
   background: white;
-  border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
 }
 
 .tabs {
-  display: flex;
-  border-bottom: 1px solid #e5e7eb;
-  background: #fafafa;
+  border-bottom: 1px solid #e4e4e4;
+  background: transparent;
+  margin-bottom: 16px;
 }
 
 .tab {
@@ -273,11 +272,12 @@
 .tab:hover {
   color: #5865f2;
   background: #f9fafb;
+  font-weight: 600;
 }
 
 .activeTab {
   color: #5865f2;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .activeTab::after {
@@ -291,7 +291,6 @@
 }
 
 .tabContent {
-  padding: 48px 24px;
   min-height: 400px;
 }
 

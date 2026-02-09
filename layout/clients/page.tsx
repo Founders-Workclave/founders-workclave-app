@@ -118,7 +118,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
                     onClick={closeMobileMenu}
                   >
                     {items.icon}
-                    <Link href={items.link}>{items.label}</Link>
+                    <Link href={items.link as string}>{items.label}</Link>
                   </div>
                 );
               })}
@@ -132,11 +132,17 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
                   <div
                     key={index}
                     className={`${styles.menuListing} ${
-                      pathname.startsWith(items.link) ? styles.active : ""
+                      items.link && pathname.startsWith(items.link)
+                        ? styles.active
+                        : ""
                     }`}
                   >
                     {items.icon}
-                    <Link href={items.link}>{items.label}</Link>
+                    {items.link ? (
+                      <Link href={items.link as string}>{items.label}</Link>
+                    ) : (
+                      <span>{items.label}</span>
+                    )}
                   </div>
                 );
               })}
@@ -151,9 +157,14 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
                   className={`${styles.menuListing} ${
                     items.link === pathname ? styles.active : ""
                   }`}
+                  onClick={closeMobileMenu}
                 >
                   {items.icon}
-                  <Link href={items.link}>{items.label}</Link>
+                  {items.link ? (
+                    <Link href={items.link}>{items.label}</Link>
+                  ) : (
+                    <span>{items.label}</span>
+                  )}
                 </div>
               );
             })}

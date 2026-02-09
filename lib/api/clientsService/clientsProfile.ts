@@ -15,7 +15,7 @@ export interface UserProfile {
   lastName?: string;
   name: string;
   email: string;
-  role: "admin" | "user";
+  role: "admin" | "user" | "clients" | "manager";
   userType?: string;
   username: string;
   companyName?: string;

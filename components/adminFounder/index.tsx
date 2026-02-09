@@ -11,11 +11,19 @@ import {
 } from "../../lib/api/foundersTable";
 import type { Founder } from "@/types/founder";
 import Loader from "../loader";
+import type { UserProfileData } from "@/types/userProfile";
+
+interface ProjectResponse {
+  id: string;
+  name: string;
+  status: string;
+}
 
 const AdminFounderComp: React.FC = () => {
   const [currentView, setCurrentView] = useState<"table" | "profile">("table");
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [selectedUserData, setSelectedUserData] = useState<unknown>(null);
+  const [selectedUserData, setSelectedUserData] =
+    useState<UserProfileData | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [founders, setFounders] = useState<Founder[]>([]);
@@ -40,6 +48,7 @@ const AdminFounderComp: React.FC = () => {
       if (result.success) {
         const validFounders = result.founders.map((founder) => ({
           ...founder,
+          founderID: founder.founderID || founder.id,
           status: (["Active", "Inactive", "Suspended"].includes(founder.status)
             ? founder.status
             : "Inactive") as "Active" | "Inactive" | "Suspended",
@@ -60,7 +69,6 @@ const AdminFounderComp: React.FC = () => {
   const handleFounderSelect = async (founderId: string) => {
     console.log("🔍 See Details founder:", founderId);
 
-    // First, check what founder data we have in the table
     const founderFromTable = founders.find((f) => f.id === founderId);
     console.log("📋 Founder from table:", founderFromTable);
 
@@ -68,30 +76,69 @@ const AdminFounderComp: React.FC = () => {
     setProfileLoading(true);
     setCurrentView("profile");
 
-    // Fetch detailed founder data with projects
     const result = await fetchFounderById(founderId);
 
-    console.log("📊 Fetch result:", result); // Debug log
+    console.log("📊 Fetch result:", result);
 
     if (result.success && result.founder) {
-      const userData = {
-        ...result.founder,
-        role: "Founder" as const,
-        projects: result.projects || [],
-        prds: [], // Add PRDs when endpoint is available
+      const validStatus: "Active" | "Inactive" | "Suspended" = [
+        "Active",
+        "Inactive",
+        "Suspended",
+      ].includes(result.founder.status)
+        ? (result.founder.status as "Active" | "Inactive" | "Suspended")
+        : "Inactive";
+
+      const userData: UserProfileData = {
+        id: result.founder.id,
+        name: result.founder.name,
+        email: result.founder.email,
+        phone: result.founder.phone,
+        agency: result.founder.agency || "N/A",
+        joinedDate: result.founder.joinedDate || new Date().toISOString(),
+        status: validStatus,
+        role: "Founder",
+        projects: Array.isArray(result.projects)
+          ? (result.projects as ProjectResponse[]).map((project) => ({
+              id: project.id,
+              title: project.name,
+              stage: "N/A",
+              progress: 0,
+              status: (["In-Progress", "Completed", "Pending"].includes(
+                project.status
+              )
+                ? project.status
+                : "Pending") as "In-Progress" | "Completed" | "Pending",
+            }))
+          : [],
+        prds: [],
       };
 
-      console.log("👤 Setting user data:", userData); // Debug log
+      console.log("👤 Setting user data:", userData);
       setSelectedUserData(userData);
     } else {
       console.error("❌ Failed to fetch founder details:", result.error);
-      // Fallback to basic founder data from table
       const basicFounder = founders.find((f) => f.id === founderId);
       if (basicFounder) {
         console.log("⚠️ Using fallback data from table");
+
+        const validStatus: "Active" | "Inactive" | "Suspended" = [
+          "Active",
+          "Inactive",
+          "Suspended",
+        ].includes(basicFounder.status)
+          ? (basicFounder.status as "Active" | "Inactive" | "Suspended")
+          : "Inactive";
+
         setSelectedUserData({
-          ...basicFounder,
-          role: "Founder" as const,
+          id: basicFounder.id,
+          name: basicFounder.name,
+          email: basicFounder.email,
+          phone: basicFounder.phone,
+          agency: basicFounder.agency || "N/A",
+          joinedDate: basicFounder.joinedDate || new Date().toISOString(),
+          status: validStatus,
+          role: "Founder",
           projects: [],
           prds: [],
         });
@@ -121,19 +168,20 @@ const AdminFounderComp: React.FC = () => {
     currentStatus: string
   ) => {
     const newActiveStatus = currentStatus !== "Active";
+    const newStatus: "Active" | "Inactive" = newActiveStatus
+      ? "Active"
+      : "Inactive";
 
     const result = await updateFounderStatus(founderId, newActiveStatus);
 
     if (result.success) {
-      // Refresh the founders list
       setCurrentPage((prev) => prev);
       alert(result.message);
 
-      // If viewing this user's profile, update the profile data
       if (selectedUserId === founderId && selectedUserData) {
         setSelectedUserData({
           ...selectedUserData,
-          status: newActiveStatus ? "Active" : "Inactive",
+          status: newStatus,
         });
       }
     } else {
@@ -151,7 +199,6 @@ const AdminFounderComp: React.FC = () => {
     const result = await deleteFounder(founderId);
 
     if (result.success) {
-      // If viewing the deleted user's profile, go back to table
       if (selectedUserId === founderId) {
         handleBackToTable();
       }

@@ -30,5 +30,11 @@ export const formatStatus = (status: string | undefined): string => {
 
 export const formatCurrency = (amount: number | string): string => {
   const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+
+  // Check if the number is valid
+  if (isNaN(numAmount)) {
+    return "$0";
+  }
+
   return `$${numAmount.toLocaleString()}`;
 };

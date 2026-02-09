@@ -16,6 +16,7 @@ export interface FoundersListResponse {
 }
 
 export interface Founder {
+  founderID: string;
   id: string;
   name: string;
   email: string;

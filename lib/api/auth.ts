@@ -1082,3 +1082,38 @@ export const authApi = {
     }
   },
 };
+
+/**
+ * Clear all authentication data and logout the user
+ */
+export const clearAuth = (): void => {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    console.log("🧹 Clearing authentication data...");
+
+    // Remove authentication tokens
+    localStorage.removeItem("token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("authToken");
+
+    // Remove user data
+    localStorage.removeItem("user");
+    localStorage.removeItem("userProfile");
+    localStorage.removeItem("userData");
+
+    // Clear any other auth-related items
+    localStorage.removeItem("sessionId");
+    localStorage.removeItem("expiresAt");
+
+    // Clear sessionStorage
+    sessionStorage.clear();
+
+    console.log("✅ Authentication data cleared successfully");
+  } catch (error) {
+    console.error("❌ Error clearing auth data:", error);
+  }
+};

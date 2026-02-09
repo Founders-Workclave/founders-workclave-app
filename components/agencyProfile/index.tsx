@@ -6,54 +6,12 @@ import MessageApp from "@/svgs/messageApp";
 import DeleteUser from "@/svgs/deleteUser";
 import AdminRevenue from "@/svgs/adminRevenue";
 import AdminFounder from "@/svgs/adminFounders";
-
 import AdminPrds from "@/svgs/adminPrds";
-
-export interface Project {
-  id: string;
-  title: string;
-  stage: string;
-  progress: number;
-  status: string;
-  client?: string;
-  pm?: string;
-}
-
-export interface PRD {
-  id: string;
-  title: string;
-  projectId: string;
-  projectName: string;
-  description: string;
-  createdDate: string;
-  lastModified: string;
-  duration: string;
-  status: string;
-  prdUrl: string;
-}
-
-export interface Client {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  company: string;
-  projectsCount: number;
-  joinedDate: string;
-  status: "Active" | "Inactive";
-}
-
-export interface ProductManager {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  role: string;
-  projectsCount: number;
-  joinedDate: string;
-  status: "Active" | "Inactive";
-  avatar?: string;
-}
+import AdminAgencyProjects from "../adminAgencyProjects";
+import type { PRD, ProductManager } from "../../types/user";
+import AdminAgencyClients from "../adminClientsList";
+import AdminManagersPage from "../adminManagersList";
+import EmptyPrd from "@/svgs/emptyprd";
 
 export interface AgencyProfileData {
   id: string;
@@ -66,11 +24,9 @@ export interface AgencyProfileData {
   status: "Active" | "Inactive" | "Suspended";
   avatar?: string;
   plan: "Starter" | "Professional" | "Enterprise";
-  clients?: Client[];
   productManagers?: ProductManager[];
   pms: number;
   mrr: number;
-  projects?: Project[];
   prds?: PRD[];
 }
 
@@ -219,7 +175,7 @@ const AgencyProfile: React.FC<AgencyProfileProps> = ({ agency, onBack }) => {
           </div>
           <div className={styles.statInfo}>
             <p className={styles.statLabel}>Clients</p>
-            <p className={styles.statValue}>{agency.clients?.length || 0}</p>
+            <p className={styles.statValue}>0</p>
           </div>
         </div>
 
@@ -265,343 +221,22 @@ const AgencyProfile: React.FC<AgencyProfileProps> = ({ agency, onBack }) => {
         {/* Tab Content */}
         <div className={styles.tabContent}>
           {activeTab === "Projects" && (
-            <>
-              {agency.projects && agency.projects.length > 0 ? (
-                <div className={styles.tableContainer}>
-                  <table className={styles.dataTable}>
-                    <thead>
-                      <tr>
-                        <th>Project Name</th>
-                        <th>Stage</th>
-                        <th>Client</th>
-                        <th>PM</th>
-                        <th>Progress</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {agency.projects.map((project) => (
-                        <tr key={project.id}>
-                          <td>{project.title}</td>
-                          <td>{project.stage}</td>
-                          <td>{project.client || "N/A"}</td>
-                          <td>{project.pm || "N/A"}</td>
-                          <td>
-                            <div className={styles.progressBar}>
-                              <div
-                                className={styles.progressFill}
-                                style={{ width: `${project.progress}%` }}
-                              />
-                              <span className={styles.progressText}>
-                                {project.progress}%
-                              </span>
-                            </div>
-                          </td>
-                          <td>
-                            <span
-                              className={styles.statusBadge}
-                              style={{
-                                backgroundColor:
-                                  project.status === "Completed"
-                                    ? "#ECFDF3"
-                                    : "#EEF2FF",
-                                color:
-                                  project.status === "Completed"
-                                    ? "#00B049"
-                                    : "#5865F2",
-                              }}
-                            >
-                              {project.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#5865F2"
-                      strokeWidth="1.5"
-                    >
-                      <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-                    </svg>
-                  </div>
-                  <h3 className={styles.emptyTitle}>No Project Yet!</h3>
-                  <p className={styles.emptyText}>No Project created yet</p>
-                  <button className={styles.createButton}>
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <line x1="12" y1="5" x2="12" y2="19" />
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                    </svg>
-                    Create New
-                  </button>
-                </div>
-              )}
-            </>
+            <AdminAgencyProjects agencyId={agency.id} />
           )}
 
           {activeTab === "Clients" && (
-            <>
-              {agency.clients && agency.clients.length > 0 ? (
-                <div className={styles.tableContainer}>
-                  <table className={styles.dataTable}>
-                    <thead>
-                      <tr>
-                        <th>Client Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Company</th>
-                        <th>Projects</th>
-                        <th>Joined Date</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {agency.clients.map((client) => (
-                        <tr key={client.id}>
-                          <td>
-                            <div className={styles.nameCell}>
-                              <div className={styles.avatar}>
-                                {client.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")
-                                  .toUpperCase()}
-                              </div>
-                              {client.name}
-                            </div>
-                          </td>
-                          <td>{client.email}</td>
-                          <td>{client.phone}</td>
-                          <td>{client.company}</td>
-                          <td>{client.projectsCount}</td>
-                          <td>{client.joinedDate}</td>
-                          <td>
-                            <span
-                              className={styles.statusBadge}
-                              style={{
-                                backgroundColor:
-                                  client.status === "Active"
-                                    ? "#ECFDF3"
-                                    : "#F3F4F6",
-                                color:
-                                  client.status === "Active"
-                                    ? "#00B049"
-                                    : "#6B7280",
-                              }}
-                            >
-                              {client.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#5865F2"
-                      strokeWidth="1.5"
-                    >
-                      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-                    </svg>
-                  </div>
-                  <h3 className={styles.emptyTitle}>No Clients Yet!</h3>
-                  <p className={styles.emptyText}>No clients added yet</p>
-                </div>
-              )}
-            </>
+            <AdminAgencyClients agencyId={agency.id} />
           )}
 
-          {activeTab === "PM's" && (
-            <>
-              {agency.productManagers && agency.productManagers.length > 0 ? (
-                <div className={styles.tableContainer}>
-                  <table className={styles.dataTable}>
-                    <thead>
-                      <tr>
-                        <th>PM Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Role</th>
-                        <th>Projects</th>
-                        <th>Joined Date</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {agency.productManagers.map((pm) => (
-                        <tr key={pm.id}>
-                          <td>
-                            <div className={styles.nameCell}>
-                              <div className={styles.avatar}>
-                                {pm.avatar ? (
-                                  <Image
-                                    src={pm.avatar}
-                                    alt={pm.name}
-                                    width={32}
-                                    height={32}
-                                  />
-                                ) : (
-                                  pm.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")
-                                    .toUpperCase()
-                                )}
-                              </div>
-                              {pm.name}
-                            </div>
-                          </td>
-                          <td>{pm.email}</td>
-                          <td>{pm.phone}</td>
-                          <td>{pm.role}</td>
-                          <td>{pm.projectsCount}</td>
-                          <td>{pm.joinedDate}</td>
-                          <td>
-                            <span
-                              className={styles.statusBadge}
-                              style={{
-                                backgroundColor:
-                                  pm.status === "Active"
-                                    ? "#ECFDF3"
-                                    : "#F3F4F6",
-                                color:
-                                  pm.status === "Active"
-                                    ? "#00B049"
-                                    : "#6B7280",
-                              }}
-                            >
-                              {pm.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#5865F2"
-                      strokeWidth="1.5"
-                    >
-                      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" />
-                    </svg>
-                  </div>
-                  <h3 className={styles.emptyTitle}>
-                    No Product Managers Yet!
-                  </h3>
-                  <p className={styles.emptyText}>
-                    No product managers added yet
-                  </p>
-                </div>
-              )}
-            </>
-          )}
+          {activeTab === "PM's" && <AdminManagersPage agencyId={agency.id} />}
 
           {activeTab === "PRDs" && (
-            <>
-              {agency.prds && agency.prds.length > 0 ? (
-                <div className={styles.tableContainer}>
-                  <table className={styles.dataTable}>
-                    <thead>
-                      <tr>
-                        <th>PRD Title</th>
-                        <th>Project</th>
-                        <th>Description</th>
-                        <th>Created Date</th>
-                        <th>Last Modified</th>
-                        <th>Duration</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {agency.prds.map((prd) => (
-                        <tr key={prd.id}>
-                          <td>{prd.title}</td>
-                          <td>{prd.projectName}</td>
-                          <td className={styles.descriptionCell}>
-                            {prd.description}
-                          </td>
-                          <td>{prd.createdDate}</td>
-                          <td>{prd.lastModified}</td>
-                          <td>{prd.duration}</td>
-                          <td>
-                            <span
-                              className={styles.statusBadge}
-                              style={{
-                                backgroundColor:
-                                  prd.status === "Approved"
-                                    ? "#ECFDF3"
-                                    : prd.status === "Review"
-                                    ? "#FEF3C7"
-                                    : "#EEF2FF",
-                                color:
-                                  prd.status === "Approved"
-                                    ? "#00B049"
-                                    : prd.status === "Review"
-                                    ? "#F59E0B"
-                                    : "#5865F2",
-                              }}
-                            >
-                              {prd.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className={styles.emptyState}>
-                  <div className={styles.emptyIcon}>
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="#5865F2"
-                      strokeWidth="1.5"
-                    >
-                      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                      <polyline points="14 2 14 8 20 8" />
-                    </svg>
-                  </div>
-                  <h3 className={styles.emptyTitle}>No PRDs Yet!</h3>
-                  <p className={styles.emptyText}>No PRDs generated yet</p>
-                </div>
-              )}
-            </>
+            <div className={styles.emptyState}>
+              <EmptyPrd />
+              <br />
+              <h3 className={styles.emptyTitle}>No PRDs Yet!</h3>
+              <p className={styles.emptyText}>No PRDs generated yet</p>
+            </div>
           )}
         </div>
       </div>

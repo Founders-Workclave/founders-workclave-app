@@ -2,10 +2,9 @@
 import React from "react";
 import styles from "./styles.module.css";
 import milestoneDataRaw from "../../mocks/projectMilestone.json";
-import { ProjectMilestoneData } from "@/types/project";
 
 interface PaymentTransaction {
-  id: number;
+  id: number | string;
   milestoneNumber: number;
   milestoneTitle: string;
   amount: number;
@@ -14,35 +13,53 @@ interface PaymentTransaction {
   status: "completed" | "pending" | "failed";
 }
 
+interface Milestone {
+  id: number | string;
+  number: number;
+  title: string;
+  payment: number;
+  status: string;
+  completedDate?: string;
+}
+
+interface Project {
+  milestones: Milestone[];
+}
+
 interface PaymentHistoryProps {
   projectId?: string;
 }
 
-const PaymentHistory: React.FC<PaymentHistoryProps> = ({ projectId }) => {
-  const project = milestoneDataRaw as ProjectMilestoneData;
+const PaymentHistory: React.FC<PaymentHistoryProps> = ({
+  projectId, // TODO: Use this when fetching real payment data from API
+}) => {
+  const project = milestoneDataRaw as Project;
   const totalProjectValue = project.milestones.reduce(
-    (sum, milestone) => sum + milestone.payment,
+    (sum: number, milestone: Milestone) => sum + milestone.payment,
     0
   );
 
   const paidAmount = project.milestones
-    .filter((m) => m.status === "completed")
-    .reduce((sum, milestone) => sum + milestone.payment, 0);
+    .filter((m: Milestone) => m.status === "completed")
+    .reduce((sum: number, milestone: Milestone) => sum + milestone.payment, 0);
 
   const remainingAmount = totalProjectValue - paidAmount;
 
   // Generate payment transactions from completed milestones
   const paymentTransactions: PaymentTransaction[] = project.milestones
-    .filter((m) => m.status === "completed" && m.completedDate)
-    .map((milestone, index) => ({
+    .filter((m: Milestone) => m.status === "completed" && m.completedDate)
+    .map((milestone: Milestone, index: number) => ({
       id: milestone.id,
       milestoneNumber: milestone.number,
       milestoneTitle: milestone.title,
       amount: milestone.payment,
       date: milestone.completedDate!,
-      method: index % 2 === 0 ? "Wallet" : "Paystack", // Alternate payment methods for demo
+      method: index % 2 === 0 ? "Wallet" : "Paystack",
       status: "completed" as const,
     }));
+
+  // Suppress unused variable warning
+  console.log("Project ID for future API use:", projectId);
 
   return (
     <div className={styles.container}>

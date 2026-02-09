@@ -90,20 +90,25 @@ const ProjectDetailsPage: React.FC = () => {
     try {
       setIsLoadingEditData(true);
 
+      if (!project) {
+        toast.error("Project not found");
+        return;
+      }
+
       // Fetch complete milestones with deliverables
       const milestonesData = await agencyService.getProjectMilestones(
         projectId
       );
 
-      // Combine current project data with full milestone data
+      // Combine current project data with full milestone data - ensure all required fields exist
       const combinedData = {
         ...project,
         milestones: milestonesData.milestones || [],
-        productManager: project?.productManager ?? undefined,
-      };
+        productManager: project.productManager ?? undefined,
+      } as const;
 
       // Transform to form data
-      const formData = transformApiProjectToFormData(combinedData);
+      const formData = transformApiProjectToFormData(combinedData as never);
 
       setEditFormData(formData);
       setIsEditModalOpen(true);

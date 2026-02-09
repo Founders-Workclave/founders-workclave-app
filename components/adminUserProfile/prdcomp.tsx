@@ -68,6 +68,8 @@ const PrdComp: React.FC<UserProfileProps> = ({ user }) => {
       status: getCardStatus(prd.status),
       modifiedDate: prd.lastModified,
       prdUrl: prd.prdUrl || "#",
+      documentUrl: prd.prdUrl || "#",
+      uploadedAt: prd.createdDate,
     };
 
     console.log("Converted PRD data:", converted);

@@ -1,9 +1,9 @@
+import LogoutButton from "@/components/logout";
 import AgenciesIcon from "@/svgs/agenciesIcon";
 import CalenderAdmin from "@/svgs/calender";
 import ClientsAdmin from "@/svgs/clients";
 import Dashboard from "@/svgs/dashboard";
 import FounderIcon from "@/svgs/founderIcon";
-import Logout from "@/svgs/logout";
 import Messages from "@/svgs/messages";
 import Payments from "@/svgs/payments";
 import Prd from "@/svgs/prd";
@@ -110,9 +110,9 @@ export const founderMenuItems = (userId: string, projectId: string) => [
     link: `/${userId}/profile`,
   },
   {
-    icon: <Logout />,
+    icon: <LogoutButton />,
     label: "",
-    link: "/login",
+    link: "",
   },
 ];
 
@@ -168,9 +168,9 @@ export const agencyMenuItems = [
     link: `/agency/settings`,
   },
   {
-    icon: <Logout />,
+    icon: <LogoutButton />,
     label: "",
-    link: "/login",
+    link: "",
   },
 ];
 
@@ -203,12 +203,12 @@ export const superAdminMenuItems = [
   {
     icon: <Settings />,
     label: "Settings",
-    link: "admin/settings",
+    link: "/admin/settings",
   },
   {
-    icon: <Logout />,
+    icon: <LogoutButton />,
     label: "",
-    link: "/login",
+    link: "",
   },
 ];
 
@@ -239,9 +239,9 @@ export const pmMenuItems = [
     link: "/pm/settings",
   },
   {
-    icon: <Logout />,
+    icon: <LogoutButton />,
     label: "",
-    link: "/login",
+    link: "",
   },
 ];
 
@@ -272,8 +272,7 @@ export const clientMenuItems = [
     link: "/clients/settings",
   },
   {
-    icon: <Logout />,
+    icon: <LogoutButton />,
     label: "",
-    link: "/login",
   },
 ];

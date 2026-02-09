@@ -11,7 +11,7 @@ import Milestones from "@/svgs/milestones";
 const NextMilestone = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const project = milestoneData as ProjectMilestoneData;
+  const project = milestoneData as unknown as ProjectMilestoneData;
   const nextMilestone: Milestone | undefined = project.milestones.find(
     (m) => m.status === "in-progress" || m.status === "pending"
   );
