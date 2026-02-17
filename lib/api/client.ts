@@ -1,4 +1,3 @@
-// api/client.ts
 import { getAuthToken } from "../api/auth";
 
 const BASE_URL =
@@ -19,11 +18,12 @@ export class ApiClient {
   private baseURL: string;
 
   constructor(baseURL: string) {
-    this.baseURL = baseURL.replace(/\/+$/, ""); // Remove trailing slash
+    this.baseURL = baseURL.replace(/\/+$/, ""); // Remove trailing slash from base URL only
   }
 
   private buildURL(endpoint: string, params?: Record<string, string | number>) {
-    const cleanEndpoint = endpoint.replace(/^\/+|\/+$/g, ""); // Clean endpoint
+    // Only remove leading slashes, PRESERVE trailing slashes (important for Django/DRF)
+    const cleanEndpoint = endpoint.replace(/^\/+/, "");
     let url = `${this.baseURL}/${cleanEndpoint}`;
 
     if (params) {

@@ -72,7 +72,6 @@ export const transformProjectDetail = (
     id: apiProject.id,
     projectName: apiProject.name,
     description: apiProject.description,
-    // Pass through raw status - let formatStatus handle display formatting
     status: apiProject.status,
     client: {
       id: apiProject.client,
@@ -97,7 +96,7 @@ export const transformProjectDetail = (
     lastDocumentUpload: getLastDocumentUploadText(documentCount),
     projectProgress: {
       overallCompletion: apiProject.progressPercentage,
-      milestones: [], // Will be populated from milestones endpoint
+      milestones: [],
     },
     problemStatement: apiProject.description,
     keyFeatures: apiProject.projectFeatures.map((f, index) => ({

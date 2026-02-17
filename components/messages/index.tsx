@@ -1,19 +1,15 @@
 "use client";
-import React, { useState, useCallback } from "react";
-import messagesData from "@/mocks/messages.json";
-import useWebSocket from "@/hooks/useWebSocket";
+import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
-import type { Conversation } from "./conversionList";
-import type { Message } from "./chatWindow";
-import type { WebSocketMessage } from "@/types/websocket";
+import { useConversations } from "@/hooks/useConversation";
+import { useWebSocket } from "@/hooks/useWebSocket";
+import { getCurrentUserId } from "@/lib/api/getUserId";
 import ConversationList from "./conversionList";
 import ChatWindow from "./chatWindow";
 import EmptyState from "./emptyState";
 
 interface PageProps {
-  params: {
-    userId: string;
-  };
+  params: { userId: string };
 }
 
 const MessagesPage = ({ params }: PageProps) => {
@@ -21,106 +17,100 @@ const MessagesPage = ({ params }: PageProps) => {
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
-  const [conversations, setConversations] = useState<Conversation[]>(
-    messagesData.conversations as Conversation[]
-  );
-  const [messages, setMessages] = useState<Record<string, Message[]>>(
-    messagesData.messages as Record<string, Message[]>
-  );
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
-  // WebSocket connection with proper generic type
-  const { sendMessage: sendWebSocketMessage } = useWebSocket<Message>({
-    url: process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080",
-    userId: params.userId,
-    onMessage: useCallback((wsMessage: WebSocketMessage<Message>) => {
-      // Handle incoming WebSocket messages
-      if (wsMessage.type === "message" && wsMessage.conversationId) {
-        const newMessage: Message = wsMessage.data;
-        setMessages((prev) => ({
-          ...prev,
-          [wsMessage.conversationId!]: [
-            ...(prev[wsMessage.conversationId!] || []),
-            newMessage,
-          ],
-        }));
+  const userId = params.userId || getCurrentUserId() || "";
 
-        // Update conversation list
-        setConversations((prev) =>
-          prev.map((conv) =>
-            conv.id === wsMessage.conversationId
-              ? {
-                  ...conv,
-                  lastMessage: {
-                    text: newMessage.text,
-                    timestamp: "Just now",
-                    isRead: false,
-                  },
-                  unreadCount: conv.unreadCount + 1,
-                }
-              : conv
-          )
-        );
-      }
-    }, []),
+  const {
+    conversations,
+    messages,
+    isLoading,
+    isFetchingPreviews,
+    error,
+    onlineUsers,
+    fetchMessages,
+    sendMessage,
+    handleWebSocketMessage,
+    markAsRead,
+  } = useConversations({
+    currentUserId: userId,
+    autoFetch: true,
   });
 
-  // Filter conversations
+  const { isConnected, sendMessage: sendWebSocketMessage } = useWebSocket({
+    conversationId: selectedConversationId,
+    onMessage: handleWebSocketMessage,
+    onConnect: () => console.log("✅ Chat WebSocket connected"),
+    onDisconnect: () => console.log("🔌 Chat WebSocket disconnected"),
+    onError: (error) => console.error("❌ Chat WebSocket error:", error),
+    autoConnect: true,
+  });
+
+  useEffect(() => {
+    if (!selectedConversationId) return;
+
+    const loadMessages = async () => {
+      setIsLoadingMessages(true);
+      try {
+        await fetchMessages(selectedConversationId);
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+
+    loadMessages();
+    markAsRead(selectedConversationId);
+  }, [selectedConversationId, fetchMessages, markAsRead]);
+
+  if (!userId) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.errorBanner}>
+          <p>Error: No user ID found. Please log in again.</p>
+          <button onClick={() => (window.location.href = "/login")}>
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const filteredConversations = conversations.filter((conv) => {
     const searchLower = searchQuery.toLowerCase();
     return (
       conv.participant.name.toLowerCase().includes(searchLower) ||
+      conv.participant.role.toLowerCase().includes(searchLower) ||
       conv.lastMessage.text.toLowerCase().includes(searchLower)
     );
   });
 
-  // Get selected conversation
   const selectedConversation = conversations.find(
     (conv) => conv.id === selectedConversationId
   );
 
-  // Handle sending message
-  const handleSendMessage = (text: string) => {
+  // Derive online status from onlineUsers set - single source of truth
+  const isParticipantOnline = selectedConversation
+    ? onlineUsers.has(selectedConversation.participant.id)
+    : false;
+
+  const participantWithCorrectStatus = selectedConversation
+    ? {
+        ...selectedConversation.participant,
+        isOnline: isParticipantOnline,
+        status: isParticipantOnline
+          ? ("online" as const)
+          : ("offline" as const),
+      }
+    : null;
+
+  const handleSendMessage = async (text: string) => {
     if (!selectedConversationId) return;
-
-    const newMessage: Message = {
-      id: `msg_${Date.now()}`,
-      senderId: messagesData.currentUser.id,
-      text,
-      timestamp: new Date().toISOString(),
-      isRead: false,
-    };
-
-    // Update local state
-    setMessages((prev) => ({
-      ...prev,
-      [selectedConversationId]: [
-        ...(prev[selectedConversationId] || []),
-        newMessage,
-      ],
-    }));
-
-    // Update conversation last message
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === selectedConversationId
-          ? {
-              ...conv,
-              lastMessage: {
-                text: newMessage.text,
-                timestamp: "Just now",
-                isRead: true,
-              },
-            }
-          : conv
-      )
-    );
-
-    // Send via WebSocket with proper structure
-    sendWebSocketMessage({
-      type: "message",
-      data: newMessage,
-      conversationId: selectedConversationId,
-    });
+    try {
+      await sendMessage(selectedConversationId, text);
+      sendWebSocketMessage({ message: text });
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
 
   return (
@@ -136,6 +126,11 @@ const MessagesPage = ({ params }: PageProps) => {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onSelectConversation={setSelectedConversationId}
+          // Show skeleton while initially loading OR while fetching previews
+          isLoading={
+            (isLoading && conversations.length === 0) || isFetchingPreviews
+          }
+          onlineUsers={onlineUsers}
         />
       </div>
 
@@ -144,18 +139,27 @@ const MessagesPage = ({ params }: PageProps) => {
           !selectedConversationId ? styles.hidden : ""
         }`}
       >
-        {selectedConversation ? (
+        {selectedConversation && participantWithCorrectStatus ? (
           <ChatWindow
-            participant={selectedConversation.participant}
+            participant={participantWithCorrectStatus}
             messages={messages[selectedConversationId!] || []}
-            currentUserId={messagesData.currentUser.id}
+            currentUserId={userId}
             onSendMessage={handleSendMessage}
             onBack={() => setSelectedConversationId(null)}
+            isConnected={isConnected}
+            isLoadingMessages={isLoadingMessages}
           />
         ) : (
           <EmptyState />
         )}
       </div>
+
+      {error && (
+        <div className={styles.errorBanner}>
+          <p>Error: {error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      )}
     </div>
   );
 };

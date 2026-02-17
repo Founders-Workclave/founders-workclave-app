@@ -149,15 +149,7 @@ class ClientService {
       // Provide more specific error messages
       if (error instanceof TypeError && error.message === "Failed to fetch") {
         const errorMessage =
-          "❌ Network error: Unable to connect to the server.\n\n" +
-          "Please check:\n" +
-          `1. API URL: ${BASE_URL}\n` +
-          `2. Full endpoint: ${url}\n` +
-          "3. Your internet connection\n" +
-          "4. CORS is enabled on the server\n" +
-          "5. You are logged in\n\n" +
-          "Open DevTools → Network tab to see the failed request.";
-
+          "❌ Network error: Unable to connect to the server.\n\n";
         console.error(errorMessage);
         throw new Error(errorMessage);
       }
@@ -203,14 +195,7 @@ class ClientService {
       // Provide more specific error messages
       if (error instanceof TypeError && error.message === "Failed to fetch") {
         const errorMessage =
-          "❌ Network error: Unable to connect to the server.\n\n" +
-          "Please check:\n" +
-          `1. API URL: ${BASE_URL}\n` +
-          `2. Full endpoint: ${url}\n` +
-          "3. Your internet connection\n" +
-          "4. CORS is enabled on the server\n" +
-          "5. You are logged in\n\n" +
-          "Open DevTools → Network tab to see the failed request.";
+          "❌ Network error: Unable to connect to the server.";
 
         console.error(errorMessage);
         throw new Error(errorMessage);

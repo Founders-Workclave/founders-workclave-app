@@ -12,7 +12,6 @@ import {
   getUserInitials,
   getUserProfileImage,
 } from "@/lib/api/auth";
-import Loader from "@/components/loader";
 
 interface AgencyLayoutProps {
   pageTitle: string;
@@ -31,7 +30,7 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
   const router = useRouter();
   const menu = agencyMenuItems;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [user, setUser] = useState(getCurrentUser());
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
@@ -126,18 +125,6 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
-
-  // Show loading state while checking authentication
-  if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
-        <p>Loading agency dashboard...</p>
-      </div>
-    );
-  }
-
-  // Don't render anything if no user (will redirect)
   if (!user) {
     return null;
   }
