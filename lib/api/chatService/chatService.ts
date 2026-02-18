@@ -58,10 +58,6 @@ export const chatService = {
         mapApiMessageToComponent(msg, currentUserId)
       );
     } catch (error) {
-      console.error(
-        `Failed to fetch messages for conversation ${conversationId}:`,
-        error
-      );
       throw error;
     }
   },

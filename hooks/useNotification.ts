@@ -48,9 +48,6 @@ export function useNotifications(
       setNotifications(valid);
       valid.forEach((n) => seenIdsRef.current.add(n.id));
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Failed to fetch notifications";
-      setError(errorMessage);
       console.error("Error fetching notifications:", err);
     } finally {
       setIsLoading(false);

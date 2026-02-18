@@ -31,10 +31,6 @@ export const notificationService = {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch notifications: ${response.status}`);
-      }
-
       const data = await response.json();
 
       // Map API response to component format
