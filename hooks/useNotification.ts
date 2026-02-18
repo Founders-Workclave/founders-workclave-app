@@ -1,7 +1,12 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
-import { Notification } from "@/types/notification";
+import { useState, useEffect, useCallback, useRef } from "react";
+import {
+  Notification,
+  NotificationApiResponse,
+  mapApiNotificationToComponent,
+} from "@/types/notification";
 import notificationService from "@/lib/api/notification/notificationService";
+import { useBrowserNotifications } from "./useBrowserNotifications";
 
 interface UseNotificationsReturn {
   notifications: Notification[];
@@ -14,33 +19,34 @@ interface UseNotificationsReturn {
 
 interface UseNotificationsOptions {
   autoFetch?: boolean;
-  refetchInterval?: number;
+  token?: string;
 }
 
-/**
- * Custom hook to manage notifications
- * @param options - Configuration options
- * @returns Notification state and actions
- */
 export function useNotifications(
   options: UseNotificationsOptions = {}
 ): UseNotificationsReturn {
-  const { autoFetch = true, refetchInterval } = options;
+  const { autoFetch = true, token } = options;
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Fetch notifications from API
-   */
+  const { notify } = useBrowserNotifications();
+  const seenIdsRef = useRef<Set<string>>(new Set());
+  const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+
   const fetchNotifications = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-
     try {
       const data = await notificationService.getNotifications();
-      setNotifications(data);
+      // Filter out any notifications with undefined/null ids
+      const valid = data.filter((n) => n.id != null);
+      setNotifications(valid);
+      valid.forEach((n) => seenIdsRef.current.add(n.id));
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch notifications";
@@ -51,87 +57,159 @@ export function useNotifications(
     }
   }, []);
 
-  /**
-   * Mark a single notification as read
-   */
-  const markAsRead = useCallback(async (id: string) => {
-    try {
-      // Optimistically update UI
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
-      );
+  const handleIncomingNotification = useCallback(
+    (notification: Notification) => {
+      // Guard: skip if no valid id
+      if (!notification.id) return;
 
-      // Call API
-      await notificationService.markAsRead(id);
-    } catch (err) {
-      // Revert optimistic update on error
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: false } : n))
-      );
+      setNotifications((prev) => {
+        const exists = prev.find((n) => n.id === notification.id);
+        if (exists) return prev;
+        return [notification, ...prev];
+      });
 
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to mark notification as read";
-      setError(errorMessage);
-      console.error("Error marking notification as read:", err);
-      throw err;
-    }
-  }, []);
-
-  /**
-   * Mark all notifications as read
-   */
-  const markAllAsRead = useCallback(async () => {
-    try {
-      const unreadIds = notifications.filter((n) => !n.isRead).map((n) => n.id);
-
-      if (unreadIds.length === 0) {
-        return;
+      if (!seenIdsRef.current.has(notification.id)) {
+        seenIdsRef.current.add(notification.id);
+        if (!notification.isRead) {
+          notify(notification.title ?? "New notification", {
+            body: notification.description ?? "",
+            url: notification.link ?? "/",
+          });
+        }
       }
+    },
+    [notify]
+  );
 
-      // Optimistically update UI
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  const connectWebSocket = useCallback(() => {
+    if (!token) return;
 
-      // Call API
-      await notificationService.markAllAsRead(unreadIds);
-    } catch (err) {
-      // Refetch to get correct state on error
-      await fetchNotifications();
-
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to mark all notifications as read";
-      setError(errorMessage);
-      console.error("Error marking all notifications as read:", err);
-      throw err;
+    if (
+      wsRef.current &&
+      (wsRef.current.readyState === WebSocket.OPEN ||
+        wsRef.current.readyState === WebSocket.CONNECTING)
+    ) {
+      return;
     }
-  }, [notifications, fetchNotifications]);
 
-  /**
-   * Initial fetch on mount
-   */
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
+
+    console.log("🔌 Connecting WebSocket...");
+
+    const ws = new WebSocket(
+      `wss://foundersapi.up.railway.app/ws/notifications/?token=${token}`
+    );
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("✅ Notification WebSocket connected");
+    };
+
+    ws.onmessage = (event: MessageEvent) => {
+      try {
+        const raw = JSON.parse(event.data as string) as Record<string, unknown>;
+
+        // The WS might send { notification: {...} } or the object directly
+        // It also sends in API format (is_read, created_at) so we must map it
+        const payload = (raw.notification ?? raw) as NotificationApiResponse;
+
+        // Only process if it looks like a valid notification
+        if (!payload.id) {
+          console.warn("Received WS message without id, skipping:", payload);
+          return;
+        }
+
+        const notification = mapApiNotificationToComponent(payload);
+        handleIncomingNotification(notification);
+      } catch (err) {
+        console.error("Failed to parse notification WS message:", err);
+      }
+    };
+
+    ws.onerror = () => {
+      console.error("❌ Notification WebSocket error");
+    };
+
+    ws.onclose = (event: CloseEvent) => {
+      console.log("🔴 WebSocket closed:", event.code);
+      wsRef.current = null;
+      if (event.code !== 1000) {
+        reconnectTimeoutRef.current = setTimeout(() => {
+          connectWebSocket();
+        }, 5000);
+      }
+    };
+  }, [token, handleIncomingNotification]);
+
   useEffect(() => {
     if (autoFetch) {
       fetchNotifications();
     }
   }, [autoFetch, fetchNotifications]);
 
-  /**
-   * Set up polling if refetchInterval is provided
-   */
   useEffect(() => {
-    if (!refetchInterval) {
-      return;
+    if (!token) return;
+
+    connectWebSocket();
+
+    return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+      if (wsRef.current) {
+        wsRef.current.onclose = null;
+        wsRef.current.close(1000, "Component unmounted");
+        wsRef.current = null;
+      }
+    };
+  }, [token, connectWebSocket]);
+
+  const markAsRead = useCallback(async (id: string) => {
+    // Guard: don't call API with undefined id
+    if (!id) return;
+    try {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+      );
+      await notificationService.markAsRead(id);
+    } catch (err) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === id ? { ...n, isRead: false } : n))
+      );
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to mark notification as read";
+      setError(errorMessage);
+      throw err;
     }
+  }, []);
 
-    const intervalId = setInterval(() => {
-      fetchNotifications();
-    }, refetchInterval);
+  const markAllAsRead = useCallback(async () => {
+    try {
+      // Guard: filter out any undefined ids before calling API
+      const unreadIds = notifications
+        .filter((n) => !n.isRead && n.id != null)
+        .map((n) => n.id);
 
-    return () => clearInterval(intervalId);
-  }, [refetchInterval, fetchNotifications]);
+      if (unreadIds.length === 0) return;
+
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+      await notificationService.markAllAsRead(unreadIds);
+    } catch (err) {
+      await fetchNotifications();
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Failed to mark all notifications as read";
+      setError(errorMessage);
+      throw err;
+    }
+  }, [notifications, fetchNotifications]);
 
   return {
     notifications,

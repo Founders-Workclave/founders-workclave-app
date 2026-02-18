@@ -720,3 +720,166 @@
 .messageSending {
   opacity: 0.7;
 }
+
+/* Reply Preview in Message Bubble */
+.replyPreview {
+  display: flex;
+  font-family: "inter", sans-serif;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.messageSent .replyPreview {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.replyBar {
+  background: #5b50e6;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.replyContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.replyAuthor {
+  font-weight: 600;
+  color: #5b50e6;
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+
+.messageSent .replyAuthor {
+  color: #fff;
+  opacity: 0.9;
+}
+
+.replyText {
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messageSent .replyText {
+  color: #fff;
+  opacity: 0.7;
+}
+
+/* Reply Button (appears on hover) */
+.replyButton {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.messageBubble:hover .replyButton {
+  display: flex;
+}
+
+.replyButton:hover {
+  background: #5b50e6;
+  color: white;
+  transform: scale(1.1);
+}
+
+.messageBubble {
+  position: relative;
+}
+
+/* Reply Bar (above input when replying) */
+.replyBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: #f8f8ff;
+  border-top: 1px solid #e8e8f0;
+  animation: slideUp 0.2s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.replyBarContent {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "inter", sans-serif;
+  min-width: 0;
+}
+
+.replyBarStripe {
+  height: 40px;
+  background: #5b50e6;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.replyBarText {
+  flex: 1;
+  min-width: 0;
+}
+
+.replyBarAuthor {
+  font-size: 13px;
+  font-weight: 600;
+  color: #5b50e6;
+  margin-bottom: 2px;
+}
+
+.replyBarMessage {
+  font-size: 14px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.replyBarCancel {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #999;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.replyBarCancel:hover {
+  background: #ffe0e0;
+  color: #e53935;
+}

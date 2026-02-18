@@ -1,8 +1,14 @@
 "use client";
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 import styles from "./styles.module.css";
 import SendMessage from "@/svgs/sendMessage";
-import MessageSkeleton from "../messageSkeleton/index";
+import MessageSkeleton from "../messageSkeleton";
 
 export interface Message {
   id: string;
@@ -12,6 +18,8 @@ export interface Message {
   isRead: boolean;
   isDelivered?: boolean;
   senderName?: string;
+  replyToId?: string | null;
+  replyToMessage?: Message | null;
 }
 
 export interface Participant {
@@ -27,7 +35,7 @@ interface ChatWindowProps {
   participant: Participant;
   messages: Message[];
   currentUserId: string;
-  onSendMessage: (text: string) => void;
+  onSendMessage: (text: string, replyToId?: string) => void;
   onBack?: () => void;
   isConnected?: boolean;
   isLoadingMessages?: boolean;
@@ -35,7 +43,7 @@ interface ChatWindowProps {
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
   participant,
-  messages,
+  messages: rawMessages,
   currentUserId,
   onSendMessage,
   onBack,
@@ -47,20 +55,62 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<number[]>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const validMessages = messages.filter(
-    (msg) => msg.text && msg.text.trim() !== ""
+  const notificationSound = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const AudioContextClass =
+      window.AudioContext ||
+      (window as Window & { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+
+    if (!AudioContextClass) return;
+    const audioContext = new AudioContextClass();
+
+    notificationSound.current = {
+      play: () => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        oscillator.frequency.value = 800;
+        gainNode.gain.value = 0.1;
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + 0.1);
+        return Promise.resolve();
+      },
+    } as HTMLAudioElement;
+  }, []);
+
+  useEffect(() => {
+    if (rawMessages.length > 0) {
+      const lastMessage = rawMessages[rawMessages.length - 1];
+      if (lastMessage.senderId !== currentUserId) {
+      }
+    }
+  }, [rawMessages, currentUserId]);
+
+  const messages = useMemo(
+    () =>
+      rawMessages.map((msg) => ({
+        ...msg,
+        replyToMessage: msg.replyToId
+          ? rawMessages.find((m) => m.id === msg.replyToId) || null
+          : null,
+      })),
+    [rawMessages]
   );
 
-  const isParticipantOnline =
-    participant.isOnline || participant.status === "online";
-
-  const isMessageSending = (messageId: string) => messageId.startsWith("temp_");
+  const validMessages = useMemo(
+    () => messages.filter((msg) => msg.text && msg.text.trim() !== ""),
+    [messages]
+  );
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -70,26 +120,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // Focus search input when search opens
-  useEffect(() => {
-    const resetSearch = () => {
-      setSearchQuery("");
-      setSearchResults([]);
-      setCurrentSearchIndex(0);
-    };
+  // Helper to close search and reset all search state
+  const closeSearch = useCallback(() => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+    setSearchResults([]);
+    setCurrentSearchIndex(0);
+  }, []);
 
-    if (isSearchOpen) {
-      setTimeout(() => searchInputRef.current?.focus(), 100);
-    } else {
-      setTimeout(resetSearch, 0);
-    }
-  }, [isSearchOpen]);
+  const openSearch = useCallback(() => {
+    setIsSearchOpen(true);
+    setTimeout(() => searchInputRef.current?.focus(), 100);
+  }, []);
 
   const scrollToMessage = useCallback(
     (messageIndex: number) => {
       const message = validMessages[messageIndex];
       if (!message) return;
-
       const messageEl = messageRefs.current.get(message.id);
       if (messageEl) {
         messageEl.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -98,7 +145,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     [validMessages]
   );
 
-  // Search through messages
   useEffect(() => {
     const runSearch = () => {
       if (!searchQuery.trim()) {
@@ -148,13 +194,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       handleNextResult();
     }
     if (e.key === "Escape") {
-      setIsSearchOpen(false);
+      closeSearch();
+    }
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setSearchQuery(val);
+    if (!val.trim()) {
+      setSearchResults([]);
+      setCurrentSearchIndex(0);
     }
   };
 
   const highlightText = (text: string, query: string) => {
     if (!query.trim()) return <>{text}</>;
-
     const parts = text.split(new RegExp(`(${query})`, "gi"));
     return (
       <>
@@ -173,8 +227,9 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   const handleSend = () => {
     if (messageText.trim() && isConnected) {
-      onSendMessage(messageText.trim());
+      onSendMessage(messageText.trim(), replyingTo?.id);
       setMessageText("");
+      setReplyingTo(null);
     }
   };
 
@@ -183,6 +238,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleReply = (message: Message) => {
+    setReplyingTo(message);
+    setTimeout(() => {
+      document
+        .querySelector<HTMLInputElement>(`.${styles.messageInput}`)
+        ?.focus();
+    }, 100);
+  };
+
+  const cancelReply = () => {
+    setReplyingTo(null);
   };
 
   const formatTime = (timestamp: string) => {
@@ -217,6 +285,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       return "Today";
     }
   };
+
+  const isParticipantOnline =
+    participant.isOnline || participant.status === "online";
+
+  const isMessageSending = (messageId: string) => messageId.startsWith("temp_");
 
   return (
     <div className={styles.container}>
@@ -280,7 +353,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             className={`${styles.searchToggleBtn} ${
               isSearchOpen ? styles.searchToggleBtnActive : ""
             }`}
-            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            onClick={isSearchOpen ? closeSearch : openSearch}
             title="Search messages"
           >
             <svg
@@ -319,7 +392,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               type="text"
               placeholder="Search messages..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchInputChange}
               onKeyDown={handleSearchKeyDown}
               className={styles.searchBarInput}
             />
@@ -332,7 +405,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             )}
           </div>
 
-          {/* Navigation */}
           <div className={styles.searchNavigation}>
             <button
               className={styles.searchNavBtn}
@@ -370,7 +442,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
             </button>
             <button
               className={styles.searchCloseBtn}
-              onClick={() => setIsSearchOpen(false)}
+              onClick={closeSearch}
               title="Close search"
             >
               <svg
@@ -408,7 +480,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               const isCurrentUser = message.senderId === currentUserId;
               const messageTime = formatTime(message.timestamp);
               const isSending = isMessageSending(message.id);
-
               const isSearchResult = searchResults.includes(index);
               const isActiveResult =
                 searchResults[currentSearchIndex] === index;
@@ -440,11 +511,28 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         {message.senderName}
                       </div>
                     )}
+
+                    {/* Reply Preview */}
+                    {message.replyToMessage && (
+                      <div className={styles.replyPreview}>
+                        <div className={styles.replyBar}></div>
+                        <div className={styles.replyContent}>
+                          <div className={styles.replyAuthor}>
+                            {message.replyToMessage.senderName || "Unknown"}
+                          </div>
+                          <div className={styles.replyText}>
+                            {message.replyToMessage.text}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <p className={styles.messageText}>
                       {isSearchOpen && searchQuery
                         ? highlightText(message.text, searchQuery)
                         : message.text}
                     </p>
+
                     <div className={styles.messageFooter}>
                       {messageTime && (
                         <span className={styles.messageTime}>
@@ -543,6 +631,25 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         </span>
                       )}
                     </div>
+
+                    {/* Reply Button */}
+                    <button
+                      className={styles.replyButton}
+                      onClick={() => handleReply(message)}
+                      title="Reply to this message"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M9 10L4 15L9 20" />
+                        <path d="M20 4v7a4 4 0 01-4 4H4" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               );
@@ -551,6 +658,37 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         )}
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Reply Bar */}
+      {replyingTo && (
+        <div className={styles.replyBar}>
+          <div className={styles.replyBarContent}>
+            <div className={styles.replyBarStripe}></div>
+            <div className={styles.replyBarText}>
+              <div className={styles.replyBarAuthor}>
+                Replying to {replyingTo.senderName || "Unknown"}
+              </div>
+              <div className={styles.replyBarMessage}>{replyingTo.text}</div>
+            </div>
+          </div>
+          <button
+            className={styles.replyBarCancel}
+            onClick={cancelReply}
+            title="Cancel reply"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
 
       {/* Input */}
       <div className={styles.inputContainer}>

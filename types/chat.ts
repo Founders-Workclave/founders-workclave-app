@@ -1,3 +1,7 @@
+/**
+ * Chat Type Definitions
+ */
+
 export interface MessageApiResponse {
   id: string;
   sender: string;
@@ -6,6 +10,7 @@ export interface MessageApiResponse {
   timestamp: string;
   is_read: boolean;
   is_delivered: boolean;
+  reply_to_id?: string | null;
 }
 
 export interface ActualConversationApiResponse {
@@ -54,6 +59,8 @@ export interface Message {
   isRead: boolean;
   isDelivered?: boolean;
   senderName?: string;
+  replyToId?: string | null;
+  replyToMessage?: Message | null;
 }
 
 export interface Participant {
@@ -62,7 +69,6 @@ export interface Participant {
   avatar: string;
   role: string;
   status: "online" | "offline" | "away";
-  isOnline?: boolean; // ✅ Added missing field
 }
 
 export interface LastMessage {
@@ -95,6 +101,7 @@ export interface WebSocketChatMessage {
   timestamp: string;
   is_read: boolean;
   is_delivered: boolean;
+  reply_to_id?: string | null;
 }
 
 export interface WebSocketUserStatus {
@@ -123,14 +130,13 @@ export interface WebSocketReadReceipt {
 
 export interface SendMessagePayload {
   message: string;
+  reply_to?: string;
 }
 
-// ✅ Proper type for the raw API conversation response instead of `any`
+// ✅ Proper type for raw API conversation response
 export interface RawApiConversation {
   conversation: string;
   otherUserName?: string;
-  otherUserId?: string;
-  other_user_id?: string;
   lastMessage?: string;
   unreadMessage?: number;
   [key: string]: unknown;
@@ -145,13 +151,11 @@ export function formatMessageTimestamp(isoString: string): string {
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) return "Just now";
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours}h ago`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays === 1) return "Yesterday";
-  if (diffInDays < 7) return `${diffInDays}d ago`;
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds === 1) return "Yesterday";
+  if (diffInSeconds < 604800)
+    return `${Math.floor(diffInSeconds / 86400)}d ago`;
 
   return date.toLocaleDateString("en-US", {
     month: "short",
@@ -164,7 +168,7 @@ export function formatMessageTimestamp(isoString: string): string {
  */
 export function mapApiMessageToComponent(
   apiMessage: MessageApiResponse,
-  _currentUserId: string
+  _currentUserId: string // ✅ Prefixed with _
 ): Message {
   return {
     id: apiMessage.id,
@@ -174,6 +178,7 @@ export function mapApiMessageToComponent(
     timestamp: apiMessage.timestamp,
     isRead: apiMessage.is_read,
     isDelivered: apiMessage.is_delivered,
+    replyToId: apiMessage.reply_to_id,
   };
 }
 
@@ -182,7 +187,7 @@ export function mapApiMessageToComponent(
  */
 export function mapWebSocketMessageToComponent(
   wsMessage: WebSocketChatMessage,
-  _currentUserId: string
+  _currentUserId: string // ✅ Prefixed with _
 ): Message {
   return {
     id: wsMessage.message_id || `msg_${Date.now()}_${Math.random()}`,
@@ -192,30 +197,29 @@ export function mapWebSocketMessageToComponent(
     timestamp: wsMessage.timestamp,
     isRead: wsMessage.is_read || false,
     isDelivered: wsMessage.is_delivered || false,
+    replyToId: wsMessage.reply_to_id,
   };
 }
 
+/**
+ * Map API conversation to component format
+ */
 export function mapApiConversationToComponent(
-  apiConversation: RawApiConversation
+  apiConversation: RawApiConversation // ✅ Replaced any
 ): Conversation {
   const conversationId = apiConversation.conversation;
   const userName = apiConversation.otherUserName;
-  const otherUserId =
-    apiConversation.otherUserId ||
-    apiConversation.other_user_id ||
-    conversationId;
 
   return {
     id: conversationId,
     participant: {
-      id: otherUserId,
+      id: conversationId,
       name: userName || "Unknown User",
       avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${
         userName || "User"
       }`,
       role: "User",
       status: "offline",
-      isOnline: false,
     },
     lastMessage: {
       text: apiConversation.lastMessage || "No messages yet",

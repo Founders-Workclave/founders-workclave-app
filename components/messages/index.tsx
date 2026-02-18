@@ -88,7 +88,6 @@ const MessagesPage = ({ params }: PageProps) => {
     (conv) => conv.id === selectedConversationId
   );
 
-  // Derive online status from onlineUsers set - single source of truth
   const isParticipantOnline = selectedConversation
     ? onlineUsers.has(selectedConversation.participant.id)
     : false;
@@ -103,11 +102,14 @@ const MessagesPage = ({ params }: PageProps) => {
       }
     : null;
 
-  const handleSendMessage = async (text: string) => {
+  const handleSendMessage = async (text: string, replyToId?: string) => {
     if (!selectedConversationId) return;
     try {
       await sendMessage(selectedConversationId, text);
-      sendWebSocketMessage({ message: text });
+      sendWebSocketMessage({
+        message: text,
+        ...(replyToId && { reply_to: replyToId }),
+      });
     } catch (error) {
       console.error("Failed to send message:", error);
     }
@@ -126,7 +128,6 @@ const MessagesPage = ({ params }: PageProps) => {
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onSelectConversation={setSelectedConversationId}
-          // Show skeleton while initially loading OR while fetching previews
           isLoading={
             (isLoading && conversations.length === 0) || isFetchingPreviews
           }
