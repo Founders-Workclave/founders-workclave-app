@@ -5,6 +5,7 @@ import PRDCard from "./prdCard";
 import EmptyPrd from "@/svgs/emptyprd";
 import { PRDService, PRD } from "@/lib/api/prdService";
 import Loader from "../loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 const PRDPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,18 +87,12 @@ const PRDPage = () => {
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <h3>Error loading PRDs</h3>
-          <p>{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className={styles.retryButton}
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load PRDs"
+        message="We're having trouble loading your PRDs. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

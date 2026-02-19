@@ -10,6 +10,7 @@ import { useMilestones } from "@/hooks/useAgencyMilestones";
 import { MilestoneFormData } from "@/types/createPrjects";
 import AllLoading from "@/layout/Loader";
 import EditMilestoneModal from "@/components/createProject/editMilestoneModal";
+import ServiceUnavailable from "@/components/errorBoundary/serviceUnavailable";
 
 interface AdminMilestonesPageProps {
   projectId: string;
@@ -119,22 +120,12 @@ const AdminMilestonesPage: React.FC<AdminMilestonesPageProps> = ({
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Milestones</h1>
-        </div>
-        <div className={styles.emptyState}>
-          <p className={styles.emptyMessage} style={{ color: "red" }}>
-            Error: {error}
-          </p>
-          <button
-            className={styles.addButton}
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load milestones"
+        message="We're having trouble loading your milestones. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

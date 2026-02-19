@@ -7,6 +7,7 @@ import type {
   PaymentHistory,
 } from "@/types/agencyPayments";
 import AllLoading from "@/layout/Loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface AgencyPaymentsProps {
   projectId: string;
@@ -92,12 +93,12 @@ export default function AgencyPayments({ projectId }: AgencyPaymentsProps) {
 
   if (error || !paymentsData) {
     return (
-      <div className={styles.wrapper}>
-        <div className={styles.errorContainer}>
-          <p>{error || "Failed to load payment data"}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load payment history"
+        message="We're having trouble fetching payment history. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

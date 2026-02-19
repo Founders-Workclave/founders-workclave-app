@@ -17,6 +17,7 @@ import ManagerDocuments from "../managerDocument";
 import ManagerPayments from "../managerPayments";
 import WhiteMessage from "@/svgs/whiteMessage";
 import { useManagerMilestones } from "@/hooks/useManagerMilestones";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 const ManagerProjectDetailsPage: React.FC = () => {
   const params = useParams();
@@ -77,18 +78,12 @@ const ManagerProjectDetailsPage: React.FC = () => {
 
   if (error || !project) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <h2>Error loading project</h2>
-          <p>{error || "Project not found"}</p>
-          <button onClick={refetch} className={styles.retryButton}>
-            Retry
-          </button>
-          <button onClick={() => router.back()} className={styles.backButton}>
-            Go Back
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load project"
+        message="We're having trouble fetching this project. Please try again."
+        showRetry
+        onRetry={refetch}
+      />
     );
   }
 

@@ -4,23 +4,19 @@ import styles from "./styles.module.css";
 import { useManagerData } from "@/hooks/useManagerData";
 import ManagerDashboard from "../managersDashboard";
 import ManagerProjectsList from "../managerProjectDetails/manageProjectList";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 const ManagerDashboardPage = () => {
   const { stats, projects, isLoading, error, refetch } = useManagerData();
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <div className={styles.errorContent}>
-            <h3>Unable to load dashboard</h3>
-            <p>{error}</p>
-            <button className={styles.retryButton} onClick={refetch}>
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load dashboard"
+        message="We're having trouble loading your dashboard. Please try again."
+        showRetry
+        onRetry={refetch}
+      />
     );
   }
 

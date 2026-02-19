@@ -22,8 +22,8 @@ export const transformProject = (apiProject: ApiProject): Project => {
     id: apiProject.id,
     projectName: apiProject.name,
     client: {
-      id: apiProject.client,
-      name: "Client Name", // You'll need to fetch this separately or include in API
+      id: "",
+      name: apiProject.client,
     },
     totalProjectValue: totalValue,
     amountPaid: paidBalance,
@@ -32,7 +32,6 @@ export const transformProject = (apiProject: ApiProject): Project => {
       current,
       total,
     },
-    // Pass through the raw status - let formatStatus handle display formatting
     status: apiProject.status,
   };
 };

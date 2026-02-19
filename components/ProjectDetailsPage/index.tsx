@@ -7,6 +7,7 @@ import styles from "./styles.module.css";
 import ProjectHeader from "@/components/projectDetail/projectHeader";
 import ProjectTabs from "@/components/TabHeader";
 import Loader from "../loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface PageProps {
   params: {
@@ -141,17 +142,12 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
   if (error) {
     return (
-      <div className={styles.errorContainer}>
-        <h2>Error loading project</h2>
-        <p>{error}</p>
-        {error.includes("Authentication") ? (
-          <p className={styles.errorSubtext}>Redirecting to login...</p>
-        ) : (
-          <button onClick={() => router.back()} className={styles.errorButton}>
-            Go Back
-          </button>
-        )}
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load project details"
+        message="We're having trouble loading your project details. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

@@ -9,6 +9,7 @@ import {
 } from "@/utils/prdTransformer";
 import AllLoading from "@/layout/Loader";
 import AgencyUploadPRDModal from "./agencyUpload";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface AgencyDocumentsProps {
   projectId: string;
@@ -78,14 +79,12 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
 
   if (error) {
     return (
-      <div className={styles.wrapper}>
-        <div className={styles.header}>
-          <h2>Documents</h2>
-        </div>
-        <div className={styles.emptyState}>
-          <p style={{ color: "red" }}>Error: {error}</p>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load PRDs"
+        message="We're having trouble loading your PRDs. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

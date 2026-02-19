@@ -10,6 +10,7 @@ import { getAgencyManagers } from "@/lib/api/superAdmin/agencyService";
 import { ProductManager } from "@/types/agencyPm";
 import AllLoading from "@/layout/Loader";
 import EmptyClients from "@/svgs/emptyClients";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface AllProductManagersPageProps {
   agencyId: string;
@@ -126,16 +127,12 @@ const AdminManagersPage: React.FC<AllProductManagersPageProps> = ({
   }
 
   if (error) {
-    return (
-      <div className={styles.pageWrapper}>
-        <div className={styles.container}>
-          <div className={styles.errorContainer}>
-            <p>Error: {error}</p>
-            <button onClick={() => window.location.reload()}>Retry</button>
-          </div>
-        </div>
-      </div>
-    );
+    <ServiceUnavailable
+      title="Couldn't load managers"
+      message="We're having trouble loading your managers. Please try again."
+      showRetry
+      onRetry={() => window.location.reload()}
+    />;
   }
 
   return (

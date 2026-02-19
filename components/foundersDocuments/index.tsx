@@ -5,6 +5,7 @@ import DocumentCard from "./documentsCard";
 import DocEmpty from "@/svgs/docEmpty";
 import { DocumentService, Document } from "@/lib/api/documentService";
 import Loader from "../loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface PageProps {
   params: {
@@ -75,11 +76,12 @@ const DocumentsPage = ({ params }: PageProps) => {
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <p>Error: {error}</p>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load PRDs"
+        message="We're having trouble loading your PRDs. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

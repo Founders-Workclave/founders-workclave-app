@@ -7,6 +7,7 @@ import {
   mapWebSocketMessageToComponent,
 } from "@/types/chat";
 import type { WebSocketMessage, WebSocketChatMessage } from "@/types/chat";
+import toast from "react-hot-toast";
 
 interface UseConversationsProps {
   currentUserId: string;
@@ -229,8 +230,8 @@ export const useConversations = ({
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch conversations";
-      setError(errorMessage);
-      console.error("Error fetching conversations:", err);
+      toast.error(errorMessage);
+      console.error("Error fetching conversations:");
     } finally {
       setIsLoading(false);
     }

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
 import { PaymentService, PaymentTransaction } from "@/lib/api/paymentService";
 import Loader from "../loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface PaymentHistoryProps {
   projectId?: string;
@@ -63,11 +64,12 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ projectId }) => {
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <p>Error: {error}</p>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load payment history"
+        message="We're having trouble loading your payment history. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

@@ -10,6 +10,7 @@ import { agencyService } from "@/lib/api/agencyService/agencyService";
 import type { PRD } from "@/types/allAgencyPrd";
 import AllLoading from "@/layout/Loader";
 import EmptyPrd from "@/svgs/emptyprd";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 type FilterTab = "all" | "in-progress" | "completed";
 
@@ -23,21 +24,21 @@ const AllPRDsPage: React.FC = () => {
 
   const itemsPerPage = 10;
 
-  useEffect(() => {
-    const fetchPRDs = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await agencyService.getAllPRDs();
-        setPrds(response.prds);
-      } catch (err) {
-        console.error("Error fetching PRDs:", err);
-        setError("Failed to load PRDs");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchPRDs = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await agencyService.getAllPRDs();
+      setPrds(response.prds);
+    } catch (err) {
+      console.error("Error fetching PRDs:", err);
+      setError("Failed to load PRDs");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPRDs();
   }, []);
 
@@ -95,12 +96,12 @@ const AllPRDsPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className={styles.pageWrapper}>
-        <div className={styles.errorContainer}>
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load PRDs"
+        message="We're having trouble loading your PRDs. Please try again."
+        showRetry
+        onRetry={fetchPRDs}
+      />
     );
   }
 

@@ -6,6 +6,7 @@ import EmptyState from "./emptyState";
 import { ProjectService } from "../../lib/api/projectService";
 import { Project } from "@/types/project";
 import Loader from "../loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 const ProjectComponent = () => {
   // State management for projects, loading, and errors
@@ -49,26 +50,12 @@ const ProjectComponent = () => {
   // Show error state if fetch failed
   if (error) {
     return (
-      <div
-        style={{
-          padding: "2rem",
-          textAlign: "center",
-          color: "#e74c3c",
-        }}
-      >
-        <h3>Error loading projects</h3>
-        <p>{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          style={{
-            marginTop: "1rem",
-            padding: "0.5rem 1rem",
-            cursor: "pointer",
-          }}
-        >
-          Try Again
-        </button>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load projects"
+        message="We're having trouble loading your projects. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

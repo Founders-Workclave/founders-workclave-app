@@ -17,6 +17,7 @@ import { useClientMilestones } from "@/hooks/useClientMilestones";
 import ClientMilestonesPage from "../clientMilestones/milestonePage";
 import ClientDocuments from "../clientsDocument";
 import ClientPayments from "../clientPayments";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 const ClientsProjectDetailsPage: React.FC = () => {
   const params = useParams();
@@ -77,18 +78,12 @@ const ClientsProjectDetailsPage: React.FC = () => {
 
   if (error || !project) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <h2>Error loading project</h2>
-          <p>{error || "Project not found"}</p>
-          <button onClick={refetch} className={styles.retryButton}>
-            Retry
-          </button>
-          <button onClick={() => router.back()} className={styles.backButton}>
-            Go Back
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load projects"
+        message="We're having trouble fetching projects. Please try again."
+        showRetry
+        onRetry={refetch}
+      />
     );
   }
 

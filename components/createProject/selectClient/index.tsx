@@ -4,6 +4,7 @@ import styles from "./styles.module.css";
 import { Client } from "@/types/createPrjects";
 import { clientService } from "@/lib/api/createProject/client";
 import AllLoading from "@/layout/Loader";
+import ServiceUnavailable from "@/components/errorBoundary/serviceUnavailable";
 
 interface SelectClientProps {
   selectedClientId: string;
@@ -83,15 +84,12 @@ const SelectClient: React.FC<SelectClientProps> = ({
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <h3 className={styles.title}>Select client</h3>
-        <div className={styles.errorState}>
-          <p>{error}</p>
-          <button onClick={fetchClients} className={styles.retryButton}>
-            Retry
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load clients"
+        message="We're having trouble loading your clients. Please try again."
+        showRetry
+        onRetry={fetchClients}
+      />
     );
   }
 

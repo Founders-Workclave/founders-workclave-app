@@ -21,12 +21,6 @@ export const useLogin = (options?: UseLoginOptions) => {
     setSuccess(false);
 
     try {
-      console.log("🔐 useLogin: Attempting login", {
-        email: payload.email,
-        userType: options?.userType || "auto-detect",
-      });
-
-      // Call API - it will auto-detect user type if not specified
       const response = await authApi.login(payload, options?.userType);
 
       if (response.success) {

@@ -8,6 +8,7 @@ import { getAgencyProjects } from "@/lib/api/superAdmin/agencyService";
 import { ProjectRow } from "../agencyProject/projectRow";
 import { ProjectCard } from "../agencyProject/projectCard";
 import { Pagination } from "../agencyProject/pagination";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface AdminAgencyProjectsProps {
   agencyId: string;
@@ -138,11 +139,12 @@ const AdminAgencyProjects: React.FC<AdminAgencyProjectsProps> = ({
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.emptyState}>
-          <p>Error loading projects: {error}</p>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load your projects"
+        message="We're having trouble loading your projects. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

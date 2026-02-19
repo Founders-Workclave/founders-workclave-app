@@ -1,9 +1,10 @@
+import Preloader from "@/layout/preLoader";
 import React from "react";
 
 const Loading = () => {
   return (
     <div>
-      <h2>Loading...</h2>
+      <Preloader style="bars" duration={2000} />
     </div>
   );
 };

@@ -4,6 +4,7 @@ import styles from "@/components/agencyMilestone/milestonePage/styles.module.css
 import { useClientMilestones } from "@/hooks/useClientMilestones";
 import AllLoading from "@/layout/Loader";
 import ClientMilestoneCard from "../milestoneCard";
+import ServiceUnavailable from "@/components/errorBoundary/serviceUnavailable";
 
 interface ManagerMilestonesPageProps {
   projectId: string;
@@ -30,19 +31,12 @@ const ClientMilestonesPage: React.FC<ManagerMilestonesPageProps> = ({
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h1 className={styles.title}>Milestones</h1>
-        </div>
-        <div className={styles.emptyState}>
-          <p className={styles.emptyMessage} style={{ color: "red" }}>
-            Error: {error}
-          </p>
-          <button className={styles.editButton} onClick={refetch}>
-            Retry
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load milestones"
+        message="We're having trouble loading your milestones. Please try again."
+        showRetry
+        onRetry={refetch}
+      />
     );
   }
 

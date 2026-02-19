@@ -8,6 +8,7 @@ import {
   ApiError,
 } from "@/lib/api/agencyService/paymentService";
 import AllLoading from "@/layout/Loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface Payment {
   id: number;
@@ -143,17 +144,12 @@ const AllAgencyPayments = () => {
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorState}>
-          <p>Error: {error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className={styles.retryButton}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load payments"
+        message="We're having trouble loading your payments. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

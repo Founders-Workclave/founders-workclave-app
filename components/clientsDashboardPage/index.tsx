@@ -3,23 +3,19 @@ import styles from "./styles.module.css";
 import { useClientData } from "@/hooks/useClientsData";
 import ClientsDashboard from "../clientsDashboard";
 import ClientsProjectsList from "../clientsDashboard/clientsProjectList";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 const ClientsDashboardPage = () => {
   const { stats, projects, isLoading, error, refetch } = useClientData();
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <div className={styles.errorContent}>
-            <h3>Unable to load dashboard</h3>
-            <p>{error}</p>
-            <button className={styles.retryButton} onClick={refetch}>
-              Retry
-            </button>
-          </div>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load dashboard"
+        message="We're having trouble loading your dashboard. Please try again."
+        showRetry
+        onRetry={refetch}
+      />
     );
   }
 

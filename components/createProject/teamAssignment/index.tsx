@@ -4,6 +4,7 @@ import styles from "./styles.module.css";
 import { ProjectManager } from "@/types/createPrjects";
 import { managerServiceForProjects } from "@/lib/api/createProject/managersForProjects";
 import AllLoading from "@/layout/Loader";
+import ServiceUnavailable from "@/components/errorBoundary/serviceUnavailable";
 
 interface TeamAssignmentProps {
   selectedManagerId: string;
@@ -118,20 +119,12 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h3 className={styles.title}>Team Assignment</h3>
-          <p className={styles.subtitle}>
-            Assign this project to a product manager
-          </p>
-        </div>
-        <div className={styles.errorState}>
-          <p>{error}</p>
-          <button onClick={fetchManagers} className={styles.retryButton}>
-            Retry
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load product managers"
+        message="We're having trouble loading your product managers. Please try again."
+        showRetry
+        onRetry={fetchManagers}
+      />
     );
   }
 

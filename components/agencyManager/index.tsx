@@ -10,6 +10,7 @@ import { managerService, ApiError } from "@/lib/api/agencyService/pmService";
 import { ProductManager } from "@/types/agencyPm";
 import AllLoading from "@/layout/Loader";
 import EmptyClients from "@/svgs/emptyClients";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 type FilterTab = "all" | "active" | "pending";
 
@@ -113,14 +114,12 @@ const AllProductManagersPage: React.FC = () => {
 
   if (error) {
     return (
-      <div className={styles.pageWrapper}>
-        <div className={styles.container}>
-          <div className={styles.errorContainer}>
-            <p>Error: {error}</p>
-            <button onClick={() => window.location.reload()}>Retry</button>
-          </div>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load managers"
+        message="We're having trouble loading your managers. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

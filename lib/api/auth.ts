@@ -265,14 +265,6 @@ export const isClientUser = (): boolean => {
   const user = getUser();
   if (!user) return false;
 
-  console.log("🔍 isClientUser check:", {
-    role: user.role,
-    userType: user.userType,
-    result:
-      user.role?.toLowerCase() === "client" ||
-      user.userType?.toLowerCase() === "client",
-  });
-
   // Check both role and userType
   return (
     user.role?.toLowerCase() === "client" ||
@@ -455,8 +447,6 @@ export const updateUserProfile = (updates: Partial<UserInfo>): void => {
         detail: updates,
       })
     );
-
-    console.log("✅ User profile updated in localStorage");
   } catch (error) {
     console.error("Error updating user profile:", error);
     throw error;
@@ -476,8 +466,6 @@ export const logout = (): void => {
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem("token");
     localStorage.removeItem("authToken");
-
-    console.log("✅ User logged out successfully");
   } catch (error) {
     console.error("Error during logout:", error);
   }
@@ -488,7 +476,6 @@ export const logout = (): void => {
  * Logs out user and redirects to login
  */
 export const handleSessionTimeout = (redirectUrl: string = "/login"): void => {
-  console.log("🚫 Session timeout detected, logging out...");
   logout();
 
   if (typeof window !== "undefined") {
@@ -512,14 +499,11 @@ export const setAuthData = (token: string, user: UserInfo): void => {
   try {
     setAuthTokens(token);
     setUser(user);
-    console.log("✅ Authentication data stored");
   } catch (error) {
     console.error("Error setting auth data:", error);
     throw error;
   }
 };
-
-// ========== END NEW FUNCTIONS ==========
 
 /**
  * Determine if user should have admin role based on API response
@@ -669,7 +653,6 @@ export const authApi = {
 
       if (accessToken) {
         setAuthTokens(accessToken, refreshToken);
-        console.log("🔑 Tokens stored after registration");
       }
 
       // Create user object with the data we sent
@@ -686,8 +669,6 @@ export const authApi = {
       };
 
       setUser(userData);
-
-      console.log("✅ Registration successful - User data saved:", userData);
 
       return {
         success: true,
@@ -724,10 +705,6 @@ export const authApi = {
         ? `${baseUrl}?user_type=${encodeURIComponent(userType.toLowerCase())}`
         : baseUrl;
 
-      console.log(
-        `🔐 Logging in${userType ? ` as ${userType}` : " (auto-detect)"}...`
-      );
-
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -749,17 +726,6 @@ export const authApi = {
       }
 
       const data: AuthResponse = await response.json();
-
-      console.log("🔍 Full API Login Response:", {
-        status: response.status,
-        success: response.ok,
-        data: data,
-        dataObject: data.data,
-        userType: data.userType,
-        user_type: data.user_type,
-        dataUserType: data.data?.userType,
-        dataUser_type: data.data?.user_type,
-      });
 
       if (response.status === 400 && data.errors) {
         const errorMessages = Object.entries(data.errors)
@@ -789,11 +755,6 @@ export const authApi = {
       const accessToken = data.access || data.data?.access || data.data?.token;
       const refreshToken = data.refresh || data.data?.refresh;
 
-      console.log("🔑 Tokens extracted:", {
-        hasAccess: !!accessToken,
-        hasRefresh: !!refreshToken,
-      });
-
       if (!accessToken) {
         console.error("❌ No access token in response!");
         return {
@@ -816,13 +777,6 @@ export const authApi = {
         data.user_type?.toLowerCase() ||
         userType?.toLowerCase() ||
         "founder";
-
-      console.log("🎯 Detected user type:", detectedUserType, "from:", {
-        directUser: data.user,
-        dataUser: data.data?.user,
-        userType: data.userType,
-        user_type: data.user_type,
-      });
 
       // Determine user role
       const isAdminUser = determineAdminRole(data, requestBody.email);
@@ -867,12 +821,7 @@ export const authApi = {
       };
 
       setUser(userData);
-
-      console.log("✅ Login successful - User data saved:", userData);
-
-      // Verify data was stored correctly
       const verification = getUser();
-      console.log("🔍 Verification - Data in localStorage:", verification);
 
       if (!verification || !verification.userType) {
         console.error("❌ WARNING: User data not stored correctly!");
@@ -1092,8 +1041,6 @@ export const clearAuth = (): void => {
   }
 
   try {
-    console.log("🧹 Clearing authentication data...");
-
     // Remove authentication tokens
     localStorage.removeItem("token");
     localStorage.removeItem("accessToken");
@@ -1111,8 +1058,6 @@ export const clearAuth = (): void => {
 
     // Clear sessionStorage
     sessionStorage.clear();
-
-    console.log("✅ Authentication data cleared successfully");
   } catch (error) {
     console.error("❌ Error clearing auth data:", error);
   }

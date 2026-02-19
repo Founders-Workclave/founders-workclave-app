@@ -5,6 +5,7 @@ import AgencyDashboard from "@/components/agencyDashboard";
 import ProjectsPage from "@/components/agencyProject/projectsList";
 import CreateProjectButton from "@/components/createProjectButton";
 import { useAgencyData } from "@/hooks/useAgencyData";
+import ServiceUnavailable from "@/components/errorBoundary/serviceUnavailable";
 
 const AdminFounders = () => {
   const { stats, projects, isLoading, error, refetch } = useAgencyData();
@@ -12,15 +13,7 @@ const AdminFounders = () => {
   if (error) {
     return (
       <AgencyLayout pageTitle="" pageText="">
-        <div className={styles.errorContainer}>
-          <div className={styles.errorContent}>
-            <h3>Unable to load dashboard</h3>
-            <p>{error}</p>
-            <button className={styles.retryButton} onClick={refetch}>
-              Retry
-            </button>
-          </div>
-        </div>
+        <ServiceUnavailable showRetry onRetry={refetch} />
       </AgencyLayout>
     );
   }

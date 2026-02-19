@@ -17,6 +17,7 @@ import type {
   ApiProject,
 } from "@/types/agencyClients";
 import AllLoading from "@/layout/Loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface ClientDetailProps {
   params?: {
@@ -141,18 +142,12 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
 
   if (error || !client) {
     return (
-      <div className={styles.pageContainer}>
-        <button onClick={handleBack} className={styles.backButton}>
-          <BackBlack />
-          Back
-        </button>
-        <div className={styles.errorState}>
-          <p>Error: {error || "Client not found"}</p>
-          <button onClick={() => router.push("/agency/clients")}>
-            Back to Clients
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load client information"
+        message="We're having trouble fetching client information. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

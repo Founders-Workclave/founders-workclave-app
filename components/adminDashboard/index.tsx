@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/superAdmin/dashboardService";
 import AllLoading from "@/layout/Loader";
 import adminData from "@/mocks/adminData.json";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 export default function AdminDashboard() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
@@ -103,14 +104,12 @@ export default function AdminDashboard() {
   }
 
   if (error) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <p>Error: {error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      </div>
-    );
+    <ServiceUnavailable
+      title="Couldn't load Dashboard"
+      message="We're having trouble loading your dashboard. Please try again."
+      showRetry
+      onRetry={() => window.location.reload()}
+    />;
   }
 
   if (!dashboardData) {

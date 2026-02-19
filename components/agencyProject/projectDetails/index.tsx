@@ -25,7 +25,9 @@ import { agencyService } from "@/lib/api/agencyService/agencyService";
 import { agencyPauseService } from "@/lib/api/agencyService/pauseService";
 import { agencyTerminateService } from "@/lib/api/agencyService/terminateService";
 import { formatStatus, formatCurrency } from "@/utils/formatters";
+import { getAuthToken } from "@/lib/utils/auth";
 import toast from "react-hot-toast";
+import ServiceUnavailable from "@/components/errorBoundary/serviceUnavailable";
 
 const ProjectDetailsPage: React.FC = () => {
   const params = useParams();
@@ -45,12 +47,12 @@ const ProjectDetailsPage: React.FC = () => {
     useState<boolean>(false);
   const [showTerminateConfirm, setShowTerminateConfirm] =
     useState<boolean>(false);
+  const [isStartingConversation, setIsStartingConversation] =
+    useState<boolean>(false);
 
   const getStatusClass = (status: string | undefined): string => {
     if (!status) return styles.statusDefault;
-
     const normalizedStatus = status.toLowerCase();
-
     switch (normalizedStatus) {
       case "completed":
         return styles.statusCompleted;
@@ -86,6 +88,45 @@ const ProjectDetailsPage: React.FC = () => {
     return styles.milestonePending;
   };
 
+  const handleMessageUser = async (userId: string) => {
+    if (!userId) {
+      toast.error("User ID not available");
+      return;
+    }
+
+    try {
+      setIsStartingConversation(true);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+
+      const formData = new FormData();
+      formData.append("userID", userId);
+
+      const response = await fetch(`${baseUrl}/chat/conversation/`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to start conversation");
+
+      const data = await response.json();
+      const conversationId = data.conversationID;
+
+      router.push(
+        `/agency/messages?conversationId=${conversationId}&userId=${userId}`
+      );
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      toast.error("Failed to start conversation");
+    } finally {
+      setIsStartingConversation(false);
+    }
+  };
+
   const handleEditProject = async () => {
     try {
       setIsLoadingEditData(true);
@@ -95,21 +136,17 @@ const ProjectDetailsPage: React.FC = () => {
         return;
       }
 
-      // Fetch complete milestones with deliverables
       const milestonesData = await agencyService.getProjectMilestones(
         projectId
       );
 
-      // Combine current project data with full milestone data - ensure all required fields exist
       const combinedData = {
         ...project,
         milestones: milestonesData.milestones || [],
         productManager: project.productManager ?? undefined,
       } as const;
 
-      // Transform to form data
       const formData = transformApiProjectToFormData(combinedData as never);
-
       setEditFormData(formData);
       setIsEditModalOpen(true);
     } catch (err) {
@@ -125,7 +162,6 @@ const ProjectDetailsPage: React.FC = () => {
       setIsPausingProject(true);
       setShowActionsMenu(false);
 
-      // Check if project is already paused
       const isPaused = project?.status?.toLowerCase() === "paused";
 
       if (isPaused) {
@@ -138,7 +174,6 @@ const ProjectDetailsPage: React.FC = () => {
         toast.success("Project paused!");
       }
 
-      // Attempt one refetch (in case backend updates quickly)
       setTimeout(() => {
         refetch();
       }, 1000);
@@ -167,9 +202,8 @@ const ProjectDetailsPage: React.FC = () => {
       toast.dismiss(loadingToast);
       toast.success("Project terminated successfully!");
 
-      // Redirect to projects list after a short delay
       setTimeout(() => {
-        router.push("/agency"); // Adjust this path to your projects list route
+        router.push("/agency");
       }, 1500);
     } catch (err) {
       console.error("Error terminating project:", err);
@@ -178,8 +212,6 @@ const ProjectDetailsPage: React.FC = () => {
 
       if (err instanceof Error) {
         errorMessage = err.message;
-
-        // Check if it's a network error
         if (err.message.includes("Failed to fetch")) {
           errorMessage =
             "Network error: Unable to reach the server. Please check your connection and try again.";
@@ -206,18 +238,12 @@ const ProjectDetailsPage: React.FC = () => {
 
   if (error || !project) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <h2>Error loading project</h2>
-          <p>{error || "Project not found"}</p>
-          <button onClick={refetch} className={styles.retryButton}>
-            Retry
-          </button>
-          <button onClick={() => router.back()} className={styles.backButton}>
-            Go Back
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load project"
+        message="We're having trouble fetching this project. Please try again."
+        showRetry
+        onRetry={refetch}
+      />
     );
   }
 
@@ -243,9 +269,13 @@ const ProjectDetailsPage: React.FC = () => {
           </div>
 
           <div className={styles.actionButtons}>
-            <button className={styles.messageButton}>
+            <button
+              className={styles.messageButton}
+              onClick={() => handleMessageUser(project.client.id)}
+              disabled={isStartingConversation}
+            >
               <MessageApp />
-              Message client
+              {isStartingConversation ? "Starting..." : "Message client"}
             </button>
 
             <button
@@ -383,7 +413,6 @@ const ProjectDetailsPage: React.FC = () => {
       {/* Content Area */}
       <div className={styles.contentGrid}>
         <div className={styles.mainContent}>
-          {/* Overview Tab Content */}
           {activeTab === "overview" && (
             <div className={styles.overviewTab}>
               <div className={styles.colOne}>
@@ -429,7 +458,6 @@ const ProjectDetailsPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Problem Statement */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>Problem Statement</h2>
@@ -440,7 +468,6 @@ const ProjectDetailsPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Key Features */}
                 <div className={styles.section}>
                   <h2 className={styles.sectionTitle}>Key Features</h2>
                   <div className={styles.featuresGrid}>
@@ -457,6 +484,7 @@ const ProjectDetailsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+
               <div className={styles.sidebar}>
                 {/* Client Card */}
                 <div className={styles.card}>
@@ -469,12 +497,17 @@ const ProjectDetailsPage: React.FC = () => {
                       {project.client.name}
                     </span>
                   </div>
-                  <button className={styles.messageClientButton}>
+                  <button
+                    className={styles.messageClientButton}
+                    onClick={() => handleMessageUser(project.client.id)}
+                    disabled={isStartingConversation}
+                  >
                     <MessageApp />
-                    Message client
+                    {isStartingConversation ? "Starting..." : "Message client"}
                   </button>
                 </div>
 
+                {/* Product Manager Card */}
                 {project.productManager && (
                   <div className={styles.projectManager}>
                     <div className={styles.card}>
@@ -487,9 +520,16 @@ const ProjectDetailsPage: React.FC = () => {
                           {project.productManager.name}
                         </span>
                       </div>
-                      <button className={styles.messagePMButton}>
+                      <button
+                        className={styles.messagePMButton}
+                        onClick={() =>
+                          project.productManager &&
+                          handleMessageUser(project.productManager.id)
+                        }
+                        disabled={isStartingConversation}
+                      >
                         <MessageApp />
-                        Message PM
+                        {isStartingConversation ? "Starting..." : "Message PM"}
                       </button>
                       <button className={styles.unassignButton}>
                         Un-assign
@@ -501,17 +541,14 @@ const ProjectDetailsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Milestones Tab Content */}
           {activeTab === "milestones" && (
             <AdminMilestonesPage projectId={projectId} />
           )}
 
-          {/* Documents Tab Content */}
           {activeTab === "documents" && (
             <AgencyDocuments projectId={projectId} />
           )}
 
-          {/* Payment Tab Content */}
           {activeTab === "payment" && <AgencyPayments projectId={projectId} />}
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
 import { Manager } from "@/types/agencyPm";
 import AllLoading from "@/layout/Loader";
 import AdminIconProject from "@/svgs/adminIconProject";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface PMDetailProps {
   params?: {
@@ -137,18 +138,12 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
 
   if (error || !pm) {
     return (
-      <div className={styles.pageContainer}>
-        <button onClick={handleBack} className={styles.backButton}>
-          <BackBlack />
-          Back
-        </button>
-        <div className={styles.errorContainer}>
-          <p>Error: {error || "Manager not found"}</p>
-          <button onClick={() => router.push("/agency/pm")}>
-            Back to Managers
-          </button>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load PM's information"
+        message="We're having trouble fetching PM's information. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

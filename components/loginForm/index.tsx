@@ -28,35 +28,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   useEffect(() => {
     if (isAuthenticated()) {
       const user = getUser();
-      console.log("=== ALREADY AUTHENTICATED CHECK ===");
-      console.log("User object:", JSON.stringify(user, null, 2));
 
       const userType = user?.userType?.toLowerCase();
       const role = user?.role?.toLowerCase();
 
-      console.log("Detected values:", {
-        userType,
-        role,
-      });
-
       // Check userType first, then role
       if (userType === "agency") {
-        console.log("→ Redirecting to /agency");
         router.replace("/agency");
       } else if (userType === "manager" || userType === "pm" || role === "pm") {
-        console.log("→ Redirecting to /pm");
         router.replace("/pm");
       } else if (userType === "client" || role === "client") {
-        console.log("→ Redirecting to /clients");
         router.replace("/clients");
       } else if (role === "admin") {
-        console.log("→ Redirecting to /admin");
         router.replace("/admin");
       } else {
-        // Only founders/regular users should go to /[username]
         const username =
           user?.username || user?.name?.toLowerCase().replace(/\s+/g, ".");
-        console.log("→ Redirecting to /" + username);
         router.replace(`/${username}`);
       }
     }
@@ -65,15 +52,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
   // Handle successful login
   useEffect(() => {
     if (success) {
-      console.log("=== LOGIN SUCCESS - STARTING REDIRECT ===");
-
       const timer = setTimeout(() => {
         const user = getUser();
 
-        console.log("User from localStorage:", JSON.stringify(user, null, 2));
-
         if (!user) {
-          console.error("❌ No user found after successful login");
           setLoginError("Login failed. Please try again.");
           clearUser();
           resetState();
@@ -83,10 +65,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
         const userType = user.userType?.toLowerCase();
         const role = user.role?.toLowerCase();
 
-        console.log("=== REDIRECT DECISION ===");
-        console.log("userType:", userType);
-        console.log("role:", role);
-
         setLoginError(null);
 
         if (onSubmit) {
@@ -94,38 +72,24 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
         }
 
         let redirectUrl = "";
-
-        // Check userType first, then role
         if (userType === "agency") {
           redirectUrl = "/agency";
-          console.log("✅ DECISION: Redirecting to /agency");
         } else if (
           userType === "manager" ||
           userType === "pm" ||
           role === "pm"
         ) {
           redirectUrl = "/pm";
-          console.log("✅ DECISION: Redirecting to /pm");
         } else if (userType === "client" || role === "client") {
           redirectUrl = "/clients";
-          console.log("✅ DECISION: Redirecting to /clients");
         } else if (role === "admin") {
           redirectUrl = "/admin";
-          console.log("✅ DECISION: Redirecting to /admin");
         } else {
-          // Only founders/regular users
           const username =
             user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
           redirectUrl = `/${username}`;
-          console.log("✅ DECISION: Redirecting to", redirectUrl);
         }
-
-        console.log("=== EXECUTING REDIRECT TO:", redirectUrl, "===");
-        console.log("Timestamp:", new Date().toISOString());
-
         window.location.href = redirectUrl;
-
-        console.log("=== REDIRECT COMMAND SENT ===");
       }, 800);
 
       return () => clearTimeout(timer);
@@ -162,9 +126,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
       setLoginError("Please enter your password");
       return;
     }
-
-    console.log("🔐 Submitting login for:", formData.email);
-
     await login({
       email: formData.email.trim(),
       password: formData.password,

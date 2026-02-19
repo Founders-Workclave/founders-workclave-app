@@ -5,6 +5,7 @@ import { Milestone } from "@/types/project";
 import { MilestoneService } from "@/lib/api/milestoneService";
 import MilestoneCard from "./milestoneCard";
 import Loader from "../loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 // API response type
 interface APIDeliverable {
@@ -141,11 +142,12 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({ projectId }) => {
 
   if (error) {
     return (
-      <div className={styles.container}>
-        <div className={styles.errorContainer}>
-          <p>Error: {error}</p>
-        </div>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load PRDs"
+        message="We're having trouble loading your PRDs. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

@@ -6,6 +6,8 @@ import AgenciesTable from "../agenciesTable";
 import type { Agency } from "../../types/user";
 import { getAllAgencies } from "@/lib/api/superAdmin/agencyService";
 import AllLoading from "@/layout/Loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import { refresh } from "next/cache";
 
 interface APIAgency {
   agencyID: string;
@@ -120,14 +122,7 @@ const AdminAgencyComp: React.FC = () => {
 
   // Show error state
   if (error) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.errorState}>
-          <AllLoading text="Loading agencies..." />
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      </div>
-    );
+    return <ServiceUnavailable showRetry onRetry={refresh} />;
   }
 
   // Show loading state in table

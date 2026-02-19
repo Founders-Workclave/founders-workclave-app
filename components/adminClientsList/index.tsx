@@ -6,6 +6,7 @@ import { getAgencyClients } from "@/lib/api/superAdmin/agencyService";
 import type { Client } from "@/types/agencyClients";
 import AllLoading from "@/layout/Loader";
 import EmptyClients from "@/svgs/emptyClients";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface AdminAgencyClientsProps {
   agencyId: string;
@@ -119,15 +120,12 @@ const AdminAgencyClients: React.FC<AdminAgencyClientsProps> = ({
   }
 
   if (error) {
-    return (
-      <div className={styles.pageWrapper}>
-        <div className={styles.container}>
-          <div className={styles.errorState}>
-            <p>Error: {error}</p>
-          </div>
-        </div>
-      </div>
-    );
+    <ServiceUnavailable
+      title="Couldn't load Clients"
+      message="We're having trouble loading your clients. Please try again."
+      showRetry
+      onRetry={() => window.location.reload()}
+    />;
   }
 
   if (clients.length === 0) {

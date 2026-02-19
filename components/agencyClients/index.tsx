@@ -1,11 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./styles.module.css";
 import { Pagination } from "../agencyProject/pagination";
 import { fetchClientsList } from "@/lib/api/agencyService/clientService";
 import type { Client, ApiClient } from "@/types/agencyClients";
 import AllLoading from "@/layout/Loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 type FilterTab = "all" | "active" | "inactive";
 
@@ -31,31 +32,41 @@ const AllClientsPage: React.FC = () => {
     };
   };
 
-  useEffect(() => {
-    const loadClients = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const loadClients = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        const response = await fetchClientsList();
-        const transformedClients = response.clients.map(transformApiClient);
-        setClients(transformedClients);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load clients";
-        setError(errorMessage);
-        console.error("Error loading clients:", err);
+      const response = await fetchClientsList();
+      const transformedClients = response.clients.map(transformApiClient);
+      setClients(transformedClients);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to load clients";
 
-        if (errorMessage.includes("Unauthorized")) {
-          router.push("/login");
-        }
-      } finally {
-        setLoading(false);
+      // Don't expose raw server errors to users
+      if (
+        errorMessage.includes("500") ||
+        errorMessage.includes("502") ||
+        errorMessage.includes("503") ||
+        errorMessage.includes("Failed to fetch")
+      ) {
+        setError("service_unavailable");
+      } else if (errorMessage.includes("Unauthorized")) {
+        router.push("/login");
+      } else {
+        setError("failed_to_load");
       }
-    };
 
-    loadClients();
+      console.error("Error loading clients:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [router]);
+
+  useEffect(() => {
+    loadClients();
+  }, [loadClients]);
 
   const filteredClients = clients.filter((client) => {
     const matchesSearch =
@@ -108,13 +119,23 @@ const AllClientsPage: React.FC = () => {
 
   if (error) {
     return (
+      <ServiceUnavailable
+        title="Couldn't load clients"
+        message="We're having trouble loading your client list. Please try again."
+        showRetry
+        onRetry={loadClients}
+      />
+    );
+  }
+
+  if (filteredClients.length === 0 && !searchQuery) {
+    return (
       <div className={styles.pageWrapper}>
-        <div className={styles.container}>
-          <div className={styles.errorState}>
-            <p>Error: {error}</p>
-            <button onClick={() => window.location.reload()}>Retry</button>
-          </div>
-        </div>
+        <ServiceUnavailable
+          title="No clients yet"
+          message="Your client list is empty. Clients will appear here once they're added."
+          minimal
+        />
       </div>
     );
   }
@@ -187,112 +208,126 @@ const AllClientsPage: React.FC = () => {
           />
         </div>
 
+        {/* Empty search result */}
+        {filteredClients.length === 0 && searchQuery && (
+          <div className={styles.emptySearch}>
+            <ServiceUnavailable
+              minimal
+              message={`No clients found for "${searchQuery}"`}
+            />
+          </div>
+        )}
+
         {/* Desktop Table View */}
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr className={styles.tableHeader}>
-                <th className={styles.tableHeaderCell}>Client Name</th>
-                <th className={styles.tableHeaderCell}>Email address</th>
-                <th className={styles.tableHeaderCell}>Phone Number</th>
-                <th className={styles.tableHeaderCell}>Joined date</th>
-                <th className={styles.tableHeaderCell}>Status</th>
-                <th className={styles.tableHeaderCell}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredClients.map((client) => (
-                <tr key={client.id} className={styles.tableRow}>
-                  <td className={styles.tableCell}>
-                    <div className={styles.clientNameContainer}>
-                      <div className={styles.avatar}>
-                        {getInitials(client.name)}
-                      </div>
-                      <span className={styles.clientName}>{client.name}</span>
-                    </div>
-                  </td>
-                  <td className={styles.tableCell}>{client.email}</td>
-                  <td className={styles.tableCell}>
-                    {client.phoneNumber || "---"}
-                  </td>
-                  <td className={styles.tableCell}>
-                    {formatDate(client.joinedDate)}
-                  </td>
-                  <td className={styles.tableCell}>
-                    <span
-                      className={`${styles.statusBadge} ${
-                        client.status === "Active"
-                          ? styles.statusActive
-                          : styles.statusInactive
-                      }`}
-                    >
-                      {client.status}
-                    </span>
-                  </td>
-                  <td className={styles.tableCell}>
-                    <button
-                      onClick={() => handleViewProfile(client.id)}
-                      className={styles.viewButton}
-                    >
-                      View profile
-                    </button>
-                  </td>
+        {filteredClients.length > 0 && (
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr className={styles.tableHeader}>
+                  <th className={styles.tableHeaderCell}>Client Name</th>
+                  <th className={styles.tableHeaderCell}>Email address</th>
+                  <th className={styles.tableHeaderCell}>Phone Number</th>
+                  <th className={styles.tableHeaderCell}>Joined date</th>
+                  <th className={styles.tableHeaderCell}>Status</th>
+                  <th className={styles.tableHeaderCell}>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredClients.map((client) => (
+                  <tr key={client.id} className={styles.tableRow}>
+                    <td className={styles.tableCell}>
+                      <div className={styles.clientNameContainer}>
+                        <div className={styles.avatar}>
+                          {getInitials(client.name)}
+                        </div>
+                        <span className={styles.clientName}>{client.name}</span>
+                      </div>
+                    </td>
+                    <td className={styles.tableCell}>{client.email}</td>
+                    <td className={styles.tableCell}>
+                      {client.phoneNumber || "---"}
+                    </td>
+                    <td className={styles.tableCell}>
+                      {formatDate(client.joinedDate)}
+                    </td>
+                    <td className={styles.tableCell}>
+                      <span
+                        className={`${styles.statusBadge} ${
+                          client.status === "Active"
+                            ? styles.statusActive
+                            : styles.statusInactive
+                        }`}
+                      >
+                        {client.status}
+                      </span>
+                    </td>
+                    <td className={styles.tableCell}>
+                      <button
+                        onClick={() => handleViewProfile(client.id)}
+                        className={styles.viewButton}
+                      >
+                        View profile
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Mobile Card View */}
-        <div className={styles.cardsContainer}>
-          {filteredClients.map((client) => (
-            <div key={client.id} className={styles.card}>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Client Name</span>
-                <div className={styles.cardNameValue}>
-                  <div className={styles.avatar}>
-                    {getInitials(client.name)}
+        {filteredClients.length > 0 && (
+          <div className={styles.cardsContainer}>
+            {filteredClients.map((client) => (
+              <div key={client.id} className={styles.card}>
+                <div className={styles.cardRow}>
+                  <span className={styles.cardLabel}>Client Name</span>
+                  <div className={styles.cardNameValue}>
+                    <div className={styles.avatar}>
+                      {getInitials(client.name)}
+                    </div>
+                    <span className={styles.clientName}>{client.name}</span>
                   </div>
-                  <span className={styles.clientName}>{client.name}</span>
                 </div>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Email address</span>
-                <span className={styles.cardValue}>{client.email}</span>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Phone Number</span>
-                <span className={styles.cardValue}>
-                  {client.phoneNumber || "---"}
-                </span>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Joined date</span>
-                <span className={styles.cardValue}>
-                  {formatDate(client.joinedDate)}
-                </span>
-              </div>
-              <div className={styles.cardRow}>
-                <span className={styles.cardLabel}>Status</span>
-                <span
-                  className={`${styles.statusBadge} ${
-                    client.status === "Active"
-                      ? styles.statusActive
-                      : styles.statusInactive
-                  }`}
+                <div className={styles.cardRow}>
+                  <span className={styles.cardLabel}>Email address</span>
+                  <span className={styles.cardValue}>{client.email}</span>
+                </div>
+                <div className={styles.cardRow}>
+                  <span className={styles.cardLabel}>Phone Number</span>
+                  <span className={styles.cardValue}>
+                    {client.phoneNumber || "---"}
+                  </span>
+                </div>
+                <div className={styles.cardRow}>
+                  <span className={styles.cardLabel}>Joined date</span>
+                  <span className={styles.cardValue}>
+                    {formatDate(client.joinedDate)}
+                  </span>
+                </div>
+                <div className={styles.cardRow}>
+                  <span className={styles.cardLabel}>Status</span>
+                  <span
+                    className={`${styles.statusBadge} ${
+                      client.status === "Active"
+                        ? styles.statusActive
+                        : styles.statusInactive
+                    }`}
+                  >
+                    {client.status}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleViewProfile(client.id)}
+                  className={styles.seeDetailsButton}
                 >
-                  {client.status}
-                </span>
+                  See Details
+                </button>
               </div>
-              <button
-                onClick={() => handleViewProfile(client.id)}
-                className={styles.seeDetailsButton}
-              >
-                See Details
-              </button>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <Pagination
           currentPage={currentPage}

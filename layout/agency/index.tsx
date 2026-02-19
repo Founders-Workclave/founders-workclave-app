@@ -44,7 +44,6 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
     };
 
     const handleProfileUpdate = () => {
-      console.log("📸 Profile updated, refreshing display...");
       refreshProfile();
     };
 
@@ -60,7 +59,6 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
     const checkAuth = () => {
       // First check if user is authenticated
       if (!isAuthenticated()) {
-        console.log("🚫 Not authenticated, redirecting to agency login...");
         router.replace("/login");
         return;
       }
@@ -68,7 +66,6 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
       const currentUser = getCurrentUser();
 
       if (!currentUser) {
-        console.log("🚫 No user data found, redirecting to agency login...");
         router.replace("/login");
         return;
       }
@@ -76,19 +73,8 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
       // CRITICAL: Check if user is an agency user
       const userUserType = currentUser.userType?.toLowerCase();
 
-      console.log("🔍 Agency Layout - User validation:", {
-        userType: userUserType,
-        role: currentUser.role,
-        email: currentUser.email,
-        name: currentUser.name,
-      });
-
       // If user is not an agency user, redirect them to their correct dashboard
       if (userUserType !== "agency") {
-        console.log(
-          "🚫 User is not an agency user, redirecting to correct dashboard..."
-        );
-
         // Redirect based on their actual user type/role
         if (currentUser.role === "admin") {
           router.replace("/admin");
@@ -106,13 +92,6 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
       setUser(currentUser);
       setProfileImage(getUserProfileImage());
       setIsLoading(false);
-
-      console.log("✅ Agency layout: User authenticated and validated", {
-        name: currentUser.name,
-        email: currentUser.email,
-        userType: currentUser.userType,
-        role: currentUser.role,
-      });
     };
 
     checkAuth();

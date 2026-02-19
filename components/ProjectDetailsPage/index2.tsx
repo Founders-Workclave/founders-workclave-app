@@ -10,6 +10,7 @@ import KeyFeatures from "../projectDetail/keyfeatures";
 import NextMilestone from "../projectDetail/nextMilestone";
 import ProductManager from "../projectDetail/productManager";
 import Loader from "../loader";
+import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 interface PageProps {
   params: {
@@ -63,9 +64,12 @@ export default function TabOneComponent({ params }: PageProps) {
 
   if (error) {
     return (
-      <div className={styles.errorContainer}>
-        <p>Error: {error}</p>
-      </div>
+      <ServiceUnavailable
+        title="Couldn't load "
+        message="We're having trouble loading. Please try again."
+        showRetry
+        onRetry={() => window.location.reload()}
+      />
     );
   }
 

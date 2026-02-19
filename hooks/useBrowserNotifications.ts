@@ -26,7 +26,7 @@ export function useBrowserNotifications() {
       const ctx = audioRef.current;
       if (ctx.state === "suspended") {
         ctx.resume();
-      }
+      }s
       const playTone = (
         frequency: number,
         startTime: number,
