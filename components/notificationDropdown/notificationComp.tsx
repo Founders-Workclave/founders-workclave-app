@@ -1,8 +1,7 @@
 "use client";
 import NotificationsDropdown from "./index";
 import { useNotifications } from "@/hooks/useNotification";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { useState } from "react";
 import { getAuthToken } from "@/lib/api/auth";
 
 export default function HeaderNotification() {
@@ -10,16 +9,10 @@ export default function HeaderNotification() {
     () => getAuthToken() ?? undefined
   );
 
-  const { notifications, error, markAsRead, markAllAsRead } = useNotifications({
+  const { notifications, markAsRead, markAllAsRead } = useNotifications({
     autoFetch: true,
     token,
   });
-
-  useEffect(() => {
-    if (error) {
-      toast.error(error);
-    }
-  }, [error]);
 
   return (
     <NotificationsDropdown

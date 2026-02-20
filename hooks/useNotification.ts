@@ -43,12 +43,12 @@ export function useNotifications(
     setError(null);
     try {
       const data = await notificationService.getNotifications();
-      // Filter out any notifications with undefined/null ids
       const valid = data.filter((n) => n.id != null);
       setNotifications(valid);
       valid.forEach((n) => seenIdsRef.current.add(n.id));
     } catch (err) {
-      console.error("Error fetching notifications:", err);
+      console.warn("Background fetch: notifications unavailable", err);
+      setError("service_unavailable");
     } finally {
       setIsLoading(false);
     }
@@ -56,8 +56,12 @@ export function useNotifications(
 
   const handleIncomingNotification = useCallback(
     (notification: Notification) => {
-      // Guard: skip if no valid id
-      if (!notification.id) return;
+      console.log("📨 handleIncomingNotification called:", notification);
+
+      if (!notification.id) {
+        console.warn("⚠️ No id, skipping");
+        return;
+      }
 
       setNotifications((prev) => {
         const exists = prev.find((n) => n.id === notification.id);
@@ -67,25 +71,32 @@ export function useNotifications(
 
       if (!seenIdsRef.current.has(notification.id)) {
         seenIdsRef.current.add(notification.id);
+        console.log("🔔 Calling notify for:", notification.title);
         if (!notification.isRead) {
           notify(notification.title ?? "New notification", {
             body: notification.description ?? "",
             url: notification.link ?? "/",
           });
         }
+      } else {
+        console.log("👀 Already seen:", notification.id);
       }
     },
     [notify]
   );
 
   const connectWebSocket = useCallback(() => {
-    if (!token) return;
+    if (!token) {
+      console.warn("⚠️ No token, skipping WS connection");
+      return;
+    }
 
     if (
       wsRef.current &&
       (wsRef.current.readyState === WebSocket.OPEN ||
         wsRef.current.readyState === WebSocket.CONNECTING)
     ) {
+      console.log("⚡ WebSocket already connected, skipping...");
       return;
     }
 
@@ -106,23 +117,28 @@ export function useNotifications(
     };
 
     ws.onmessage = (event: MessageEvent) => {
+      console.log("📩 Raw WS message received:", event.data);
       try {
         const raw = JSON.parse(event.data as string) as Record<string, unknown>;
+        console.log("📦 Parsed WS data:", raw);
 
-        // The WS might send { notification: {...} } or the object directly
-        // It also sends in API format (is_read, created_at) so we must map it
-        const payload = (raw.notification ?? raw) as NotificationApiResponse;
+        // Handle nested { message: { notification: {...} } } or { notification: {...} } or flat
+        const inner = (raw.message ?? raw) as Record<string, unknown>;
+        const payload = (inner.notification ??
+          inner) as NotificationApiResponse;
 
-        // Only process if it looks like a valid notification
+        console.log("🎯 Payload:", payload);
+
         if (!payload.id) {
-          console.warn("Received WS message without id, skipping:", payload);
+          console.warn("⚠️ No id in payload, skipping:", payload);
           return;
         }
 
         const notification = mapApiNotificationToComponent(payload);
+        console.log("✅ Mapped notification:", notification);
         handleIncomingNotification(notification);
       } catch (err) {
-        console.error("Failed to parse notification WS message:", err);
+        console.error("❌ Failed to parse WS message:", err);
       }
     };
 
@@ -134,6 +150,7 @@ export function useNotifications(
       console.log("🔴 WebSocket closed:", event.code);
       wsRef.current = null;
       if (event.code !== 1000) {
+        console.log("🔄 Reconnecting in 5s...");
         reconnectTimeoutRef.current = setTimeout(() => {
           connectWebSocket();
         }, 5000);
@@ -141,12 +158,14 @@ export function useNotifications(
     };
   }, [token, handleIncomingNotification]);
 
+  // Initial fetch
   useEffect(() => {
     if (autoFetch) {
       fetchNotifications();
     }
   }, [autoFetch, fetchNotifications]);
 
+  // WebSocket connection
   useEffect(() => {
     if (!token) return;
 
@@ -166,7 +185,6 @@ export function useNotifications(
   }, [token, connectWebSocket]);
 
   const markAsRead = useCallback(async (id: string) => {
-    // Guard: don't call API with undefined id
     if (!id) return;
     try {
       setNotifications((prev) =>
@@ -177,18 +195,12 @@ export function useNotifications(
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, isRead: false } : n))
       );
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to mark notification as read";
-      setError(errorMessage);
-      throw err;
+      console.warn("Failed to mark notification as read:", err);
     }
   }, []);
 
   const markAllAsRead = useCallback(async () => {
     try {
-      // Guard: filter out any undefined ids before calling API
       const unreadIds = notifications
         .filter((n) => !n.isRead && n.id != null)
         .map((n) => n.id);
@@ -199,12 +211,7 @@ export function useNotifications(
       await notificationService.markAllAsRead(unreadIds);
     } catch (err) {
       await fetchNotifications();
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Failed to mark all notifications as read";
-      setError(errorMessage);
-      throw err;
+      console.warn("Failed to mark all notifications as read:", err);
     }
   }, [notifications, fetchNotifications]);
 

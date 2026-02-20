@@ -26,7 +26,7 @@ export function useBrowserNotifications() {
       const ctx = audioRef.current;
       if (ctx.state === "suspended") {
         ctx.resume();
-      }s
+      }
       const playTone = (
         frequency: number,
         startTime: number,
@@ -63,16 +63,29 @@ export function useBrowserNotifications() {
       title: string,
       options?: { body?: string; icon?: string; url?: string }
     ) => {
-      if (!("Notification" in window)) return;
-      if (permissionRef.current !== "granted") return;
-      if (document.visibilityState === "visible") {
-        // Still play sound even when tab is visible
-        playSound();
+      console.log("🔔 notify called");
+      console.log("📋 Notification support:", "Notification" in window);
+      console.log("🔑 Permission:", permissionRef.current);
+      console.log("👁️ Visibility:", document.visibilityState);
+
+      if (!("Notification" in window)) {
+        console.warn("❌ Notifications not supported");
+        return;
+      }
+      if (permissionRef.current !== "granted") {
+        console.warn("❌ Permission not granted:", permissionRef.current);
         return;
       }
 
+      // Play sound regardless of visibility
       playSound();
 
+      if (document.visibilityState === "visible") {
+        console.log("👁️ Tab visible - skipping popup but playing sound");
+        return;
+      }
+
+      console.log("🚀 Firing notification popup");
       const notification = new Notification(title, {
         body: options?.body,
         icon: options?.icon || "/favicon.ico",
