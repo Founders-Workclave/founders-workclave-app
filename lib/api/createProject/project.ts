@@ -133,7 +133,7 @@ export const projectService = {
   async updateProject(
     projectId: string,
     projectData: CreateProjectRequest,
-    documentFile?: File
+    _documentFile?: File
   ): Promise<{ message: string; projectId: string }> {
     try {
       const token = getAuthToken();

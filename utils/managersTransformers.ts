@@ -4,9 +4,6 @@ import {
   ManagerProjectDetails,
 } from "@/types/managersDashbord";
 
-/**
- * Generate initials from a name
- */
 const getInitials = (name: string): string => {
   return name
     .split(" ")
@@ -15,41 +12,13 @@ const getInitials = (name: string): string => {
     .join("");
 };
 
-/**
- * Parse progress string (e.g., "1/4" or "2/4") into object
- */
 const parseProgress = (
   progressStr: string
 ): { current: number; total: number } => {
   const [current, total] = progressStr.split("/").map(Number);
-  return {
-    current: current || 0,
-    total: total || 0,
-  };
+  return { current: current || 0, total: total || 0 };
 };
 
-/**
- * Parses the stringified feature object from the API
- * e.g. "{'id': 1, 'feature': 'Inventory Management'}" → { id: "1", name: "Inventory Management" }
- */
-const parseFeature = (
-  featureStr: string
-): { id: string; name: string } | null => {
-  try {
-    const json = featureStr.replace(/'/g, '"');
-    const parsed = JSON.parse(json);
-    return {
-      id: String(parsed.id),
-      name: parsed.feature as string,
-    };
-  } catch {
-    return null;
-  }
-};
-
-/**
- * Formats a date string into a human-readable "time ago" string
- */
 const formatTimeAgo = (dateStr: string | null): string => {
   if (!dateStr) return "Unknown";
   const seconds = Math.floor(
@@ -61,9 +30,6 @@ const formatTimeAgo = (dateStr: string | null): string => {
   return `${Math.floor(seconds / 86400)}d ago`;
 };
 
-/**
- * Formats a date string into a readable date (e.g. "Feb 5, 2026")
- */
 const formatDate = (dateStr: string | null): string => {
   if (!dateStr) return "Not set";
   return new Date(dateStr).toLocaleDateString("en-US", {
@@ -73,9 +39,19 @@ const formatDate = (dateStr: string | null): string => {
   });
 };
 
-/**
- * Transform manager API project to UI project format
- */
+const parseFeatureName = (feature: string): string => {
+  if (typeof feature === "string" && feature.trim().startsWith("{")) {
+    try {
+      const json = feature.replace(/'/g, '"').replace(/(\w+):/g, '"$1":');
+      const parsed = JSON.parse(json) as { feature?: string };
+      return parsed.feature || feature;
+    } catch {
+      return feature;
+    }
+  }
+  return feature;
+};
+
 export const transformManagerProject = (
   project: ManagerProject
 ): TransformedManagerProject => {
@@ -98,34 +74,27 @@ export const transformManagerProject = (
   };
 };
 
-/**
- * Transform array of manager projects
- */
 export const transformManagerProjects = (
   projects: ManagerProject[]
 ): TransformedManagerProject[] => {
   return projects.map(transformManagerProject);
 };
 
-/**
- * Transform manager API project details response to typed format
- * Matches the actual API response:
- * { message, project: { ... }, nextMilestone: { ... } }
- */
 export const transformManagerProjectDetails = (
   data: Record<string, unknown>
 ): ManagerProjectDetails => {
   const project = data.project as Record<string, unknown>;
   const nextMilestone = data.nextMilestone as Record<string, unknown> | null;
 
-  // Parse projectFeatures, filtering out any that fail to parse
   const features = (
     (project.projectFeatures as { id: number; feature: string }[]) || []
   )
-    .map((f) => parseFeature(f.feature))
-    .filter((f): f is { id: string; name: string } => f !== null);
+    .map((f) => ({
+      id: String(f.id),
+      name: parseFeatureName(f.feature),
+    }))
+    .filter((f) => Boolean(f.name));
 
-  // Build milestones array from nextMilestone
   const milestones = nextMilestone
     ? [
         {
@@ -158,11 +127,13 @@ export const transformManagerProjectDetails = (
     problemStatement: (project.description as string) || undefined,
     keyFeatures: features.length > 0 ? features : undefined,
     client: {
+      id: (project.client as string) || "",
       name: (project.clientName as string) || "",
       initials: getInitials((project.clientName as string) || ""),
     },
     productManager: project.managerName
       ? {
+          id: (project.manager as string) || "",
           name: project.managerName as string,
           initials: getInitials(project.managerName as string),
         }

@@ -71,10 +71,12 @@ export interface ManagerProjectDetails {
   problemStatement?: string;
   keyFeatures?: ManagerKeyFeature[];
   client: {
+    id: string;
     name: string;
     initials: string;
   };
   productManager?: {
+    id: string;
     name: string;
     initials: string;
   };

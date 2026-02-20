@@ -111,11 +111,6 @@
   transition: all 0.2s;
 }
 
-.messageButton:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
-}
-
 .editButton {
   display: flex;
   align-items: center;

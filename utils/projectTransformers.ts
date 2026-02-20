@@ -3,9 +3,6 @@ import type {
   ProjectDetail,
 } from "@/types/agencyProjectsNew";
 
-/**
- * Get initials from full name
- */
 const getInitials = (name: string | null): string => {
   if (!name) return "?";
   const parts = name.trim().split(" ");
@@ -15,9 +12,6 @@ const getInitials = (name: string | null): string => {
   return parts[0][0].toUpperCase();
 };
 
-/**
- * Calculate how long ago a date was
- */
 const getTimeAgo = (dateString: string): string => {
   const date = new Date(dateString);
   const now = new Date();
@@ -36,9 +30,6 @@ const getTimeAgo = (dateString: string): string => {
   return diffInYears === 1 ? "1 year ago" : `${diffInYears} years ago`;
 };
 
-/**
- * Format date to readable string
- */
 const formatDate = (dateString: string | null): string => {
   if (!dateString) return "Not set";
   const date = new Date(dateString);
@@ -49,18 +40,25 @@ const formatDate = (dateString: string | null): string => {
   });
 };
 
-/**
- * Get last document upload text
- */
 const getLastDocumentUploadText = (documentCount: number): string => {
   if (documentCount === 0) return "No documents";
   if (documentCount === 1) return "1 document uploaded";
   return `${documentCount} documents uploaded`;
 };
 
-/**
- * Transform API project detail to UI project detail
- */
+const parseFeatureName = (feature: string): string => {
+  if (typeof feature === "string" && feature.trim().startsWith("{")) {
+    try {
+      const json = feature.replace(/'/g, '"').replace(/(\w+):/g, '"$1":');
+      const parsed = JSON.parse(json) as { feature?: string };
+      return parsed.feature || feature;
+    } catch {
+      return feature;
+    }
+  }
+  return feature;
+};
+
 export const transformProjectDetail = (
   apiProject: ApiProjectDetail
 ): ProjectDetail => {
@@ -101,7 +99,7 @@ export const transformProjectDetail = (
     problemStatement: apiProject.description,
     keyFeatures: apiProject.projectFeatures.map((f, index) => ({
       id: f.id?.toString() || `feature-${index}`,
-      name: f.feature,
+      name: parseFeatureName(f.feature as string),
     })),
   };
 };

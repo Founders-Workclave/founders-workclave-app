@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styles from "./styles.module.css";
 import { MilestoneFormData, Deliverable } from "@/types/createPrjects";
 import EditMilestoneModal from "../editMilestoneModal";
@@ -10,7 +10,7 @@ interface MilestonesPaymentsProps {
   onNext: () => void;
   onBack: () => void;
   mode?: "create" | "edit";
-  onRefresh?: () => void; // Optional callback to refresh data after edit
+  onRefresh?: () => void;
 }
 
 const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
@@ -27,13 +27,13 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
   const [editingMilestone, setEditingMilestone] =
     useState<MilestoneFormData | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const idCounterRef = useRef(0);
 
   const isReadOnly = mode === "edit";
 
-  const toggleMilestone = (milestoneId: string) => {
-    setExpandedMilestone(
-      expandedMilestone === milestoneId ? null : milestoneId
-    );
+  const generateId = () => {
+    idCounterRef.current += 1;
+    return `item-${idCounterRef.current}`;
   };
 
   const updateMilestone = (
@@ -47,6 +47,21 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
     onUpdate(updated);
   };
 
+  const toggleMilestone = (milestoneId: string) => {
+    const isOpening = expandedMilestone !== milestoneId;
+    setExpandedMilestone(isOpening ? milestoneId : null);
+
+    // Auto-add first deliverable field if none exist
+    if (isOpening && !isReadOnly) {
+      const milestone = milestones.find((m) => m.id === milestoneId);
+      if (milestone && milestone.deliverables.length === 0) {
+        updateMilestone(milestoneId, {
+          deliverables: [{ id: generateId(), task: "" }],
+        });
+      }
+    }
+  };
+
   const handleEditMilestone = (milestone: MilestoneFormData) => {
     setEditingMilestone(milestone);
     setIsEditModalOpen(true);
@@ -58,10 +73,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
   };
 
   const handleEditSuccess = () => {
-    // Refresh data if callback provided
-    if (onRefresh) {
-      onRefresh();
-    }
+    if (onRefresh) onRefresh();
   };
 
   const addDeliverable = (milestoneId: string) => {
@@ -69,7 +81,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
     const milestone = milestones.find((m) => m.id === milestoneId);
     if (milestone) {
       const newDeliverable: Deliverable = {
-        id: `${Date.now()}`,
+        id: generateId(),
         task: "",
       };
       updateMilestone(milestoneId, {
@@ -107,7 +119,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
   const addMilestone = () => {
     if (isReadOnly) return;
     const newMilestone: MilestoneFormData = {
-      id: `${Date.now()}`,
+      id: generateId(),
       number: milestones.length + 1,
       title: "",
       description: "",
@@ -129,9 +141,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
   };
 
   const getDeliverableTask = (deliverable: Deliverable | unknown): string => {
-    if (typeof deliverable === "string") {
-      return deliverable;
-    }
+    if (typeof deliverable === "string") return deliverable;
     if (
       deliverable &&
       typeof deliverable === "object" &&
@@ -140,7 +150,6 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
       const d = deliverable as Deliverable;
       return typeof d.task === "string" ? d.task : "";
     }
-    console.warn("Unexpected deliverable format:", deliverable);
     return "";
   };
 
@@ -204,7 +213,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
               onClick={() => toggleMilestone(milestone.id)}
             >
               <div className={styles.milestoneHeaderLeft}>
-                {index === 0 && (
+                {index === 0 ? (
                   <svg
                     width="20"
                     height="20"
@@ -217,8 +226,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                     <polyline points="22 4 12 14.01 9 11.01" />
                   </svg>
-                )}
-                {index !== 0 && (
+                ) : (
                   <span className={styles.milestoneNumber}>
                     {milestone.number}
                   </span>
@@ -276,7 +284,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                       updateMilestone(milestone.id, { title: e.target.value })
                     }
                     className={styles.input}
-                    placeholder={milestone.title}
+                    placeholder="Enter milestone name"
                     disabled={isReadOnly}
                   />
                 </div>
@@ -353,6 +361,7 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                   </div>
                 </div>
 
+                {/* Deliverables */}
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Deliverables</label>
                   {milestone.deliverables.map((deliverable) => (
@@ -368,10 +377,11 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
                           )
                         }
                         className={styles.input}
-                        placeholder="Enter deliverables"
+                        placeholder="Enter deliverable"
                         disabled={isReadOnly}
                       />
-                      {!isReadOnly && (
+                      {/* Only show remove if more than one deliverable */}
+                      {!isReadOnly && milestone.deliverables.length > 1 && (
                         <button
                           onClick={() =>
                             removeDeliverable(milestone.id, deliverable.id)
@@ -466,7 +476,6 @@ const MilestonesPayments: React.FC<MilestonesPaymentsProps> = ({
         </button>
       </div>
 
-      {/* Edit Milestone Modal */}
       {editingMilestone && (
         <EditMilestoneModal
           milestone={editingMilestone}

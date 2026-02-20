@@ -18,6 +18,8 @@ import ManagerPayments from "../managerPayments";
 import WhiteMessage from "@/svgs/whiteMessage";
 import { useManagerMilestones } from "@/hooks/useManagerMilestones";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import { getAuthToken } from "@/lib/utils/auth";
+import toast from "react-hot-toast";
 
 const ManagerProjectDetailsPage: React.FC = () => {
   const params = useParams();
@@ -27,12 +29,45 @@ const ManagerProjectDetailsPage: React.FC = () => {
   const { project, isLoading, error, refetch } =
     useManagerProjectDetails(projectId);
   const [activeTab, setActiveTab] = useState<string>("overview");
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
+
+  const handleMessageClient = async () => {
+    if (!project?.client?.id) {
+      toast.error("Client information not available");
+      return;
+    }
+    try {
+      setIsStartingConversation(true);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+
+      const formData = new FormData();
+      formData.append("userID", project.client.id);
+
+      const response = await fetch(`${baseUrl}/chat/conversation/`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to start conversation");
+
+      const data = await response.json();
+      router.push(`/manager/messages?conversationId=${data.conversationID}`);
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      toast.error("Failed to start conversation");
+    } finally {
+      setIsStartingConversation(false);
+    }
+  };
 
   const getStatusClass = (status: string | undefined): string => {
     if (!status) return styles.statusDefault;
-
     const normalizedStatus = status.toLowerCase();
-
     switch (normalizedStatus) {
       case "completed":
         return styles.statusCompleted;
@@ -107,9 +142,13 @@ const ManagerProjectDetailsPage: React.FC = () => {
           </div>
 
           <div className={styles.actionButtons}>
-            <button className={styles.messageButton}>
+            <button
+              className={styles.messageButton}
+              onClick={handleMessageClient}
+              disabled={isStartingConversation}
+            >
               <WhiteMessage />
-              Message client
+              {isStartingConversation ? "Starting..." : "Message client"}
             </button>
           </div>
         </div>
@@ -202,7 +241,6 @@ const ManagerProjectDetailsPage: React.FC = () => {
       {/* Content Area */}
       <div className={styles.contentGrid}>
         <div className={styles.mainContent}>
-          {/* Overview Tab Content */}
           {activeTab === "overview" && (
             <div className={styles.overviewTab}>
               <div className={styles.colOne}>
@@ -249,7 +287,6 @@ const ManagerProjectDetailsPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Problem Statement */}
                 {project.problemStatement && (
                   <div className={styles.section}>
                     <div className={styles.sectionHeader}>
@@ -264,7 +301,6 @@ const ManagerProjectDetailsPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Key Features */}
                 {project.keyFeatures && project.keyFeatures.length > 0 && (
                   <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>Key Features</h2>
@@ -283,8 +319,8 @@ const ManagerProjectDetailsPage: React.FC = () => {
                   </div>
                 )}
               </div>
+
               <div className={styles.sidebar}>
-                {/* Client Card */}
                 {project.client && (
                   <div className={styles.card}>
                     <h3 className={styles.cardTitle}>Client</h3>
@@ -296,9 +332,15 @@ const ManagerProjectDetailsPage: React.FC = () => {
                         {project.client.name}
                       </span>
                     </div>
-                    <button className={styles.messageClientButton}>
+                    <button
+                      className={styles.messageClientButton}
+                      onClick={handleMessageClient}
+                      disabled={isStartingConversation}
+                    >
                       <MessageApp />
-                      Message client
+                      {isStartingConversation
+                        ? "Starting..."
+                        : "Message client"}
                     </button>
                   </div>
                 )}
@@ -306,17 +348,14 @@ const ManagerProjectDetailsPage: React.FC = () => {
             </div>
           )}
 
-          {/* Milestones Tab Content */}
           {activeTab === "milestones" && (
             <ManagerMilestonesPage projectId={projectId} />
           )}
 
-          {/* Documents Tab Content */}
           {activeTab === "documents" && (
             <ManagerDocuments projectId={projectId} />
           )}
 
-          {/* Payment Tab Content */}
           {activeTab === "payment" && <ManagerPayments projectId={projectId} />}
         </div>
       </div>

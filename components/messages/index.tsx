@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import styles from "./styles.module.css";
 import { useConversations } from "@/hooks/useConversation";
 import { useWebSocket } from "@/hooks/useWebSocket";
@@ -13,10 +14,11 @@ interface PageProps {
 }
 
 const MessagesPage = ({ params }: PageProps) => {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
-  >(null);
+  >(() => searchParams.get("conversationId"));
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   const userId = params.userId || getCurrentUserId() || "";

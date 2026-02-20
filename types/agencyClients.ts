@@ -7,6 +7,8 @@ export interface ApiClient {
   phone: string;
   dateJoined: string;
   active: boolean;
+  manager: string;
+  managerName: string;
 }
 
 export interface ClientsListResponse {

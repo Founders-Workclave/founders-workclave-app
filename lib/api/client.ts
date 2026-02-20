@@ -67,22 +67,16 @@ export class ApiClient {
 
       console.error("❌ API Error:", {
         status: response.status,
-        url: response.url,
         data,
       });
       throw error;
     }
 
-    console.log("✅ API Response:", {
-      status: response.status,
-      url: response.url,
-    });
     return data as T;
   }
 
   async get<T>(endpoint: string, options?: FetchOptions): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
-    console.log("🚀 GET:", url);
 
     const response = await fetch(url, {
       method: "GET",

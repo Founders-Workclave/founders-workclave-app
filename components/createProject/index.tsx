@@ -36,30 +36,12 @@ const getDefaultFormData = (): ProjectFormData => ({
       dueDate: "",
       deliverables: [],
     },
-    {
-      id: "2",
-      number: 2,
-      title: "PRD Review & Technical Planning",
-      description: "",
-      amount: "",
-      dueDate: "",
-      deliverables: [],
-    },
-    {
-      id: "3",
-      number: 3,
-      title: "Design & System Architecture",
-      description: "",
-      amount: "",
-      dueDate: "",
-      deliverables: [],
-    },
   ],
   productManagerId: "",
 });
 
 interface ExtendedCreateProjectProps extends CreateProjectProps {
-  initialStep?: CreateProjectStep; // NEW: Allow starting at specific step
+  initialStep?: CreateProjectStep;
 }
 
 const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
@@ -69,7 +51,7 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
   mode = "create",
   projectId,
   initialData,
-  initialStep = 1, // NEW: Default to step 1
+  initialStep = 1,
 }) => {
   const [currentStep, setCurrentStep] =
     useState<CreateProjectStep>(initialStep);

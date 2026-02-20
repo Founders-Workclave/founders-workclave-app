@@ -18,6 +18,8 @@ import ClientMilestonesPage from "../clientMilestones/milestonePage";
 import ClientDocuments from "../clientsDocument";
 import ClientPayments from "../clientPayments";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import { getAuthToken } from "@/lib/utils/auth";
+import toast from "react-hot-toast";
 
 const ClientsProjectDetailsPage: React.FC = () => {
   const params = useParams();
@@ -27,12 +29,45 @@ const ClientsProjectDetailsPage: React.FC = () => {
   const { project, isLoading, error, refetch } =
     useManagerProjectDetails(projectId);
   const [activeTab, setActiveTab] = useState<string>("overview");
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
+
+  const handleMessagePM = async () => {
+    if (!project?.productManager?.id) {
+      toast.error("No product manager assigned to this project");
+      return;
+    }
+    try {
+      setIsStartingConversation(true);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+
+      const formData = new FormData();
+      formData.append("userID", project.productManager.id);
+
+      const response = await fetch(`${baseUrl}/chat/conversation/`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to start conversation");
+
+      const data = await response.json();
+      router.push(`/client/messages?conversationId=${data.conversationID}`);
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      toast.error("Failed to start conversation with PM");
+    } finally {
+      setIsStartingConversation(false);
+    }
+  };
 
   const getStatusClass = (status: string | undefined): string => {
     if (!status) return styles.statusDefault;
-
     const normalizedStatus = status.toLowerCase();
-
     switch (normalizedStatus) {
       case "completed":
         return styles.statusCompleted;
@@ -107,9 +142,13 @@ const ClientsProjectDetailsPage: React.FC = () => {
           </div>
 
           <div className={styles.actionButtons}>
-            <button className={styles.messageButton}>
+            <button
+              className={styles.messageButton}
+              onClick={handleMessagePM}
+              disabled={isStartingConversation || !project.productManager}
+            >
               <WhiteMessage />
-              Message client
+              {isStartingConversation ? "Starting..." : "Message PM"}
             </button>
           </div>
         </div>
@@ -202,7 +241,6 @@ const ClientsProjectDetailsPage: React.FC = () => {
       {/* Content Area */}
       <div className={styles.contentGrid}>
         <div className={styles.mainContent}>
-          {/* Overview Tab Content */}
           {activeTab === "overview" && (
             <div className={styles.overviewTab}>
               <div className={styles.colOne}>
@@ -249,7 +287,6 @@ const ClientsProjectDetailsPage: React.FC = () => {
                   )}
                 </div>
 
-                {/* Problem Statement */}
                 {project.problemStatement && (
                   <div className={styles.section}>
                     <div className={styles.sectionHeader}>
@@ -264,7 +301,6 @@ const ClientsProjectDetailsPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Key Features */}
                 {project.keyFeatures && project.keyFeatures.length > 0 && (
                   <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>Key Features</h2>
@@ -283,40 +319,48 @@ const ClientsProjectDetailsPage: React.FC = () => {
                   </div>
                 )}
               </div>
+
               <div className={styles.sidebar}>
-                {/* Client Card */}
-                {project.client && (
+                {project.productManager ? (
                   <div className={styles.card}>
-                    <h3 className={styles.cardTitle}>Client</h3>
+                    <h3 className={styles.cardTitle}>Product Manager</h3>
                     <div className={styles.userProfile}>
                       <div className={styles.avatar}>
-                        {project.client.initials}
+                        {project.productManager.initials}
                       </div>
                       <span className={styles.userName}>
-                        {project.client.name}
+                        {project.productManager.name}
                       </span>
                     </div>
-                    <button className={styles.messageClientButton}>
+                    <button
+                      className={styles.messageClientButton}
+                      onClick={handleMessagePM}
+                      disabled={isStartingConversation}
+                    >
                       <MessageApp />
-                      Message client
+                      {isStartingConversation ? "Starting..." : "Message PM"}
                     </button>
+                  </div>
+                ) : (
+                  <div className={styles.card}>
+                    <h3 className={styles.cardTitle}>Product Manager</h3>
+                    <p className={styles.noDataText}>
+                      No product manager assigned yet
+                    </p>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Milestones Tab Content */}
           {activeTab === "milestones" && (
             <ClientMilestonesPage projectId={projectId} />
           )}
 
-          {/* Documents Tab Content */}
           {activeTab === "documents" && (
             <ClientDocuments projectId={projectId} />
           )}
 
-          {/* Payment Tab Content */}
           {activeTab === "payment" && <ClientPayments projectId={projectId} />}
         </div>
       </div>
