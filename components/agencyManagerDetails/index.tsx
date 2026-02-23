@@ -15,6 +15,8 @@ import { Manager } from "@/types/agencyPm";
 import AllLoading from "@/layout/Loader";
 import AdminIconProject from "@/svgs/adminIconProject";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import { getAuthToken } from "@/lib/utils/auth";
+import toast from "react-hot-toast";
 
 interface PMDetailProps {
   params?: {
@@ -31,6 +33,7 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
 
   useEffect(() => {
     const fetchManagerData = async () => {
@@ -44,7 +47,6 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
         setIsLoading(true);
         setError(null);
 
-        // Fetch manager details
         const manager = await managerService.getPMById(id);
 
         if (!manager) {
@@ -55,7 +57,6 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
 
         setPm(manager);
 
-        // Fetch manager projects using managerID
         const projectsData = await managerService.getManagerProjects(
           manager.managerID
         );
@@ -79,9 +80,37 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
     router.back();
   };
 
-  const handleMessagePM = () => {
-    if (pm) {
-      console.log("Message PM:", pm.id);
+  const handleMessagePM = async () => {
+    if (!pm?.managerID) {
+      toast.error("PM information not available");
+      return;
+    }
+    try {
+      setIsStartingConversation(true);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+
+      const formData = new FormData();
+      formData.append("userID", pm.managerID);
+
+      const response = await fetch(`${baseUrl}/chat/conversation/`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to start conversation");
+
+      const data = await response.json();
+      router.push(`/agency/messages?conversationId=${data.conversationID}`);
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      toast.error("Failed to start conversation");
+    } finally {
+      setIsStartingConversation(false);
     }
   };
 
@@ -176,9 +205,13 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
         </div>
 
         <div className={styles.profileActions}>
-          <button onClick={handleMessagePM} className={styles.messageButton}>
+          <button
+            onClick={handleMessagePM}
+            className={styles.messageButton}
+            disabled={isStartingConversation}
+          >
             <MessageApp />
-            Message PM
+            {isStartingConversation ? "Starting..." : "Message PM"}
           </button>
           <button onClick={handleAssignProject} className={styles.assignButton}>
             Assign project

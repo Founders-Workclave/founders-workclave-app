@@ -133,3 +133,9 @@
   font-family: "inter", sans-serif;
   font-weight: 400;
 }
+
+@media (max-width: 768px) {
+  .summary {
+    grid-template-columns: 1fr;
+  }
+}

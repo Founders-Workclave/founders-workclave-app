@@ -6,7 +6,8 @@ import ProjectsPage from "@/components/agencyProject/projectsList";
 import { useAgencyData } from "@/hooks/useAgencyData";
 
 const AdminProjects = () => {
-  const { projects, isLoading } = useAgencyData();
+  const { projects, isLoading, refetch } = useAgencyData();
+
   return (
     <>
       <AgencyLayout pageTitle="" pageText="">
@@ -14,7 +15,7 @@ const AdminProjects = () => {
           <div>
             <h2>Projects</h2>
           </div>
-          <CreateProjectButton />
+          <CreateProjectButton onSuccess={refetch} />
         </div>
         <ProjectsPage
           initialProjects={projects}

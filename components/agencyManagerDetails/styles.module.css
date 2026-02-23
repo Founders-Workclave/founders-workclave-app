@@ -94,9 +94,6 @@
 }
 
 .contactInfo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   font-size: 14px;
 }
 
@@ -361,6 +358,10 @@
   text-align: right;
 }
 
+.separator {
+  padding: 0px 5px;
+}
+
 @media (max-width: 1024px) {
   .profileCard {
     flex-direction: column;
@@ -380,7 +381,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .pageContainer {
     padding: 16px;
   }
@@ -406,6 +407,7 @@
   }
 
   .contactInfo {
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
@@ -417,5 +419,11 @@
 
   .pageTitle {
     font-size: 20px;
+  }
+  .statusIndicator {
+    width: 18px;
+    height: 18px;
+    bottom: -3px;
+    right: 5px;
   }
 }

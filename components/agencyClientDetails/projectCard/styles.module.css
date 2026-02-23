@@ -1,5 +1,4 @@
 .projectCard {
-  background: white;
   border: 1px solid #e4e4e4;
   border-radius: 16px;
   padding: 24px;
@@ -85,4 +84,16 @@
 
 .projectsList {
   margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 16px;
+  }
+  .subtitle {
+    font-size: 12px;
+  }
+  .status {
+    font-size: 8px;
+  }
 }

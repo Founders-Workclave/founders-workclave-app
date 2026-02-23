@@ -16,6 +16,11 @@
   line-height: 32px;
 }
 
+.subtitle {
+  font-family: "inter", sans-serif;
+  color: #ffffff;
+}
+
 .form {
   margin: 0 auto;
   font-family: "inter", sans-serif;

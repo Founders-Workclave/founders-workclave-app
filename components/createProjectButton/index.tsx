@@ -4,11 +4,19 @@ import styles from "./styles.module.css";
 import { ProjectFormData } from "@/types/createPrjects";
 import CreateProjectModal from "../createProject";
 
-export default function CreateProjectButton() {
+interface CreateProjectButtonProps {
+  onSuccess?: () => void;
+}
+
+export default function CreateProjectButton({
+  onSuccess,
+}: CreateProjectButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCreateProject = (data: ProjectFormData) => {
     console.log("Project Data:", data);
+    setIsModalOpen(false);
+    if (onSuccess) onSuccess();
   };
 
   return (

@@ -18,6 +18,8 @@ import type {
 } from "@/types/agencyClients";
 import AllLoading from "@/layout/Loader";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import { getAuthToken } from "@/lib/utils/auth";
+import toast from "react-hot-toast";
 
 interface ClientDetailProps {
   params?: {
@@ -38,6 +40,7 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [projectsLoading, setProjectsLoading] = useState<boolean>(false);
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
 
   const transformApiProject = (apiProject: ApiProject): ClientProject => {
     return {
@@ -62,7 +65,6 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
         setLoading(true);
         setError(null);
 
-        // Fetch client details
         const clientData = await fetchClientById(id);
 
         if (!clientData) {
@@ -73,7 +75,6 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
 
         setClient(clientData);
 
-        // Fetch client projects using clientID
         setProjectsLoading(true);
         try {
           const projectsData = await fetchClientProjects(clientData.clientID);
@@ -82,7 +83,6 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
           setProjects(transformedProjects);
         } catch (projectError) {
           console.error("Error loading projects:", projectError);
-          // Don't set error, just leave projects empty
         } finally {
           setProjectsLoading(false);
         }
@@ -103,13 +103,43 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
     router.back();
   };
 
-  const handleMessageClient = () => {
-    console.log("Message client:", id);
+  const handleMessageClient = async () => {
+    if (!client?.clientID) {
+      toast.error("Client information not available");
+      return;
+    }
+    try {
+      setIsStartingConversation(true);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+
+      const formData = new FormData();
+      formData.append("userID", client.clientID);
+
+      const response = await fetch(`${baseUrl}/chat/conversation/`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to start conversation");
+
+      const data = await response.json();
+      router.push(`/agency/messages?conversationId=${data.conversationID}`);
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      toast.error("Failed to start conversation");
+    } finally {
+      setIsStartingConversation(false);
+    }
   };
 
-  const handleAssignProject = () => {
-    console.log("Assign project to client:", id);
-  };
+  // const handleAssignProject = () => {
+  //   console.log("Assign project to client:", id);
+  // };
 
   const handleDeactivateUser = () => {
     console.log("Deactivate user:", id);
@@ -192,13 +222,14 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
           <button
             onClick={handleMessageClient}
             className={styles.messageButton}
+            disabled={isStartingConversation}
           >
             <MessageApp />
-            Message client
+            {isStartingConversation ? "Starting..." : "Message client"}
           </button>
-          <button onClick={handleAssignProject} className={styles.assignButton}>
+          {/* <button onClick={handleAssignProject} className={styles.assignButton}>
             Assign project
-          </button>
+          </button> */}
           <button
             onClick={handleDeactivateUser}
             className={styles.deactivateButton}
@@ -222,7 +253,7 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
             <p className={styles.emptyDescription}>
               Assign a project to get started
             </p>
-            <button
+            {/* <button
               onClick={handleAssignProject}
               className={styles.assignProjectLink}
             >
@@ -243,7 +274,7 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
                 />
               </svg>
               Assign project
-            </button>
+            </button> */}
           </div>
         ) : (
           <div className={styles.projectsList}>

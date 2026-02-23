@@ -11,6 +11,8 @@ import { ProductManager } from "@/types/agencyPm";
 import AllLoading from "@/layout/Loader";
 import EmptyClients from "@/svgs/emptyClients";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import { getAuthToken } from "@/lib/utils/auth";
+import toast from "react-hot-toast";
 
 type FilterTab = "all" | "active" | "pending";
 
@@ -22,6 +24,9 @@ const AllProductManagersPage: React.FC = () => {
   const [managers, setManagers] = useState<ProductManager[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [startingConversationId, setStartingConversationId] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
     const fetchManagers = async () => {
@@ -32,7 +37,7 @@ const AllProductManagersPage: React.FC = () => {
 
         const transformedManagers: ProductManager[] = response.managers.map(
           (manager) => ({
-            id: manager.id,
+            id: manager.managerID,
             name: manager.managerName || "N/A",
             email: manager.email || "N/A",
             phoneNumber: manager.phone || "N/A",
@@ -78,8 +83,41 @@ const AllProductManagersPage: React.FC = () => {
     router.push(`/agency/pm/${pmId}`);
   };
 
-  const handleMessage = (pmId: string): void => {
-    console.log("Message PM:", pmId);
+  const handleMessage = async (pmId: string): Promise<void> => {
+    if (!pmId) {
+      toast.error("PM information not available");
+      return;
+    }
+    try {
+      setStartingConversationId(pmId);
+      toast.loading("Starting conversation...", { id: "message-pm" });
+
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+
+      const formData = new FormData();
+      formData.append("userID", pmId);
+
+      const response = await fetch(`${baseUrl}/chat/conversation/`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to start conversation");
+
+      const data = await response.json();
+      toast.success("Conversation started!", { id: "message-pm" });
+      router.push(`/agency/messages?conversationId=${data.conversationID}`);
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      toast.error("Failed to start conversation", { id: "message-pm" });
+    } finally {
+      setStartingConversationId(null);
+    }
   };
 
   const handlePageChange = (page: number): void => {
@@ -190,7 +228,7 @@ const AllProductManagersPage: React.FC = () => {
             <h3>No managers yet</h3>
             <p>
               {managers.length === 0
-                ? "You don’t have any product managers yet."
+                ? "You don't have any product managers yet."
                 : "No product managers match your search or filter."}
             </p>
           </div>
@@ -242,6 +280,7 @@ const AllProductManagersPage: React.FC = () => {
                         <button
                           onClick={() => handleMessage(pm.id)}
                           className={styles.actionButton}
+                          disabled={startingConversationId === pm.id}
                         >
                           <MessageApp />
                         </button>
@@ -302,9 +341,12 @@ const AllProductManagersPage: React.FC = () => {
                   <button
                     onClick={() => handleMessage(pm.id)}
                     className={styles.messageButton}
+                    disabled={startingConversationId === pm.id}
                   >
                     <MessageApp />
-                    Message
+                    {startingConversationId === pm.id
+                      ? "Starting..."
+                      : "Message"}
                   </button>
                   <button
                     onClick={() => handleViewProfile(pm.id)}

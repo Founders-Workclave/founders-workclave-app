@@ -289,10 +289,6 @@ export function validateProjectForm(formData: ProjectFormData): {
     }
   });
 
-  if (!formData.productManagerId) {
-    errors.push("Please assign a product manager");
-  }
-
   return {
     isValid: errors.length === 0,
     errors,

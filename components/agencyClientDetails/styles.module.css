@@ -281,7 +281,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .pageContainer {
     padding: 16px;
   }
@@ -318,5 +318,12 @@
 
   .pageTitle {
     font-size: 20px;
+  }
+
+  .statusIndicator {
+    width: 15px;
+    height: 15px;
+    right: 5px;
+    bottom: -2px;
   }
 }

@@ -600,12 +600,19 @@
   }
 
   .actionButtons {
+    display: grid;
     width: 100%;
   }
 
   .messageButton,
   .editButton {
     flex: 1;
+  }
+  .metaInfo {
+    padding-top: 20px;
+  }
+  .overviewTab {
+    grid-template-columns: 1fr;
   }
 }
 

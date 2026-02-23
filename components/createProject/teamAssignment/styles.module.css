@@ -263,3 +263,7 @@
 .editInfoNote strong {
   font-weight: 600;
 }
+
+.emptyState {
+  padding: 20px;
+}

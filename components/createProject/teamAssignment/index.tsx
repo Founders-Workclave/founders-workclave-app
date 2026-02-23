@@ -84,7 +84,7 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
   );
 
   const handleSubmitProject = () => {
-    if (selectedManagerId && !isSubmitting) {
+    if (!isSubmitting) {
       onSubmit();
     }
   };
@@ -256,7 +256,7 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
         </button>
         <button
           onClick={handleSubmitProject}
-          disabled={!selectedManagerId || isSubmitting}
+          disabled={isSubmitting}
           className={styles.createButton}
         >
           {getSubmitButtonText()}

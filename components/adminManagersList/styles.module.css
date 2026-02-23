@@ -284,6 +284,12 @@
   padding: 96px 21px;
 }
 
+.emptyState > p {
+  color: #6b7280;
+  font-family: "inter", sans-serif;
+  text-align: center;
+}
+
 @media (max-width: 767px) {
   .tabsContainer {
     gap: 24px;
