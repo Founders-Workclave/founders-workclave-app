@@ -1,17 +1,18 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import styles from "./styles.module.css";
 import {
   clientService,
   ApiError,
 } from "@/lib/api/agencyCreateUsers/clientService";
 import type { RegisterClientRequest } from "@/types/createClientsApi";
+import { countryCodes } from "@/utils/data";
 
 interface AddClientModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit?: (data: ClientFormData) => Promise<void> | void;
-  onSuccess?: () => void; // Callback after successful registration
+  onSuccess?: () => void;
 }
 
 export interface ClientFormData {
@@ -22,6 +23,12 @@ export interface ClientFormData {
   countryCode: string;
   password: string;
   confirmPassword: string;
+}
+
+interface CountryOption {
+  code: string;
+  country: string;
+  flag: string;
 }
 
 const AddClientModal: React.FC<AddClientModalProps> = ({
@@ -47,15 +54,44 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Country dropdown states
+  const [countrySearch, setCountrySearch] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<CountryOption>({
+    code: "+234",
+    country: "Nigeria",
+    flag: "🇳🇬",
+  });
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setShowDropdown(false);
+        setCountrySearch("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filteredCountries = countryCodes.filter(
+    (c) =>
+      c.country.toLowerCase().includes(countrySearch.toLowerCase()) ||
+      c.code.includes(countrySearch)
+  );
+
   if (!isOpen) return null;
 
   const handleChange = (field: keyof ClientFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
-    // Clear API error when user makes changes
     if (errors.api) {
       setErrors((prev) => ({ ...prev, api: "" }));
     }
@@ -97,28 +133,23 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    setErrors({}); // Clear all errors
+    setErrors({});
 
     try {
-      // If custom onSubmit is provided, use it
       if (onSubmit) {
         await onSubmit(formData);
       } else {
-        // Otherwise, use the default API call
-        // Map form data to API request format
-        // Note: Backend expects 'phone' not 'phoneNumber'
         const requestData: RegisterClientRequest = {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          phone: `${formData.countryCode}${formData.phoneNumber}`, // Combine country code and phone number
+          phone: `${formData.countryCode}${formData.phoneNumber}`,
           password: formData.password,
         };
 
         await clientService.registerClient(requestData);
       }
 
-      // Reset form on success
       setFormData({
         firstName: "",
         lastName: "",
@@ -131,23 +162,19 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
       setErrors({});
       setShowPassword(false);
       setShowConfirmPassword(false);
+      setSelectedCountry({ code: "+234", country: "Nigeria", flag: "🇳🇬" });
 
-      // Call success callback if provided
       if (onSuccess) {
         onSuccess();
       }
 
-      // Close modal
       onClose();
     } catch (error) {
       console.error("Error submitting form:", error);
 
-      // Handle API errors
       if (error instanceof ApiError) {
-        // Try to map error to specific fields
         const errorMsg = error.message.toLowerCase();
 
-        // Check for field-specific errors
         if (errorMsg.includes("email")) {
           setErrors({ email: error.message });
         } else if (errorMsg.includes("phone")) {
@@ -158,20 +185,16 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
           setErrors({ firstName: error.message });
         } else if (errorMsg.includes("last name")) {
           setErrors({ lastName: error.message });
-        }
-        // Handle duplicate/conflict errors (409)
-        else if (
+        } else if (
           error.status === 409 ||
           errorMsg.includes("already exists") ||
           errorMsg.includes("duplicate")
         ) {
-          // Default to email for duplicate errors since that's most common
           setErrors({
             api: error.message,
             email: "This email may already be registered",
           });
         } else {
-          // Show as general API error if can't map to specific field
           setErrors({ api: error.message });
         }
       } else if (error instanceof Error) {
@@ -287,22 +310,66 @@ const AddClientModal: React.FC<AddClientModalProps> = ({
           <div className={styles.inputGroup}>
             <label className={styles.label}>Phone number</label>
             <div className={styles.phoneInputWrapper}>
-              <button
-                type="button"
-                className={styles.countrySelector}
-                disabled={isSubmitting}
-              >
-                <span className={styles.flag}>🇳🇬</span>
-                <span className={styles.code}>+234</span>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M3 4.5L6 7.5L9 4.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
+              {/* Country Selector */}
+              <div className={styles.countrySelectorWrapper} ref={dropdownRef}>
+                <button
+                  type="button"
+                  className={styles.countrySelector}
+                  disabled={isSubmitting}
+                  onClick={() => setShowDropdown((prev) => !prev)}
+                >
+                  <span className={styles.flag}>{selectedCountry.flag}</span>
+                  <span className={styles.code}>{selectedCountry.code}</span>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M3 4.5L6 7.5L9 4.5"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+
+                {showDropdown && (
+                  <div className={styles.countryDropdown}>
+                    <input
+                      type="text"
+                      className={styles.countrySearch}
+                      placeholder="Search country..."
+                      value={countrySearch}
+                      onChange={(e) => setCountrySearch(e.target.value)}
+                      autoFocus
+                    />
+                    <ul className={styles.countryList}>
+                      {filteredCountries.map((country) => (
+                        <li
+                          key={country.country}
+                          className={`${styles.countryItem} ${
+                            selectedCountry.country === country.country
+                              ? styles.countryItemActive
+                              : ""
+                          }`}
+                          onClick={() => {
+                            setSelectedCountry(country as CountryOption);
+                            setShowDropdown(false);
+                            setCountrySearch("");
+                            handleChange("countryCode", country.code);
+                          }}
+                        >
+                          <span>{(country as CountryOption).flag}</span>
+                          <span>{country.country}</span>
+                          <span className={styles.countryCode}>
+                            {country.code}
+                          </span>
+                        </li>
+                      ))}
+                      {filteredCountries.length === 0 && (
+                        <li className={styles.noResults}>No country found</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
               <input
                 type="tel"
                 className={`${styles.phoneInput} ${

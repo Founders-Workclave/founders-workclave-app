@@ -229,8 +229,8 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
               disabled={isLoading}
             >
               {countryCodes.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.code}
+                <option key={country.country} value={country.code}>
+                  {country.country} ({country.code})
                 </option>
               ))}
             </select>

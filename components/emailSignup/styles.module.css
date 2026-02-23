@@ -83,7 +83,8 @@
 
 @media (max-width: 768px) {
   .contain {
-    padding: 0px;
+    padding: 30px 0px;
+    height: unset;
   }
   .colOne {
     display: none;
