@@ -5,6 +5,7 @@ import { useManagerMilestones } from "@/hooks/useManagerMilestones";
 import AllLoading from "@/layout/Loader";
 import ManagerMilestoneCard from "../milestoneCard";
 import ServiceUnavailable from "@/components/errorBoundary/serviceUnavailable";
+import toast from "react-hot-toast";
 
 interface ManagerMilestonesPageProps {
   projectId: string;
@@ -13,8 +14,19 @@ interface ManagerMilestonesPageProps {
 const ManagerMilestonesPage: React.FC<ManagerMilestonesPageProps> = ({
   projectId,
 }) => {
-  const { milestones, isLoading, error, refetch } =
+  const { milestones, isLoading, error, refetch, markMilestoneComplete } =
     useManagerMilestones(projectId);
+
+  const handleMarkComplete = async (
+    milestoneId: string | number
+  ): Promise<void> => {
+    try {
+      await markMilestoneComplete(String(milestoneId));
+      toast.success("Marked as Completed");
+    } catch {
+      toast.error("Error marking milestone as complete");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -61,7 +73,11 @@ const ManagerMilestonesPage: React.FC<ManagerMilestonesPageProps> = ({
 
       <div className={styles.milestonesTimeline}>
         {milestones.map((milestone) => (
-          <ManagerMilestoneCard key={milestone.id} milestone={milestone} />
+          <ManagerMilestoneCard
+            key={milestone.id}
+            milestone={milestone}
+            onMarkComplete={handleMarkComplete}
+          />
         ))}
       </div>
     </div>

@@ -13,12 +13,15 @@ import ListIcons from "@/svgs/listIcons";
 
 interface ManagerMilestoneCardProps {
   milestone: Milestone;
+  onMarkComplete?: (milestoneId: string | number) => Promise<void>;
 }
 
 const ManagerMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
   milestone,
+  onMarkComplete,
 }) => {
   const [showDeliverables, setShowDeliverables] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const status = milestone.status || "pending";
   const normalizedStatus = status.toLowerCase();
@@ -65,6 +68,19 @@ const ManagerMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
     });
   };
 
+  const handleMarkComplete = async () => {
+    if (onMarkComplete && !isLoading) {
+      setIsLoading(true);
+      try {
+        await onMarkComplete(milestone.id);
+      } catch (error) {
+        console.error("Failed to mark milestone as complete:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.iconLine}>
@@ -92,14 +108,12 @@ const ManagerMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
             <SmallCalender />
             <span>Due: {formatDate(milestone.dueDate)}</span>
           </div>
-
           <div className={styles.metaItem}>
             <Payment />
             <span>
               Payment: ${parsePrice(milestone.price).toLocaleString()}
             </span>
           </div>
-
           {milestone.completedDate && (
             <div className={`${styles.metaItem} ${styles.completed}`}>
               <CompletedNew />
@@ -132,9 +146,8 @@ const ManagerMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
           </div>
         )}
 
-        {/* PM Actions - view deliverables only */}
-        {milestone.deliverables.length > 0 && (
-          <div className={styles.actions}>
+        <div className={styles.actions}>
+          {milestone.deliverables.length > 0 && (
             <button
               onClick={() => setShowDeliverables(!showDeliverables)}
               className={styles.viewDeliverablesButton}
@@ -154,8 +167,18 @@ const ManagerMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
-          </div>
-        )}
+          )}
+
+          {normalizedStatus === "in-progress" && (
+            <button
+              onClick={handleMarkComplete}
+              className={styles.markCompleteButton}
+              disabled={isLoading}
+            >
+              {isLoading ? "Marking..." : "Mark as completed"}
+            </button>
+          )}
+        </div>
 
         {showDeliverables && milestone.deliverables.length > 0 && (
           <div className={styles.deliverables}>

@@ -15,7 +15,6 @@ const getAuthToken = (): string | null => {
       "jwt",
       "jwtToken",
     ];
-
     for (const key of possibleKeys) {
       const token = localStorage.getItem(key) || sessionStorage.getItem(key);
       if (token) return token;
@@ -29,6 +28,7 @@ interface UseManagerMilestonesReturn {
   isLoading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
+  markMilestoneComplete: (milestoneId: string) => Promise<void>;
 }
 
 export const useManagerMilestones = (
@@ -37,6 +37,13 @@ export const useManagerMilestones = (
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  const getHeaders = (): HeadersInit => {
+    const token = getAuthToken();
+    const headers: HeadersInit = { "Content-Type": "application/json" };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    return headers;
+  };
 
   const fetchMilestones = useCallback(async () => {
     if (!projectId) {
@@ -51,17 +58,9 @@ export const useManagerMilestones = (
       setIsLoading(true);
       setError(null);
 
-      const token = getAuthToken();
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
       const response = await fetch(url, {
         method: "GET",
-        headers,
+        headers: getHeaders(),
       });
 
       if (!response.ok) {
@@ -75,7 +74,6 @@ export const useManagerMilestones = (
       const data = await response.json();
       console.log("📦 Manager milestones received:", data);
 
-      // Sort by order ascending
       const sorted: Milestone[] = (data.milestones || []).sort(
         (a: Milestone, b: Milestone) => a.order - b.order
       );
@@ -91,6 +89,35 @@ export const useManagerMilestones = (
     }
   }, [projectId]);
 
+  const markMilestoneComplete = useCallback(
+    async (milestoneId: string): Promise<void> => {
+      const url = `${BASE_URL}/agency/project/milestone/${milestoneId}/completed/`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: getHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Mark complete error:", errorText);
+        throw new Error(
+          `HTTP ${response.status}: ${response.statusText || "Request failed"}`
+        );
+      }
+
+      // Optimistically update the milestone status in state
+      setMilestones((prev) =>
+        prev.map((m) =>
+          String(m.id) === milestoneId
+            ? { ...m, status: "completed", progress: 100 }
+            : m
+        )
+      );
+    },
+    []
+  );
+
   useEffect(() => {
     fetchMilestones();
   }, [fetchMilestones]);
@@ -100,5 +127,6 @@ export const useManagerMilestones = (
     isLoading,
     error,
     refetch: fetchMilestones,
+    markMilestoneComplete,
   };
 };

@@ -1,11 +1,7 @@
-import React from "react";
+import { redirect } from "next/navigation";
 
 const page = () => {
-  return (
-    <div>
-      <h2>Founders Workclave</h2>
-    </div>
-  );
+  redirect("/login");
 };
 
 export default page;

@@ -7,6 +7,7 @@ import MessageApp from "@/svgs/messageApp";
 import DeleteUser from "@/svgs/deleteUser";
 import EmptyProjectIcon from "@/svgs/emptyProject";
 import ProjectCard from "./projectCard";
+import AssignProjectModal from "../assignProjectModal";
 import {
   fetchClientById,
   fetchClientProjects,
@@ -22,9 +23,7 @@ import { getAuthToken } from "@/lib/utils/auth";
 import toast from "react-hot-toast";
 
 interface ClientDetailProps {
-  params?: {
-    id: string;
-  };
+  params?: { id: string };
   clientId?: string;
 }
 
@@ -41,17 +40,17 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [projectsLoading, setProjectsLoading] = useState<boolean>(false);
   const [isStartingConversation, setIsStartingConversation] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
-  const transformApiProject = (apiProject: ApiProject): ClientProject => {
-    return {
-      id: apiProject.id,
-      projectName: apiProject.name,
-      description: apiProject.description,
-      status: apiProject.status === "completed" ? "completed" : "in-progress",
-      progress: apiProject.progressPercentage,
-      latestMilestone: apiProject.latest_milestone,
-    };
-  };
+  const transformApiProject = (apiProject: ApiProject): ClientProject => ({
+    id: apiProject.id,
+    projectName: apiProject.name,
+    description: apiProject.description,
+    status: apiProject.status === "completed" ? "completed" : "in-progress",
+    progress: apiProject.progressPercentage,
+    latestMilestone: apiProject.latest_milestone,
+  });
 
   useEffect(() => {
     const loadClientData = async () => {
@@ -60,27 +59,20 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
         setLoading(false);
         return;
       }
-
       try {
         setLoading(true);
         setError(null);
-
         const clientData = await fetchClientById(id);
-
         if (!clientData) {
           setError("Client not found");
           setLoading(false);
           return;
         }
-
         setClient(clientData);
-
         setProjectsLoading(true);
         try {
           const projectsData = await fetchClientProjects(clientData.clientID);
-          const transformedProjects =
-            projectsData.projects.map(transformApiProject);
-          setProjects(transformedProjects);
+          setProjects(projectsData.projects.map(transformApiProject));
         } catch (projectError) {
           console.error("Error loading projects:", projectError);
         } finally {
@@ -95,13 +87,10 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
         setLoading(false);
       }
     };
-
     loadClientData();
   }, [id]);
 
-  const handleBack = () => {
-    router.back();
-  };
+  const handleBack = () => router.back();
 
   const handleMessageClient = async () => {
     if (!client?.clientID) {
@@ -113,20 +102,14 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
       const token = getAuthToken();
-
       const formData = new FormData();
       formData.append("userID", client.clientID);
-
       const response = await fetch(`${baseUrl}/chat/conversation/`, {
         method: "POST",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
         body: formData,
       });
-
       if (!response.ok) throw new Error("Failed to start conversation");
-
       const data = await response.json();
       router.push(`/agency/messages?conversationId=${data.conversationID}`);
     } catch (err) {
@@ -137,19 +120,39 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
     }
   };
 
-  // const handleAssignProject = () => {
-  //   console.log("Assign project to client:", id);
-  // };
-
-  const handleDeactivateUser = () => {
-    console.log("Deactivate user:", id);
+  const handleDeactivateUser = async () => {
+    if (!client?.clientID) return;
+    const action = client.active ? "deactivate" : "activate";
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} ${client.clientName}?`
+    );
+    if (!confirmed) return;
+    try {
+      setIsDeactivating(true);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+      const response = await fetch(
+        `${baseUrl}/deactivate-user/${client.clientID}/`,
+        {
+          method: "POST",
+          headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+        }
+      );
+      if (!response.ok) throw new Error(`Failed to ${action} user`);
+      toast.success(`${client.clientName} has been ${action}d successfully`);
+      router.push("/agency/clients");
+    } catch (err) {
+      console.error(`Error ${action}ing user:`, err);
+      toast.error(`Failed to ${action} user. Please try again.`);
+    } finally {
+      setIsDeactivating(false);
+    }
   };
 
   const getInitials = (name: string): string => {
     const names = name.split(" ");
-    if (names.length >= 2) {
-      return `${names[0][0]}${names[1][0]}`.toUpperCase();
-    }
+    if (names.length >= 2) return `${names[0][0]}${names[1][0]}`.toUpperCase();
     return name.substring(0, 2).toUpperCase();
   };
 
@@ -183,16 +186,13 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
 
   return (
     <div className={styles.pageContainer}>
-      {/* Back Button */}
       <button onClick={handleBack} className={styles.backButton}>
         <BackBlack />
         Back
       </button>
 
-      {/* Page Title */}
       <h1 className={styles.pageTitle}>Client information</h1>
 
-      {/* Client Profile Card */}
       <div className={styles.profileCard}>
         <div className={styles.profileLeft}>
           <div className={styles.avatarContainer}>
@@ -227,15 +227,23 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
             <MessageApp />
             {isStartingConversation ? "Starting..." : "Message client"}
           </button>
-          {/* <button onClick={handleAssignProject} className={styles.assignButton}>
+          <button
+            onClick={() => setShowAssignModal(true)}
+            className={styles.assignButton}
+          >
             Assign project
-          </button> */}
+          </button>
           <button
             onClick={handleDeactivateUser}
             className={styles.deactivateButton}
+            disabled={isDeactivating}
           >
             <DeleteUser />
-            {client.active ? "Deactivate user" : "Activate user"}
+            {isDeactivating
+              ? "Processing..."
+              : client.active
+              ? "Deactivate user"
+              : "Activate user"}
           </button>
         </div>
       </div>
@@ -253,8 +261,8 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
             <p className={styles.emptyDescription}>
               Assign a project to get started
             </p>
-            {/* <button
-              onClick={handleAssignProject}
+            <button
+              onClick={() => setShowAssignModal(true)}
               className={styles.assignProjectLink}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -274,7 +282,7 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
                 />
               </svg>
               Assign project
-            </button> */}
+            </button>
           </div>
         ) : (
           <div className={styles.projectsList}>
@@ -292,6 +300,10 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
           </div>
         )}
       </div>
+
+      {showAssignModal && (
+        <AssignProjectModal onClose={() => setShowAssignModal(false)} />
+      )}
     </div>
   );
 };

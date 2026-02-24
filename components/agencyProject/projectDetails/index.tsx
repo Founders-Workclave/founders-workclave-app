@@ -49,6 +49,8 @@ const ProjectDetailsPage: React.FC = () => {
     useState<boolean>(false);
   const [isStartingConversation, setIsStartingConversation] =
     useState<boolean>(false);
+  const [isUnassigningManager, setIsUnassigningManager] =
+    useState<boolean>(false);
 
   const getStatusClass = (status: string | undefined): string => {
     if (!status) return styles.statusDefault;
@@ -93,31 +95,22 @@ const ProjectDetailsPage: React.FC = () => {
       toast.error("User ID not available");
       return;
     }
-
     try {
       setIsStartingConversation(true);
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
       const token = getAuthToken();
-
       const formData = new FormData();
       formData.append("userID", userId);
-
       const response = await fetch(`${baseUrl}/chat/conversation/`, {
         method: "POST",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
         body: formData,
       });
-
       if (!response.ok) throw new Error("Failed to start conversation");
-
       const data = await response.json();
-      const conversationId = data.conversationID;
-
       router.push(
-        `/agency/messages?conversationId=${conversationId}&userId=${userId}`
+        `/agency/messages?conversationId=${data.conversationID}&userId=${userId}`
       );
     } catch (err) {
       console.error("Error starting conversation:", err);
@@ -130,22 +123,18 @@ const ProjectDetailsPage: React.FC = () => {
   const handleEditProject = async () => {
     try {
       setIsLoadingEditData(true);
-
       if (!project) {
         toast.error("Project not found");
         return;
       }
-
       const milestonesData = await agencyService.getProjectMilestones(
         projectId
       );
-
       const combinedData = {
         ...project,
         milestones: milestonesData.milestones || [],
         productManager: project.productManager ?? undefined,
       } as const;
-
       const formData = transformApiProjectToFormData(combinedData as never);
       setEditFormData(formData);
       setIsEditModalOpen(true);
@@ -161,9 +150,7 @@ const ProjectDetailsPage: React.FC = () => {
     try {
       setIsPausingProject(true);
       setShowActionsMenu(false);
-
       const isPaused = project?.status?.toLowerCase() === "paused";
-
       if (isPaused) {
         toast.loading("Resuming");
         await agencyPauseService.resumeProject(projectId);
@@ -173,7 +160,6 @@ const ProjectDetailsPage: React.FC = () => {
         await agencyPauseService.pauseProject(projectId);
         toast.success("Project paused!");
       }
-
       setTimeout(() => {
         refetch();
       }, 1000);
@@ -194,22 +180,16 @@ const ProjectDetailsPage: React.FC = () => {
       setIsTerminatingProject(true);
       setShowActionsMenu(false);
       setShowTerminateConfirm(false);
-
       const loadingToast = toast.loading("Terminating project...");
-
       await agencyTerminateService.terminateProject(projectId);
-
       toast.dismiss(loadingToast);
       toast.success("Project terminated successfully!");
-
       setTimeout(() => {
         router.push("/agency");
       }, 1500);
     } catch (err) {
       console.error("Error terminating project:", err);
-
       let errorMessage = "Failed to terminate project";
-
       if (err instanceof Error) {
         errorMessage = err.message;
         if (err.message.includes("Failed to fetch")) {
@@ -217,9 +197,40 @@ const ProjectDetailsPage: React.FC = () => {
             "Network error: Unable to reach the server. Please check your connection and try again.";
         }
       }
-
       toast.error(errorMessage);
       setIsTerminatingProject(false);
+    }
+  };
+
+  const handleUnassignManager = async () => {
+    const confirmed = window.confirm(
+      `Are you sure you want to unassign ${project?.productManager?.name} from this project?`
+    );
+    if (!confirmed) return;
+
+    try {
+      setIsUnassigningManager(true);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+
+      const response = await fetch(
+        `${baseUrl}/agency/project/${projectId}/unassign-manager/`,
+        {
+          method: "POST",
+          headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to unassign manager");
+
+      toast.success("Manager unassigned successfully");
+      refetch();
+    } catch (err) {
+      console.error("Error unassigning manager:", err);
+      toast.error("Failed to unassign manager. Please try again.");
+    } finally {
+      setIsUnassigningManager(false);
     }
   };
 
@@ -329,7 +340,6 @@ const ProjectDetailsPage: React.FC = () => {
           <span>•</span>
           <span>Last updated {project.lastUpdated}</span>
         </div>
-
         <div className={styles.dueDate}>Due: {project.dueDate}</div>
       </div>
 
@@ -346,7 +356,6 @@ const ProjectDetailsPage: React.FC = () => {
             </span>
           </div>
         </div>
-
         <div className={styles.statCard}>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>
@@ -360,7 +369,6 @@ const ProjectDetailsPage: React.FC = () => {
             </span>
           </div>
         </div>
-
         <div className={styles.statCard}>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>
@@ -376,38 +384,17 @@ const ProjectDetailsPage: React.FC = () => {
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${
-            activeTab === "overview" ? styles.tabActive : ""
-          }`}
-          onClick={() => setActiveTab("overview")}
-        >
-          Overview
-        </button>
-        <button
-          className={`${styles.tab} ${
-            activeTab === "milestones" ? styles.tabActive : ""
-          }`}
-          onClick={() => setActiveTab("milestones")}
-        >
-          Milestones
-        </button>
-        <button
-          className={`${styles.tab} ${
-            activeTab === "documents" ? styles.tabActive : ""
-          }`}
-          onClick={() => setActiveTab("documents")}
-        >
-          Documents
-        </button>
-        <button
-          className={`${styles.tab} ${
-            activeTab === "payment" ? styles.tabActive : ""
-          }`}
-          onClick={() => setActiveTab("payment")}
-        >
-          Payment
-        </button>
+        {["overview", "milestones", "documents", "payment"].map((tab) => (
+          <button
+            key={tab}
+            className={`${styles.tab} ${
+              activeTab === tab ? styles.tabActive : ""
+            }`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
       </div>
 
       {/* Content Area */}
@@ -436,7 +423,6 @@ const ProjectDetailsPage: React.FC = () => {
                       }}
                     />
                   </div>
-
                   {project.projectProgress.milestones.length > 0 && (
                     <div className={styles.milestonesList}>
                       {project.projectProgress.milestones.map((milestone) => (
@@ -507,7 +493,7 @@ const ProjectDetailsPage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Product Manager Card */}
+                {/* Product Manager Card — hidden after unassign */}
                 {project.productManager && (
                   <div className={styles.projectManager}>
                     <div className={styles.card}>
@@ -531,8 +517,12 @@ const ProjectDetailsPage: React.FC = () => {
                         <MessageApp />
                         {isStartingConversation ? "Starting..." : "Message PM"}
                       </button>
-                      <button className={styles.unassignButton}>
-                        Un-assign
+                      <button
+                        className={styles.unassignButton}
+                        onClick={handleUnassignManager}
+                        disabled={isUnassigningManager}
+                      >
+                        {isUnassigningManager ? "Unassigning..." : "Un-assign"}
                       </button>
                     </div>
                   </div>
@@ -544,11 +534,9 @@ const ProjectDetailsPage: React.FC = () => {
           {activeTab === "milestones" && (
             <AdminMilestonesPage projectId={projectId} />
           )}
-
           {activeTab === "documents" && (
             <AgencyDocuments projectId={projectId} />
           )}
-
           {activeTab === "payment" && <AgencyPayments projectId={projectId} />}
         </div>
       </div>

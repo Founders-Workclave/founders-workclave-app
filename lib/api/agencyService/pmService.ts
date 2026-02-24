@@ -30,20 +30,11 @@ export interface ManagerProjectsResponse {
 }
 
 export const managerService = {
-  /**
-   * Fetches the list of product managers
-   */
   async getManagersList(): Promise<ManagersListResponse> {
     try {
       const token = getAuthToken();
-
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
       const response = await fetch(
         `${API_BASE_URL}/agency/managers-dashboard/`,
@@ -65,32 +56,18 @@ export const managerService = {
 
       return await response.json();
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error)
         throw new ApiError(`Network error: ${error.message}`);
-      }
-
       throw new ApiError("An unknown error occurred");
     }
   },
 
-  /**
-   * Fetches a single product manager by ID from the managers dashboard
-   */
   async getPMById(id: string): Promise<Manager | null> {
     try {
       const token = getAuthToken();
-
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
       const response = await fetch(
         `${API_BASE_URL}/agency/managers-dashboard/`,
@@ -112,37 +89,24 @@ export const managerService = {
 
       const data: PMDetailResponse = await response.json();
 
-      const manager = data.managers.find((m) => m.id === id);
+      // Match against managerID (the UUID used in routing) not id
+      const manager = data.managers.find((m) => m.managerID === id);
       return manager || null;
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error)
         throw new ApiError(`Network error: ${error.message}`);
-      }
-
       throw new ApiError("An unknown error occurred");
     }
   },
 
-  /**
-   * Fetches projects for a specific manager
-   */
   async getManagerProjects(
     managerId: string
   ): Promise<ManagerProjectsResponse> {
     try {
       const token = getAuthToken();
-
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
       const response = await fetch(
         `${API_BASE_URL}/agency/manager/${managerId}/projects/`,
@@ -164,14 +128,9 @@ export const managerService = {
 
       return await response.json();
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error)
         throw new ApiError(`Network error: ${error.message}`);
-      }
-
       throw new ApiError("An unknown error occurred");
     }
   },

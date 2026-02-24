@@ -15,13 +15,12 @@ import { Manager } from "@/types/agencyPm";
 import AllLoading from "@/layout/Loader";
 import AdminIconProject from "@/svgs/adminIconProject";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import AssignProjectModal from "../assignProjectModal";
 import { getAuthToken } from "@/lib/utils/auth";
 import toast from "react-hot-toast";
 
 interface PMDetailProps {
-  params?: {
-    id: string;
-  };
+  params?: { id: string };
   pmId?: string;
 }
 
@@ -34,6 +33,8 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isStartingConversation, setIsStartingConversation] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
   useEffect(() => {
     const fetchManagerData = async () => {
@@ -42,26 +43,22 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
         setIsLoading(false);
         return;
       }
-
       try {
         setIsLoading(true);
         setError(null);
-
         const manager = await managerService.getPMById(id);
-
         if (!manager) {
           setError("Manager not found");
           setIsLoading(false);
           return;
         }
-
         setPm(manager);
-
         const projectsData = await managerService.getManagerProjects(
           manager.managerID
         );
         setProjects(projectsData.projects || []);
       } catch (err) {
+        console.error("[PMPage] error:", err);
         if (err instanceof ApiError) {
           setError(err.message);
         } else {
@@ -72,13 +69,10 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
         setIsLoading(false);
       }
     };
-
     fetchManagerData();
   }, [id]);
 
-  const handleBack = () => {
-    router.back();
-  };
+  const handleBack = () => router.back();
 
   const handleMessagePM = async () => {
     if (!pm?.managerID) {
@@ -90,20 +84,14 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
       const baseUrl =
         process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
       const token = getAuthToken();
-
       const formData = new FormData();
       formData.append("userID", pm.managerID);
-
       const response = await fetch(`${baseUrl}/chat/conversation/`, {
         method: "POST",
-        headers: {
-          ...(token && { Authorization: `Bearer ${token}` }),
-        },
+        headers: { ...(token && { Authorization: `Bearer ${token}` }) },
         body: formData,
       });
-
       if (!response.ok) throw new Error("Failed to start conversation");
-
       const data = await response.json();
       router.push(`/agency/messages?conversationId=${data.conversationID}`);
     } catch (err) {
@@ -114,23 +102,39 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
     }
   };
 
-  const handleAssignProject = () => {
-    if (pm) {
-      console.log("Assign project to PM:", pm.id);
-    }
-  };
-
-  const handleDeactivateUser = () => {
-    if (pm) {
-      console.log("Deactivate user:", pm.id);
+  const handleDeactivateUser = async () => {
+    if (!pm?.managerID) return;
+    const action = pm.active ? "deactivate" : "activate";
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} ${pm.managerName}?`
+    );
+    if (!confirmed) return;
+    try {
+      setIsDeactivating(true);
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
+      const token = getAuthToken();
+      const response = await fetch(
+        `${baseUrl}/deactivate-user/${pm.managerID}/`,
+        {
+          method: "POST",
+          headers: { ...(token && { Authorization: `Bearer ${token}` }) },
+        }
+      );
+      if (!response.ok) throw new Error(`Failed to ${action} user`);
+      toast.success(`${pm.managerName} has been ${action}d successfully`);
+      router.push("/agency/team");
+    } catch (err) {
+      console.error(`Error ${action}ing user:`, err);
+      toast.error(`Failed to ${action} user. Please try again.`);
+    } finally {
+      setIsDeactivating(false);
     }
   };
 
   const getInitials = (name: string): string => {
     const names = name.split(" ");
-    if (names.length >= 2) {
-      return `${names[0][0]}${names[1][0]}`.toUpperCase();
-    }
+    if (names.length >= 2) return `${names[0][0]}${names[1][0]}`.toUpperCase();
     return name.substring(0, 2).toUpperCase();
   };
 
@@ -182,7 +186,9 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
         <BackBlack />
         Back
       </button>
+
       <h1 className={styles.pageTitle}>PM information</h1>
+
       <div className={styles.profileCard}>
         <div className={styles.profileLeft}>
           <div className={styles.avatarContainer}>
@@ -213,15 +219,23 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
             <MessageApp />
             {isStartingConversation ? "Starting..." : "Message PM"}
           </button>
-          <button onClick={handleAssignProject} className={styles.assignButton}>
+          <button
+            onClick={() => setShowAssignModal(true)}
+            className={styles.assignButton}
+          >
             Assign project
           </button>
           <button
             onClick={handleDeactivateUser}
             className={styles.deactivateButton}
+            disabled={isDeactivating}
           >
             <DeleteUser />
-            {pm.active ? "Deactivate user" : "Activate user"}
+            {isDeactivating
+              ? "Processing..."
+              : pm.active
+              ? "Deactivate user"
+              : "Activate user"}
           </button>
         </div>
       </div>
@@ -238,7 +252,7 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
               Assign a project to get started
             </p>
             <button
-              onClick={handleAssignProject}
+              onClick={() => setShowAssignModal(true)}
               className={styles.assignProjectLink}
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -303,6 +317,10 @@ const PMInformationPage: React.FC<PMDetailProps> = ({ params, pmId }) => {
           </div>
         )}
       </div>
+
+      {showAssignModal && (
+        <AssignProjectModal onClose={() => setShowAssignModal(false)} />
+      )}
     </div>
   );
 };

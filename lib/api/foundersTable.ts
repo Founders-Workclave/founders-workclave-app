@@ -282,7 +282,7 @@ export const activateFounder = async (
     console.log("🔵 Activating founder:", founderId);
 
     const response = await fetch(
-      `${API_BASE_URL}/superadmin/activate-user/${founderId}/`,
+      `${API_BASE_URL}/activate-user/${founderId}/`,
       {
         method: "POST",
         headers: getAuthHeaders(),
@@ -328,7 +328,7 @@ export const deactivateFounder = async (
     console.log("🔵 Deactivating founder:", founderId);
 
     const response = await fetch(
-      `${API_BASE_URL}/superadmin/deactivate-user/${founderId}/`,
+      `${API_BASE_URL}/deactivate-user/${founderId}/`,
       {
         method: "POST",
         headers: getAuthHeaders(),
