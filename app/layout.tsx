@@ -10,7 +10,8 @@ const interSans = Inter({
 
 export const metadata: Metadata = {
   title: "Founders Workclave",
-  description: "Welcome to founders Workclave",
+  description:
+    "Run your development agency with built-in project management, client workspaces, and automated PRD generation for every project",
 };
 
 export default function RootLayout({
