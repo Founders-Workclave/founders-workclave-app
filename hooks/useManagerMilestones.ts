@@ -91,7 +91,7 @@ export const useManagerMilestones = (
 
   const markMilestoneComplete = useCallback(
     async (milestoneId: string): Promise<void> => {
-      const url = `${BASE_URL}/agency/project/milestone/${milestoneId}/completed/`;
+      const url = `${BASE_URL}/manager/project/milestone/${milestoneId}/completed/`;
 
       const response = await fetch(url, {
         method: "POST",
