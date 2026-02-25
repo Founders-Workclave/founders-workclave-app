@@ -12,6 +12,7 @@ import {
   getUserInitials,
   getUserProfileImage,
 } from "@/lib/api/auth";
+import { profileService } from "@/lib/api/agencyService/profileService";
 
 interface AgencyLayoutProps {
   pageTitle: string;
@@ -34,6 +35,22 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
   const [user, setUser] = useState(getCurrentUser());
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
+  // ✅ Fetch full profile on mount to get companyLogo
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        await profileService.fetchUserProfile();
+        setProfileImage(getUserProfileImage());
+        setUser(getCurrentUser());
+      } catch {
+        // Fail silently — just use whatever is in storage
+        setProfileImage(getUserProfileImage());
+      }
+    };
+
+    loadProfileImage();
+  }, []);
+
   useEffect(() => {
     const refreshProfile = () => {
       const currentUser = getCurrentUser();
@@ -55,9 +72,9 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
       window.removeEventListener("storage", refreshProfile);
     };
   }, []);
+
   useEffect(() => {
     const checkAuth = () => {
-      // First check if user is authenticated
       if (!isAuthenticated()) {
         router.replace("/login");
         return;
@@ -70,16 +87,12 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
         return;
       }
 
-      // CRITICAL: Check if user is an agency user
       const userUserType = currentUser.userType?.toLowerCase();
 
-      // If user is not an agency user, redirect them to their correct dashboard
       if (userUserType !== "agency") {
-        // Redirect based on their actual user type/role
         if (currentUser.role === "admin") {
           router.replace("/admin");
         } else {
-          // Regular founder user
           const username =
             currentUser.username ||
             currentUser.name.toLowerCase().replace(/\s+/g, ".");
@@ -88,7 +101,6 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
         return;
       }
 
-      // User is authenticated and is an agency user
       setUser(currentUser);
       setProfileImage(getUserProfileImage());
       setIsLoading(false);
@@ -104,6 +116,7 @@ const AgencyLayout: React.FC<AgencyLayoutProps> = ({
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
   if (!user) {
     return null;
   }

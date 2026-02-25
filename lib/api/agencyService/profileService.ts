@@ -28,6 +28,8 @@ export interface UserProfile {
 export interface LogoUploadResponse {
   message: string;
   logoUrl?: string;
+  companyLogo?: string;
+  image?: string;
 }
 
 export interface ApiErrorResponse {
@@ -41,6 +43,15 @@ export class ApiError extends Error {
     this.name = "ApiError";
   }
 }
+
+/**
+ * Convert relative URL to absolute URL
+ */
+const toAbsoluteUrl = (url: string | undefined): string | undefined => {
+  if (!url) return undefined;
+  if (url.startsWith("http")) return url;
+  return `${API_BASE_URL}${url}`;
+};
 
 export const profileService = {
   /**
@@ -73,7 +84,6 @@ export const profileService = {
           .json()
           .catch(() => ({ message: "Failed to fetch profile" }));
 
-        // Handle authentication errors
         if (isAuthError(response.status)) {
           handleSessionTimeout();
           throw new ApiError(
@@ -95,20 +105,18 @@ export const profileService = {
       const hasDataWrapper = response_data.data !== undefined;
       const data = hasDataWrapper ? response_data.data : response_data;
       console.log("Extracted data:", data);
+      console.log("🖼️ Image fields from API:", {
+        image: data.image,
+        companyLogo: data.companyLogo,
+        profileImage: data.profileImage,
+      });
 
-      // Get existing user data to preserve fields not returned by API
       const existingUser = getUserFromStorage() as UserProfile | null;
-      console.log("Existing user in storage:", existingUser);
 
-      // Parse phone number to remove spaces and separate country code
       let phoneNumber =
         data.phone || data.phoneNumber || existingUser?.phoneNumber || "";
-      console.log("Phone number before cleaning:", phoneNumber);
-      // Remove all spaces from phone number
       phoneNumber = phoneNumber.replace(/\s/g, "");
-      console.log("Phone number after cleaning:", phoneNumber);
 
-      // Update localStorage with fetched data - map API fields correctly
       const updatedProfile: Partial<UserProfile> = {
         firstName: data.firstName,
         lastName: data.lastName,
@@ -116,16 +124,20 @@ export const profileService = {
           data.firstName && data.lastName
             ? `${data.firstName} ${data.lastName}`
             : existingUser?.name,
-        email: data.email || existingUser?.email, // Get email from API response or preserve from storage
-        companyName: data.companyName || data.company, // Try both field names
-        phoneNumber: phoneNumber || existingUser?.phoneNumber || "", // Store without spaces
-        // Keep existing fields that might not come from server
+        email: data.email || existingUser?.email,
+        companyName: data.companyName || data.company,
+        phoneNumber: phoneNumber || existingUser?.phoneNumber || "",
         id: existingUser?.id || data.id,
         role: existingUser?.role || data.role,
-        userType: data.user || existingUser?.userType, // API returns "user" field
+        userType: data.user || existingUser?.userType,
         username: existingUser?.username || data.username,
-        profileImage:
-          data.image || data.profileImage || existingUser?.profileImage, // API returns "image", not profileImage
+        // ✅ Check companyLogo first (uploaded logo), then image (profile pic)
+        profileImage: toAbsoluteUrl(
+          data.companyLogo ||
+            data.image ||
+            data.profileImage ||
+            existingUser?.profileImage
+        ),
       };
 
       console.log("Updated profile to store:", updatedProfile);
@@ -135,14 +147,9 @@ export const profileService = {
       console.log("Final user in storage after update:", finalUser);
       return finalUser as UserProfile;
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error)
         throw new ApiError(`Network error: ${error.message}`);
-      }
-
       throw new ApiError("An unknown error occurred while fetching profile");
     }
   },
@@ -153,7 +160,6 @@ export const profileService = {
   updateUserProfile(updates: Partial<UserProfile>): void {
     updateUserInStorage(updates);
 
-    // Dispatch custom event to notify other components
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("profileUpdated", {
@@ -182,7 +188,6 @@ export const profileService = {
 
       const formData = new FormData();
 
-      // Only append non-empty values
       if (updates.firstName?.trim())
         formData.append("firstName", updates.firstName.trim());
       if (updates.lastName?.trim())
@@ -190,19 +195,9 @@ export const profileService = {
       if (updates.email?.trim()) formData.append("email", updates.email.trim());
       if (updates.company?.trim())
         formData.append("company", updates.company.trim());
-
-      // Only send phone if it has more than just the country code
       if (updates.phone?.trim() && updates.phone.length > 5) {
         formData.append("phone", updates.phone.trim());
       }
-
-      console.log("Updating profile with:", {
-        firstName: updates.firstName,
-        lastName: updates.lastName,
-        email: updates.email,
-        phone: updates.phone,
-        company: updates.company,
-      });
 
       const response = await fetch(`${API_BASE_URL}/user/`, {
         method: "PATCH",
@@ -212,16 +207,11 @@ export const profileService = {
         body: formData,
       });
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response
           .json()
           .catch(() => ({ message: "Failed to update profile" }));
 
-        console.error("Error response:", errorData);
-
-        // Handle authentication errors
         if (isAuthError(response.status)) {
           handleSessionTimeout();
           throw new ApiError(
@@ -241,17 +231,14 @@ export const profileService = {
       const response_data = await response.json();
       console.log("Success response:", response_data);
 
-      // API response format: { message: "...", data: { firstName, lastName, email, phone, company } }
       const responseData = response_data.data || {};
 
-      // Remove spaces from phone number if present in response
       const cleanPhone = responseData.phone
         ? responseData.phone.replace(/\s/g, "")
         : updates.phone
         ? updates.phone.replace(/\s/g, "")
         : undefined;
 
-      // Update localStorage with the response data (which includes what the server saved)
       const updatedProfile: Partial<UserProfile> = {
         firstName: responseData.firstName || updates.firstName,
         lastName: responseData.lastName || updates.lastName,
@@ -263,24 +250,17 @@ export const profileService = {
               }`
             : undefined,
         email: responseData.email || updates.email,
-        companyName: responseData.company || updates.company, // API returns 'company', we store as 'companyName'
-        phoneNumber: cleanPhone, // Store full phone with country code, without spaces
+        companyName: responseData.company || updates.company,
+        phoneNumber: cleanPhone,
       };
 
       this.updateUserProfile(updatedProfile);
 
       return this.getUserProfile() as UserProfile;
     } catch (error) {
-      console.error("Update profile error:", error);
-
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error)
         throw new ApiError(`Network error: ${error.message}`);
-      }
-
       throw new ApiError("An unknown error occurred while updating profile");
     }
   },
@@ -312,7 +292,6 @@ export const profileService = {
           .json()
           .catch(() => ({ message: "Failed to upload logo" }));
 
-        // Handle authentication errors
         if (isAuthError(response.status)) {
           handleSessionTimeout();
           throw new ApiError(
@@ -330,25 +309,19 @@ export const profileService = {
       }
 
       const data: LogoUploadResponse = await response.json();
+      console.log("🖼️ Upload logo response:", JSON.stringify(data));
 
-      // Update profile image in localStorage
-      // API returns 'logoUrl' or the image might be in 'image' field
-      const responseWithImage = data as LogoUploadResponse & { image?: string };
-      const imageUrl = data.logoUrl || responseWithImage.image;
+      // ✅ Check all possible field names the API might return
+      const imageUrl = data.logoUrl || data.companyLogo || data.image;
       if (imageUrl) {
-        this.updateUserProfile({ profileImage: imageUrl });
+        this.updateUserProfile({ profileImage: toAbsoluteUrl(imageUrl) });
       }
 
       return data;
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error)
         throw new ApiError(`Network error: ${error.message}`);
-      }
-
       throw new ApiError("An unknown error occurred while uploading logo");
     }
   },
@@ -357,10 +330,7 @@ export const profileService = {
    * Clear user profile from localStorage (logout)
    */
   clearUserProfile(): void {
-    if (typeof window === "undefined") {
-      return;
-    }
-
+    if (typeof window === "undefined") return;
     try {
       localStorage.removeItem("user");
     } catch (error) {

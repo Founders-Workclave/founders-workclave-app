@@ -38,7 +38,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   return (
     <div className={styles.container}>
-      <label className={styles.label}>Company Logo</label>
+      {/* <label className={styles.label}>Profile Picture</label> */}
       <div className={styles.avatarWrapper}>
         <div className={styles.avatar}>
           {currentImage ? (

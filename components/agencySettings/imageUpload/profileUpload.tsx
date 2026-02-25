@@ -66,8 +66,6 @@ const ProfileUploadWithService: React.FC<ProfileUploadWithServiceProps> = ({
         if (onUploadSuccess) {
           onUploadSuccess(imageUrl);
         }
-      } else {
-        throw new Error("No image URL returned from server");
       }
     } catch (err) {
       console.error("❌ Upload failed:", err);
@@ -102,11 +100,12 @@ const ProfileUploadWithService: React.FC<ProfileUploadWithServiceProps> = ({
       {isUploading && (
         <div
           style={{
-            textAlign: "center",
+            textAlign: "left",
             marginTop: "8px",
             fontSize: "13px",
             color: "#3b82f6",
             fontWeight: "500",
+            fontFamily: "inter",
           }}
         >
           Uploading image...

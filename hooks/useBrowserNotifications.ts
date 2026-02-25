@@ -1,58 +1,116 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
+
+type IOSNotificationPermission = NotificationPermission | "unsupported";
+
+function getInitialPermission(): IOSNotificationPermission {
+  if (typeof window === "undefined" || !("Notification" in window)) {
+    return "unsupported";
+  }
+  return Notification.permission;
+}
 
 export function useBrowserNotifications() {
-  const permissionRef = useRef<NotificationPermission>("default");
+  const [permission, setPermission] =
+    useState<IOSNotificationPermission>(getInitialPermission);
   const audioRef = useRef<AudioContext | null>(null);
+  const audioUnlockedRef = useRef(false);
 
   useEffect(() => {
-    if (!("Notification" in window)) return;
-    permissionRef.current = Notification.permission;
+    const unlock = () => {
+      try {
+        if (audioUnlockedRef.current) return;
+        const AudioCtx =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext })
+            .webkitAudioContext;
+        if (!AudioCtx) return;
 
-    if (Notification.permission === "default") {
-      Notification.requestPermission().then((permission) => {
-        permissionRef.current = permission;
-      });
-    }
+        if (!audioRef.current) {
+          audioRef.current = new AudioCtx();
+        }
+        const ctx = audioRef.current;
+        const buffer = ctx.createBuffer(1, 1, 22050);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(ctx.destination);
+        source.start(0);
+        ctx.resume().then(() => {
+          audioUnlockedRef.current = true;
+        });
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener("touchstart", unlock, { once: true });
+    window.addEventListener("mousedown", unlock, { once: true });
+    return () => {
+      window.removeEventListener("touchstart", unlock);
+      window.removeEventListener("mousedown", unlock);
+    };
   }, []);
+
+  useEffect(() => {
+    if (permission === "unsupported") {
+      console.warn(
+        "Notifications not supported. On iOS, add the app to your Home Screen to enable them."
+      );
+      return;
+    }
+
+    // Only request if still in the default/undecided state
+    if (permission === "default") {
+      Notification.requestPermission().then((p) => setPermission(p));
+    }
+  }, [permission]);
 
   const playSound = useCallback(() => {
     try {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+
+      if (!AudioCtx) return;
       if (!audioRef.current) {
-        audioRef.current = new (window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext })
-            .webkitAudioContext)();
+        audioRef.current = new AudioCtx();
       }
 
       const ctx = audioRef.current;
-      if (ctx.state === "suspended") {
-        ctx.resume();
-      }
-      const playTone = (
-        frequency: number,
-        startTime: number,
-        duration: number,
-        gain: number
-      ) => {
-        const oscillator = ctx.createOscillator();
-        const gainNode = ctx.createGain();
 
-        oscillator.connect(gainNode);
-        gainNode.connect(ctx.destination);
+      const fire = () => {
+        const playTone = (
+          frequency: number,
+          startTime: number,
+          duration: number,
+          gain: number
+        ) => {
+          const oscillator = ctx.createOscillator();
+          const gainNode = ctx.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(ctx.destination);
+          oscillator.type = "sine";
+          oscillator.frequency.setValueAtTime(frequency, startTime);
+          gainNode.gain.setValueAtTime(0, startTime);
+          gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.01);
+          gainNode.gain.exponentialRampToValueAtTime(
+            0.001,
+            startTime + duration
+          );
+          oscillator.start(startTime);
+          oscillator.stop(startTime + duration);
+        };
 
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(frequency, startTime);
-
-        gainNode.gain.setValueAtTime(0, startTime);
-        gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-
-        oscillator.start(startTime);
-        oscillator.stop(startTime + duration);
+        const now = ctx.currentTime;
+        playTone(880, now, 0.3, 0.3);
+        playTone(1100, now + 0.15, 0.4, 0.2);
       };
 
-      const now = ctx.currentTime;
-      playTone(880, now, 0.3, 0.3); // A5 - first chime
-      playTone(1100, now + 0.15, 0.4, 0.2); // C#6 - second chime
+      if (ctx.state === "suspended") {
+        ctx.resume().then(fire);
+      } else {
+        fire();
+      }
     } catch (err) {
       console.warn("Could not play notification sound:", err);
     }
@@ -63,29 +121,23 @@ export function useBrowserNotifications() {
       title: string,
       options?: { body?: string; icon?: string; url?: string }
     ) => {
-      console.log("🔔 notify called");
-      console.log("📋 Notification support:", "Notification" in window);
-      console.log("🔑 Permission:", permissionRef.current);
-      console.log("👁️ Visibility:", document.visibilityState);
-
-      if (!("Notification" in window)) {
-        console.warn("❌ Notifications not supported");
-        return;
-      }
-      if (permissionRef.current !== "granted") {
-        console.warn("❌ Permission not granted:", permissionRef.current);
+      if (permission === "unsupported") {
+        console.warn(
+          "Push notifications are not supported in this browser. " +
+            "On iOS, install the app to your Home Screen and reopen it."
+        );
         return;
       }
 
-      // Play sound regardless of visibility
+      if (permission !== "granted") {
+        console.warn("Notification permission not granted:", permission);
+        return;
+      }
+
       playSound();
 
-      if (document.visibilityState === "visible") {
-        console.log("👁️ Tab visible - skipping popup but playing sound");
-        return;
-      }
+      if (document.visibilityState === "visible") return;
 
-      console.log("🚀 Firing notification popup");
       const notification = new Notification(title, {
         body: options?.body,
         icon: options?.icon || "/favicon.ico",
@@ -99,8 +151,8 @@ export function useBrowserNotifications() {
         notification.close();
       };
     },
-    [playSound]
+    [permission, playSound]
   );
 
-  return { notify };
+  return { notify, isSupported: permission !== "unsupported", permission };
 }
