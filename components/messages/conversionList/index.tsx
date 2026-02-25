@@ -133,9 +133,6 @@ const ConversationList: React.FC<ConversationListProps> = ({
         ) : (
           conversations.map((conversation) => {
             const isSelected = selectedConversationId === conversation.id;
-
-            // ✅ KEY FIX: Always derive online status from the onlineUsers Set
-            // Never trust participant.status or participant.isOnline from state
             const isOnline = onlineUsers.has(conversation.participant.id);
 
             return (

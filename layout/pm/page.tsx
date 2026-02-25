@@ -12,7 +12,9 @@ import {
   getUser,
   getUserDisplayName,
   getUserInitials,
+  getUserProfileImage,
 } from "@/lib/api/auth";
+import { profileService } from "@/lib/api/agencyService/profileService";
 
 interface PMLayoutProps {
   pageTitle: string;
@@ -31,20 +33,55 @@ const PMLayout: React.FC<PMLayoutProps> = ({
   const router = useRouter();
   const menu = pmMenuItems;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string>("");
+  const [initials, setInitials] = useState<string>("");
 
-  // Authentication and authorization check - compute directly instead of using state
   const isAuthenticatedUser = isAuthenticated();
   const isAuthorizedUser = isPMUser();
 
+  // ✅ Fetch full profile on mount to get profile image
   useEffect(() => {
-    // Check if user is authenticated
+    const loadProfileImage = async () => {
+      try {
+        await profileService.fetchUserProfile();
+        setProfileImage(getUserProfileImage());
+        setDisplayName(getUserDisplayName());
+        setInitials(getUserInitials());
+      } catch {
+        setProfileImage(getUserProfileImage());
+        setDisplayName(getUserDisplayName());
+        setInitials(getUserInitials());
+      }
+    };
+
+    loadProfileImage();
+  }, []);
+
+  // ✅ Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfileImage(getUserProfileImage());
+      setDisplayName(getUserDisplayName());
+      setInitials(getUserInitials());
+    };
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    window.addEventListener("storage", handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+      window.removeEventListener("storage", handleProfileUpdate);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isAuthenticatedUser) {
       console.log("❌ User not authenticated, redirecting to login");
       router.replace("/login");
       return;
     }
 
-    // Check if user has PM role
     if (!isAuthorizedUser) {
       console.log("❌ User is not a PM, access denied");
       const user = getUser();
@@ -63,12 +100,10 @@ const PMLayout: React.FC<PMLayoutProps> = ({
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   };
+
   if (!isAuthenticatedUser || !isAuthorizedUser) {
     return null;
   }
-
-  const displayName = getUserDisplayName();
-  const initials = getUserInitials();
 
   return (
     <div className={styles.container}>
@@ -169,7 +204,19 @@ const PMLayout: React.FC<PMLayoutProps> = ({
           <div className={styles.otherNavItems}>
             <HeaderNotification />
             <div className={styles.profileSection}>
-              <div className={styles.profilePlaceholder}>{initials}</div>
+              {profileImage ? (
+                <div className={styles.profileImageWrapper}>
+                  <Image
+                    src={profileImage}
+                    width={40}
+                    height={40}
+                    alt={displayName || "Profile"}
+                    className={styles.profileImage}
+                  />
+                </div>
+              ) : (
+                <div className={styles.profilePlaceholder}>{initials}</div>
+              )}
               <p>{displayName}</p>
             </div>
           </div>

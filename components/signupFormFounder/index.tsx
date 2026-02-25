@@ -42,10 +42,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
 
       // Redirect to founder dashboard after short delay
       setTimeout(() => {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const username =
-          user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
-        router.push(`/${username || "dashboard"}`);
+        router.push(`/founder`);
       }, 1500);
     }
   }, [success, router, onSubmit, formData]);

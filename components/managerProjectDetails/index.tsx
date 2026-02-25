@@ -5,13 +5,13 @@ import styles from "./styles.module.css";
 import BackBlack from "@/svgs/backBlack";
 import MessageApp from "@/svgs/messageApp";
 import Timeline from "@/svgs/timeline";
-import Budget from "@/svgs/budget";
+// import Budget from "@/svgs/budget";
 import Document from "@/svgs/document";
 import CheckPassive from "@/svgs/checkPassive";
 import CheckActive from "@/svgs/checkActive";
 import { useManagerProjectDetails } from "@/hooks/useManagerProjectDetails";
 import AllLoading from "@/layout/Loader";
-import { formatStatus, formatCurrency } from "@/utils/formatters";
+import { formatStatus } from "@/utils/formatters";
 import ManagerMilestonesPage from "../managersMilestone/milestonePage";
 import ManagerDocuments from "../managerDocument";
 import ManagerPayments from "../managerPayments";
@@ -174,7 +174,7 @@ const ManagerProjectDetailsPage: React.FC = () => {
             </span>
           </div>
         </div>
-
+        {/* 
         <div className={styles.statCard}>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>
@@ -187,7 +187,7 @@ const ManagerProjectDetailsPage: React.FC = () => {
               {formatCurrency(project.budgetPaid)} paid
             </span>
           </div>
-        </div>
+        </div> */}
 
         <div className={styles.statCard}>
           <div className={styles.statContent}>
@@ -228,14 +228,14 @@ const ManagerProjectDetailsPage: React.FC = () => {
         >
           Documents
         </button>
-        <button
+        {/* <button
           className={`${styles.tab} ${
             activeTab === "payment" ? styles.tabActive : ""
           }`}
           onClick={() => setActiveTab("payment")}
         >
           Payment
-        </button>
+        </button> */}
       </div>
 
       {/* Content Area */}

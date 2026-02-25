@@ -1,10 +1,16 @@
 "use client";
-import { useParams, usePathname } from "next/navigation";
-import React, { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
 import Image from "next/image";
 import { founderMenuItems } from "@/utils/data";
-import { getUser, getCurrentUser } from "@/lib/api/auth";
+import {
+  isAuthenticated,
+  getUser,
+  getUserDisplayName,
+  getUserInitials,
+  getUserProfileImage,
+} from "@/lib/api/auth";
 import Link from "next/link";
 import HeaderNotification from "@/components/notificationDropdown/notificationComp";
 
@@ -16,32 +22,81 @@ interface FounderLayoutProps {
   userId?: string;
 }
 
-const currentUser = getCurrentUser();
-
 const FounderLayout: React.FC<FounderLayoutProps> = ({
   children,
   pageTitle,
   pageText,
   projectId,
 }) => {
-  const params = useParams();
   const pathname = usePathname();
-  const userId = (params?.userId || params?.id) as string;
+  const router = useRouter();
+  const user = getUser();
+  const userId = user?.id ?? "";
   const menu = founderMenuItems(userId, projectId || "");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string>("");
+  const [initials, setInitials] = useState<string>("");
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  // Fetch profile on mount
+  useEffect(() => {
+    const loadProfile = () => {
+      setProfileImage(getUserProfileImage());
+      setDisplayName(getUserDisplayName());
+      setInitials(getUserInitials());
+    };
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
+    loadProfile();
+  }, []);
 
-  // header user display component
-  const [user] = useState<{ name: string } | null>(getUser());
+  // Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfileImage(getUserProfileImage());
+      setDisplayName(getUserDisplayName());
+      setInitials(getUserInitials());
+    };
 
-  if (!user) return null;
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    window.addEventListener("storage", handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+      window.removeEventListener("storage", handleProfileUpdate);
+    };
+  }, []);
+
+  // Auth + role check
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.replace("/login");
+      return;
+    }
+
+    const currentUser = getUser();
+    const isFounder =
+      currentUser?.userType?.toLowerCase() === "founder" ||
+      currentUser?.role?.toLowerCase() === "user" ||
+      currentUser?.role?.toLowerCase() === "founder";
+
+    if (!isFounder) {
+      router.replace("/unauthorized");
+      return;
+    }
+  }, [router]);
+
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  if (!isAuthenticated()) return null;
+
+  const currentUser = getUser();
+  const isFounder =
+    currentUser?.userType?.toLowerCase() === "founder" ||
+    currentUser?.role?.toLowerCase() === "user" ||
+    currentUser?.role?.toLowerCase() === "founder";
+
+  if (!isFounder) return null;
 
   return (
     <div className={styles.container}>
@@ -65,55 +120,49 @@ const FounderLayout: React.FC<FounderLayoutProps> = ({
           <div className={styles.menuGroup1}>
             <h4>Overview</h4>
             <div className={styles.linkContain}>
-              {menu.slice(0, 4).map((items, index) => {
-                return (
-                  <div
-                    key={index}
-                    className={`${styles.menuListing} ${
-                      items.link === pathname ? styles.active : ""
-                    }`}
-                    onClick={closeMobileMenu}
-                  >
-                    {items.icon}
-                    <Link href={items.link}>{items.label}</Link>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className={styles.menuGroup1}>
-            <h4>Financial</h4>
-            <div className={styles.linkContain}>
-              {menu.slice(4, 6).map((items, index) => {
-                return (
-                  <div
-                    key={index}
-                    className={`${styles.menuListing} ${
-                      pathname.startsWith(items.link) ? styles.active : ""
-                    }`}
-                  >
-                    {items.icon}
-                    <Link href={items.link}>{items.label}</Link>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className={styles.menuGroup1}>
-            <h4>Support</h4>
-            {menu.slice(6, 9).map((items, index) => {
-              return (
+              {menu.slice(0, 4).map((items, index) => (
                 <div
                   key={index}
                   className={`${styles.menuListing} ${
                     items.link === pathname ? styles.active : ""
                   }`}
+                  onClick={closeMobileMenu}
                 >
                   {items.icon}
                   <Link href={items.link}>{items.label}</Link>
                 </div>
-              );
-            })}
+              ))}
+            </div>
+          </div>
+          <div className={styles.menuGroup1}>
+            <h4>Financial</h4>
+            <div className={styles.linkContain}>
+              {menu.slice(4, 6).map((items, index) => (
+                <div
+                  key={index}
+                  className={`${styles.menuListing} ${
+                    pathname.startsWith(items.link) ? styles.active : ""
+                  }`}
+                >
+                  {items.icon}
+                  <Link href={items.link}>{items.label}</Link>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className={styles.menuGroup1}>
+            <h4>Support</h4>
+            {menu.slice(6, 9).map((items, index) => (
+              <div
+                key={index}
+                className={`${styles.menuListing} ${
+                  items.link === pathname ? styles.active : ""
+                }`}
+              >
+                {items.icon}
+                <Link href={items.link}>{items.label}</Link>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -142,17 +191,20 @@ const FounderLayout: React.FC<FounderLayoutProps> = ({
           <div className={styles.otherNavItems}>
             <HeaderNotification />
             <div className={styles.profileSection}>
-              {currentUser?.name ? (
-                <div className={styles.profilePlaceholder}>
-                  {currentUser.name
-                    .split(" ")
-                    .map((word) => word.charAt(0).toUpperCase())
-                    .join("")}
+              {profileImage ? (
+                <div className={styles.profileImageWrapper}>
+                  <Image
+                    src={profileImage}
+                    width={40}
+                    height={40}
+                    alt={displayName || "Profile"}
+                    className={styles.profileImage}
+                  />
                 </div>
               ) : (
-                <div className={styles.profilePlaceholder}>U</div>
+                <div className={styles.profilePlaceholder}>{initials}</div>
               )}
-              <p>{currentUser?.name || "User"}</p>
+              <p>{displayName}</p>
             </div>
           </div>
           <button

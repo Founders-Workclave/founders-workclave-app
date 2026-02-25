@@ -36,6 +36,7 @@ interface ChatMessageData {
   type: string;
   conversation_id?: string;
   user_id?: string;
+  user_ids?: string[];
   status?: "online" | "offline";
   message_id?: string;
   sender_id?: string;
@@ -414,6 +415,37 @@ export const useConversations = ({
           console.log("🔗 Connected:", chatMessage.conversation_id);
           return;
         }
+        if (chatMessage.type === "online_users") {
+          const userIds = chatMessage.user_ids as string[];
+          if (!Array.isArray(userIds)) return;
+
+          console.log("👥 Online users batch received:", userIds);
+
+          setOnlineUsers((prev) => {
+            const next = new Set(prev);
+            userIds.forEach((uid) => {
+              if (uid !== currentUserId) next.add(uid);
+            });
+            console.log("📋 Online users after batch:", Array.from(next));
+            return next;
+          });
+
+          setConversations((prev) =>
+            prev.map((conv) => {
+              const isOnline = userIds.includes(conv.participant.id);
+              if (!isOnline) return conv;
+              return {
+                ...conv,
+                participant: {
+                  ...conv.participant,
+                  status: "online" as const,
+                  isOnline: true,
+                },
+              };
+            })
+          );
+          return;
+        }
 
         // ─── user_status ──────────────────────────────────────────────────
         if (chatMessage.type === "user_status") {
@@ -446,7 +478,6 @@ export const useConversations = ({
 
         // ─── status_update ────────────────────────────────────────────────
         if (chatMessage.type === "status_update") {
-          // ✅ Guard: only proceed if message_id exists
           if (!chatMessage.message_id) return;
           const messageId = chatMessage.message_id;
 
@@ -470,7 +501,6 @@ export const useConversations = ({
                 ) {
                   return {
                     ...msg,
-                    // ✅ Fallback to existing id so it stays `string`, never `undefined`
                     id: messageId,
                     isRead: chatMessage.is_read ?? msg.isRead,
                     isDelivered: chatMessage.is_delivered ?? msg.isDelivered,
@@ -485,7 +515,6 @@ export const useConversations = ({
 
         // ─── chat_message ─────────────────────────────────────────────────
         if (chatMessage.type === "chat_message") {
-          // ✅ Guard: only proceed if required fields exist
           if (!chatMessage.message_id || !chatMessage.sender_id) return;
           const messageId = chatMessage.message_id;
           const senderId = chatMessage.sender_id;
@@ -499,7 +528,6 @@ export const useConversations = ({
                 if (conv.participant.id === senderId) return conv;
                 return {
                   ...conv,
-                  // ✅ senderId is now guaranteed `string`
                   participant: { ...conv.participant, id: senderId },
                 };
               })
@@ -519,7 +547,6 @@ export const useConversations = ({
           if (processedMessageIds.current.has(messageId)) return;
           processedMessageIds.current.add(messageId);
 
-          // ✅ Cast to WebSocketChatMessage since we've validated required fields
           const newMessage = mapWebSocketMessageToComponent(
             chatMessage as unknown as WebSocketChatMessage,
             currentUserId

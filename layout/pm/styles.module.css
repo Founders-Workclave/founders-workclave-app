@@ -343,3 +343,7 @@
     font-size: 11px;
   }
 }
+
+.profileImageWrapper > img {
+  border-radius: 100px;
+}

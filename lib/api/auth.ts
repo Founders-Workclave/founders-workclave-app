@@ -325,7 +325,6 @@ export const getUserRedirectPath = (): string => {
   const userType = user.userType?.toLowerCase();
   const role = user.role?.toLowerCase();
 
-  // Check userType first
   switch (userType) {
     case "agency":
       return "/agency";
@@ -335,23 +334,12 @@ export const getUserRedirectPath = (): string => {
     case "client":
       return "/clients";
     case "founder":
-      const username =
-        user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
-      return `/${username}`;
+      return "/founder";
     default:
-      // Check role if userType doesn't match
-      if (role === "admin") {
-        return "/admin";
-      } else if (role === "pm") {
-        return "/pm";
-      } else if (role === "client") {
-        return "/clients";
-      }
-
-      // Default to founder path for regular users
-      const defaultUsername =
-        user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
-      return `/${defaultUsername}`;
+      if (role === "admin") return "/admin";
+      if (role === "pm") return "/pm";
+      if (role === "client") return "/clients";
+      return "/founder";
   }
 };
 

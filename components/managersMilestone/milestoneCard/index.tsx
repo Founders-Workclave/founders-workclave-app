@@ -13,11 +13,13 @@ import ListIcons from "@/svgs/listIcons";
 
 interface ManagerMilestoneCardProps {
   milestone: Milestone;
+  onEdit?: (milestone: Milestone) => void;
   onMarkComplete?: (milestoneId: string | number) => Promise<void>;
 }
 
 const ManagerMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
   milestone,
+  onEdit,
   onMarkComplete,
 }) => {
   const [showDeliverables, setShowDeliverables] = useState(false);
@@ -170,12 +172,29 @@ const ManagerMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
           )}
 
           {normalizedStatus === "in-progress" && (
+            <>
+              <button
+                onClick={() => onEdit?.(milestone)}
+                className={styles.editMilestoneButton}
+              >
+                Edit milestone
+              </button>
+              <button
+                onClick={handleMarkComplete}
+                className={styles.markCompleteButton}
+                disabled={isLoading}
+              >
+                {isLoading ? "Marking..." : "Mark as completed"}
+              </button>
+            </>
+          )}
+
+          {normalizedStatus === "pending" && (
             <button
-              onClick={handleMarkComplete}
-              className={styles.markCompleteButton}
-              disabled={isLoading}
+              onClick={() => onEdit?.(milestone)}
+              className={styles.editMilestoneButton}
             >
-              {isLoading ? "Marking..." : "Mark as completed"}
+              Edit milestone
             </button>
           )}
         </div>

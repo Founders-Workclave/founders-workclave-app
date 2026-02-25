@@ -112,8 +112,6 @@ export const useWebSocket = ({
     }
 
     try {
-      // ✅ CORRECT FORMAT: /ws/chat/{conversationId}/?token={token}
-      // Backend expects: wss://foundersapi.up.railway.app/ws/chat/conversation_id/?token=access_token
       const wsUrl = `${WS_BASE_URL}/chat/${conversationId}/?token=${token}`;
 
       console.log("🔌 Connecting to WebSocket:", wsUrl.replace(token, "***"));
@@ -197,7 +195,7 @@ export const useWebSocket = ({
    */
   const reconnect = useCallback(() => {
     console.log("🔄 Manual reconnection triggered");
-    reconnectAttempts.current = 0; // Reset attempts for manual reconnection
+    reconnectAttempts.current = 0;
     disconnect();
     setTimeout(() => {
       connect();

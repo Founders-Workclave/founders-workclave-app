@@ -28,7 +28,6 @@ const MessagesPage = ({ params }: PageProps) => {
     messages,
     isLoading,
     isFetchingPreviews,
-    error,
     onlineUsers,
     fetchMessages,
     sendMessage,
@@ -156,13 +155,6 @@ const MessagesPage = ({ params }: PageProps) => {
           <EmptyState />
         )}
       </div>
-
-      {error && (
-        <div className={styles.errorBanner}>
-          <p>Error: {error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      )}
     </div>
   );
 };

@@ -42,9 +42,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
       } else if (role === "admin") {
         router.replace("/admin");
       } else {
-        const username =
-          user?.username || user?.name?.toLowerCase().replace(/\s+/g, ".");
-        router.replace(`/${username}`);
+        router.replace("/founder");
       }
     }
   }, [router]);
@@ -85,9 +83,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
         } else if (role === "admin") {
           redirectUrl = "/admin";
         } else {
-          const username =
-            user.username || user.name?.toLowerCase().replace(/\s+/g, ".");
-          redirectUrl = `/${username}`;
+          redirectUrl = `/founder`;
         }
         window.location.href = redirectUrl;
       }, 800);

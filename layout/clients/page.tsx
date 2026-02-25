@@ -11,7 +11,9 @@ import {
   getUser,
   getUserDisplayName,
   getUserInitials,
+  getUserProfileImage,
 } from "@/lib/api/auth";
+import { profileService } from "@/lib/api/clientsService/clientsProfile";
 
 interface ClientLayoutProps {
   pageTitle: string;
@@ -30,9 +32,47 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
   const router = useRouter();
   const menu = clientMenuItems;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState<string>("");
+  const [initials, setInitials] = useState<string>("");
+
+  // ✅ Fetch full profile on mount to get profile image
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        await profileService.fetchUserProfile();
+        setProfileImage(getUserProfileImage());
+        setDisplayName(getUserDisplayName());
+        setInitials(getUserInitials());
+      } catch {
+        // Fail silently — just use whatever is in storage
+        setProfileImage(getUserProfileImage());
+        setDisplayName(getUserDisplayName());
+        setInitials(getUserInitials());
+      }
+    };
+
+    loadProfileImage();
+  }, []);
+
+  // ✅ Listen for profile updates
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      setProfileImage(getUserProfileImage());
+      setDisplayName(getUserDisplayName());
+      setInitials(getUserInitials());
+    };
+
+    window.addEventListener("profileUpdated", handleProfileUpdate);
+    window.addEventListener("storage", handleProfileUpdate);
+
+    return () => {
+      window.removeEventListener("profileUpdated", handleProfileUpdate);
+      window.removeEventListener("storage", handleProfileUpdate);
+    };
+  }, []);
 
   useEffect(() => {
-    // Check if user is authenticated
     if (!isAuthenticated()) {
       console.log("❌ User not authenticated, redirecting to login");
       router.replace("/login");
@@ -45,14 +85,12 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
       userType: user?.userType,
     });
 
-    // Check if user has Client role or userType
     const isClient =
       user?.role === "clients" || user?.userType?.toLowerCase() === "client";
     const isPM = user?.role === "manager";
 
     if (!isClient && !isPM) {
       console.log("❌ User is not a Client or PM, access denied");
-      console.log("Current user type:", user?.userType, "role:", user?.role);
       router.replace("/unauthorized");
       return;
     }
@@ -68,7 +106,6 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
     setIsMobileMenuOpen(false);
   };
 
-  // Check authentication status
   if (!isAuthenticated()) {
     return null;
   }
@@ -78,13 +115,9 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
     user?.role === "clients" || user?.userType?.toLowerCase() === "client";
   const isPM = user?.role === "manager";
 
-  // Don't render content until authorization is confirmed
   if (!isClient && !isPM) {
     return null;
   }
-
-  const displayName = getUserDisplayName();
-  const initials = getUserInitials();
 
   return (
     <div className={styles.container}>
@@ -196,7 +229,19 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
           <div className={styles.otherNavItems}>
             <HeaderNotification />
             <div className={styles.profileSection}>
-              <div className={styles.profilePlaceholder}>{initials}</div>
+              {profileImage ? (
+                <div className={styles.profileImageWrapper}>
+                  <Image
+                    src={profileImage}
+                    width={40}
+                    height={40}
+                    alt={displayName || "Profile"}
+                    className={styles.profileImage}
+                  />
+                </div>
+              ) : (
+                <div className={styles.profilePlaceholder}>{initials}</div>
+              )}
               <p>{displayName}</p>
             </div>
           </div>

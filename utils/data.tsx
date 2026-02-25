@@ -312,38 +312,38 @@ export const founderMenuItems = (userId: string, projectId: string) => [
   {
     icon: <Dashboard />,
     label: "Dashboard",
-    link: `/${userId}`,
-    match: [`/${userId}/${projectId}`],
+    link: `/founder`,
+    match: [`/founder/${projectId}`],
   },
   {
     icon: <Prd />,
     label: "My PRDs",
-    link: `/${userId}/prds`,
+    link: `/founder/prds`,
   },
   {
     icon: <Projects />,
     label: "My Projects",
-    link: `/${userId}/my-projects`,
+    link: `/founder/my-projects`,
   },
   {
     icon: <Messages />,
     label: "Messages",
-    link: `/${userId}/messages`,
+    link: `/founder/messages`,
   },
   {
     icon: <Wallets />,
     label: "Wallet",
-    link: `/${userId}/wallet`,
+    link: `/founder/wallet`,
   },
   {
     icon: <Payments />,
     label: "Payments",
-    link: `/${userId}/payments`,
+    link: `/founder/payments`,
   },
   {
     icon: <Settings />,
     label: "Settings",
-    link: `/${userId}/profile`,
+    link: `/founder/profile`,
   },
   {
     icon: <LogoutButton />,
