@@ -20,12 +20,12 @@ export default function HeaderNotification() {
 
   return (
     <div>
-      {!isSupported && (
+      {/* {!isSupported && (
         <p style={{ fontSize: "0.75rem", padding: "8px 16px", color: "#888" }}>
           To receive notifications on iOS, tap{" "}
           <strong>Share → Add to Home Screen</strong> and reopen the app.
         </p>
-      )}
+      )} */}
 
       {isSupported && permission !== "granted" && (
         <button

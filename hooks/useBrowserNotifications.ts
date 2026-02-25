@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useEffect, useCallback, useRef, useState } from "react";
 
 type IOSNotificationPermission = NotificationPermission | "unsupported";
@@ -12,13 +13,10 @@ function getInitialPermission(): IOSNotificationPermission {
 export function useBrowserNotifications() {
   const [permission, setPermission] =
     useState<IOSNotificationPermission>(getInitialPermission);
+
   const audioRef = useRef<AudioContext | null>(null);
   const audioUnlockedRef = useRef(false);
 
-  // ------------------------------------------------------------------
-  // Unlock AudioContext on first user gesture (iOS requirement).
-  // Must happen in the same call stack as a tap/click.
-  // ------------------------------------------------------------------
   const unlockAudio = useCallback(() => {
     if (audioUnlockedRef.current) return;
     try {
@@ -27,12 +25,9 @@ export function useBrowserNotifications() {
         (window as unknown as { webkitAudioContext: typeof AudioContext })
           .webkitAudioContext;
       if (!AudioCtx) return;
+      if (!audioRef.current) audioRef.current = new AudioCtx();
 
-      if (!audioRef.current) {
-        audioRef.current = new AudioCtx();
-      }
       const ctx = audioRef.current;
-      // Play a zero-length silent buffer — this is what unlocks iOS audio
       const buffer = ctx.createBuffer(1, 1, 22050);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
@@ -55,16 +50,18 @@ export function useBrowserNotifications() {
     };
   }, [unlockAudio]);
 
-  // ------------------------------------------------------------------
-  // Request permission — must be called from a user gesture (button tap).
-  // Do NOT call this automatically in a useEffect on iOS.
-  // ------------------------------------------------------------------
+  // Also sync permission if another instance updated it
+  useEffect(() => {
+    if (permission === "unsupported") return;
+    const live = Notification.permission;
+    if (live !== permission) setPermission(live);
+  }, [permission]);
+
   const requestPermission =
     useCallback(async (): Promise<IOSNotificationPermission> => {
-      if (permission === "unsupported") return "unsupported";
-      if (permission === "granted") return "granted";
+      if (!("Notification" in window)) return "unsupported";
+      if (Notification.permission === "granted") return "granted";
 
-      // Unlock audio at the same time since we're inside a gesture
       unlockAudio();
 
       try {
@@ -75,12 +72,8 @@ export function useBrowserNotifications() {
         console.warn("Could not request notification permission:", err);
         return "denied";
       }
-    }, [permission, unlockAudio]);
+    }, [unlockAudio]);
 
-  // ------------------------------------------------------------------
-  // Play chime — separated from notification permission so it works
-  // even when the Notification API is unsupported (regular iOS Safari).
-  // ------------------------------------------------------------------
   const playSound = useCallback(() => {
     try {
       const AudioCtx =
@@ -88,12 +81,9 @@ export function useBrowserNotifications() {
         (window as unknown as { webkitAudioContext: typeof AudioContext })
           .webkitAudioContext;
       if (!AudioCtx) return;
+      if (!audioRef.current) audioRef.current = new AudioCtx();
 
-      if (!audioRef.current) {
-        audioRef.current = new AudioCtx();
-      }
       const ctx = audioRef.current;
-
       const fire = () => {
         const playTone = (
           frequency: number,
@@ -116,13 +106,11 @@ export function useBrowserNotifications() {
           oscillator.start(startTime);
           oscillator.stop(startTime + duration);
         };
-
         const now = ctx.currentTime;
         playTone(880, now, 0.3, 0.3);
         playTone(1100, now + 0.15, 0.4, 0.2);
       };
 
-      // iOS suspends AudioContext when the tab goes to background
       if (ctx.state === "suspended") {
         ctx.resume().then(fire);
       } else {
@@ -133,18 +121,20 @@ export function useBrowserNotifications() {
     }
   }, []);
 
-  // ------------------------------------------------------------------
-  // Main notify — plays sound always, shows popup only when allowed
-  // ------------------------------------------------------------------
   const notify = useCallback(
     (
       title: string,
       options?: { body?: string; icon?: string; url?: string }
     ) => {
-      // Always attempt sound — it works independently of notification permission
+      const livePermission: IOSNotificationPermission = !(
+        "Notification" in window
+      )
+        ? "unsupported"
+        : Notification.permission;
+
       playSound();
 
-      if (permission === "unsupported" || permission !== "granted") return;
+      if (livePermission !== "granted") return;
       if (document.visibilityState === "visible") return;
 
       const notification = new Notification(title, {
@@ -160,7 +150,7 @@ export function useBrowserNotifications() {
         notification.close();
       };
     },
-    [permission, playSound]
+    [playSound]
   );
 
   return {
