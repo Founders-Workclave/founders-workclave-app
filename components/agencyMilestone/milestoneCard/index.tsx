@@ -163,27 +163,34 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
         {/* Admin Action Buttons */}
         <div className={styles.actions}>
           {/* View deliverables — shows on all statuses */}
-          {milestone.deliverables.length > 0 && (
-            <button
-              onClick={() => setShowDeliverables(!showDeliverables)}
-              className={styles.viewDeliverablesButton}
-            >
-              View deliverables
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className={
-                  showDeliverables ? styles.chevronUp : styles.chevronDown
-                }
+          {(() => {
+            const uniqueDeliverables = milestone.deliverables.filter(
+              (deliverable, index, self) =>
+                index ===
+                self.findIndex((d) => d.task.trim() === deliverable.task.trim())
+            );
+            return uniqueDeliverables.length > 0 ? (
+              <button
+                onClick={() => setShowDeliverables(!showDeliverables)}
+                className={styles.viewDeliverablesButton}
               >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-          )}
+                View deliverables
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={
+                    showDeliverables ? styles.chevronUp : styles.chevronDown
+                  }
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+            ) : null;
+          })()}
 
           {normalizedStatus === "in-progress" && (
             <>
@@ -216,12 +223,20 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
         {showDeliverables && milestone.deliverables.length > 0 && (
           <div className={styles.deliverables}>
             <ul className={styles.deliverablesList}>
-              {milestone.deliverables.map((deliverable, index) => (
-                <li key={index} className={styles.deliverableItem}>
-                  <ListIcons />
-                  <span>{deliverable.task}</span>
-                </li>
-              ))}
+              {milestone.deliverables
+                .filter(
+                  (deliverable, index, self) =>
+                    index ===
+                    self.findIndex(
+                      (d) => d.task.trim() === deliverable.task.trim()
+                    )
+                )
+                .map((deliverable, index) => (
+                  <li key={index} className={styles.deliverableItem}>
+                    <ListIcons />
+                    <span>{deliverable.task}</span>
+                  </li>
+                ))}
             </ul>
           </div>
         )}

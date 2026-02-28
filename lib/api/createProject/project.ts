@@ -16,10 +16,6 @@ export class ApiError extends Error {
 }
 
 export const projectService = {
-  /**
-   * Creates a new project with document upload in a single request
-   * Backend now accepts FormData and handles Cloudinary upload internally
-   */
   async createProject(
     projectData: CreateProjectRequest,
     documentFile?: File
@@ -27,25 +23,19 @@ export const projectService = {
     try {
       const token = getAuthToken();
 
-      // Create FormData instead of JSON
       const formData = new FormData();
 
-      // Add all text fields
       formData.append("client", projectData.client);
       formData.append("manager", projectData.manager);
       formData.append("projectName", projectData.projectName);
       formData.append("problemStatement", projectData.problemStatement);
       formData.append("timeline", projectData.timeline);
 
-      // Add document file if exists
       if (documentFile) {
         formData.append("document", documentFile);
       }
 
-      // Add features as JSON string
       formData.append("features", JSON.stringify(projectData.features));
-
-      // Add milestones as JSON string
       formData.append("milestones", JSON.stringify(projectData.milestones));
 
       const headers: HeadersInit = {};
@@ -55,8 +45,6 @@ export const projectService = {
       }
 
       console.log("=== CREATE PROJECT API CALL ===");
-      console.log("Using FormData (multipart/form-data)");
-      console.log("Fields:");
       console.log("  - client:", projectData.client);
       console.log("  - projectName:", projectData.projectName);
       console.log("  - timeline:", projectData.timeline);
@@ -82,12 +70,10 @@ export const projectService = {
         console.error("Error Data:", errorData);
         console.error("=========================");
 
-        // ⚠️ WORKAROUND: Backend returns 500 but project is actually created
         if (response.status === 500) {
           console.warn(
             "⚠️ Backend returned 500, but project was likely created successfully."
           );
-          console.warn("💡 Check your project list to confirm.");
 
           return {
             message: "Project created successfully (backend returned 500)",
@@ -113,23 +99,13 @@ export const projectService = {
       console.log("✅ Project created successfully:", responseData);
       return responseData;
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error)
         throw new ApiError(`Network error: ${error.message}`);
-      }
-
       throw new ApiError("An unknown error occurred while creating project");
     }
   },
 
-  /**
-   * Updates project basic info (name, problem, timeline, features ONLY)
-   * Note: Milestones are NOT updated here - they need separate endpoint calls
-   * Backend expects JSON format for edit endpoint
-   */
   async updateProject(
     projectId: string,
     projectData: CreateProjectRequest,
@@ -138,7 +114,6 @@ export const projectService = {
     try {
       const token = getAuthToken();
 
-      // Edit endpoint uses JSON, not FormData
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
@@ -147,22 +122,18 @@ export const projectService = {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      // Only send project details (not milestones - they're edited separately)
-      // Keep features in {id: number, feature: string} format as backend expects
+      // Features now include action field: "update" | "create" | "delete"
       const body = JSON.stringify({
         projectName: projectData.projectName,
         problemStatement: projectData.problemStatement,
         timeline: projectData.timeline,
-        features: projectData.features, // Keep as [{id: number, feature: string}]
+        features: projectData.features,
       });
 
       console.log("=== UPDATE PROJECT API CALL ===");
       console.log("Project ID:", projectId);
-      console.log("Sending as JSON (project details only)");
       console.log("Full payload:", body);
       console.log("Features:", projectData.features);
-      console.log("Note: Feature IDs must be integers (numbers), not strings");
-      console.log("Note: Milestones are NOT included (edit separately)");
       console.log("==============================");
 
       const response = await fetch(
@@ -188,8 +159,6 @@ export const projectService = {
         );
         console.error("=========================");
 
-        // ⚠️ WORKAROUND: Backend returns 400 "Feature with id X does not belong to this project"
-        // even when the update is successful. This is a known backend bug.
         if (
           response.status === 400 &&
           errorData.error &&
@@ -197,10 +166,8 @@ export const projectService = {
           errorData.error.includes("does not belong to this project")
         ) {
           console.warn(
-            "⚠️ Backend returned 400 with 'does not belong' error, but update was likely successful."
+            "⚠️ Backend returned false 400 error, treating as success."
           );
-          console.warn("💡 Treating as success. Refresh the page to verify.");
-
           return {
             message:
               "Project updated successfully (backend returned false error)",
@@ -216,17 +183,12 @@ export const projectService = {
       }
 
       const responseData = await response.json();
-      console.log(" Project updated successfully:", responseData);
+      console.log("✅ Project updated successfully:", responseData);
       return responseData;
     } catch (error) {
-      if (error instanceof ApiError) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
+      if (error instanceof ApiError) throw error;
+      if (error instanceof Error)
         throw new ApiError(`Network error: ${error.message}`);
-      }
-
       throw new ApiError("An unknown error occurred while updating project");
     }
   },

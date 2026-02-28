@@ -121,36 +121,17 @@ export function transformProjectFormToApiRequest(
     (milestone) => !isMilestoneEmpty(milestone)
   );
 
-  // Filter features and convert to backend format: {id, feature}
+  // Filter features and convert to backend format
   const filteredFeatures = formData.coreFeatures.filter(
     (feature) => feature.trim() !== ""
   );
 
-  // For editing: use existing feature IDs if available
-  // For creating: generate sequential IDs
   const features =
     filteredFeatures.length > 0
       ? filteredFeatures.map((feature, index) => {
-          // Check if we have existing feature IDs (editing mode)
-          let featureId: number;
-
-          console.log(`🔍 Processing feature ${index}:`, feature);
-          console.log(`   - Has featureIds array:`, !!formData.featureIds);
-          console.log(
-            `   - featureIds[${index}]:`,
-            formData.featureIds?.[index]
-          );
-
           if (formData.featureIds && formData.featureIds[index]) {
             const existingIdValue = formData.featureIds[index].id;
 
-            console.log(
-              `   - Existing ID value:`,
-              existingIdValue,
-              `(type: ${typeof existingIdValue})`
-            );
-
-            // Handle both string and number types
             const parsedId =
               typeof existingIdValue === "string"
                 ? parseInt(existingIdValue, 10)
@@ -158,58 +139,72 @@ export function transformProjectFormToApiRequest(
                 ? existingIdValue
                 : NaN;
 
-            console.log(
-              `   - Parsed ID:`,
-              parsedId,
-              `(isNaN: ${isNaN(parsedId)})`
-            );
-
-            // Use existing ID only if it's a valid positive number
             if (!isNaN(parsedId) && parsedId > 0) {
-              featureId = parsedId;
-              console.log(`   ✅ Using existing database ID: ${featureId}`);
-            } else {
-              // Fallback to sequential ID if parsing fails
-              console.warn(
-                `⚠️ Invalid feature ID at index ${index}:`,
-                existingIdValue
-              );
-              featureId = index + 1;
-              console.log(`   ⚠️ Falling back to sequential ID: ${featureId}`);
+              // Existing feature → update
+              return {
+                id: parsedId,
+                feature: feature,
+                action: "update" as const,
+              };
             }
-          } else {
-            // Generate new sequential ID for create mode or missing IDs
-            featureId = index + 1;
-            console.log(
-              `   ℹ️ No existing ID - using sequential ID: ${featureId}`
-            );
           }
 
+          // No existing ID → new feature being added
           return {
-            id: featureId,
             feature: feature,
+            action: "create" as const,
           };
         })
-      : [{ id: 1, feature: "Feature" }]; // Placeholder if empty
+      : [{ feature: "Feature", action: "create" as const }];
 
-  console.log("🔄 Transform - Original features:", formData.coreFeatures);
-  console.log("🔄 Transform - Existing feature IDs:", formData.featureIds);
+  // Handle deleted features — features that had IDs but are no longer in the form
+  const deletedFeatures: { id: number; feature: string; action: "delete" }[] =
+    [];
 
-  // DEBUG: Show what's actually in each featureId
   if (formData.featureIds) {
-    formData.featureIds.forEach((fid, idx) => {
-      console.log(`  🔍 featureIds[${idx}]:`, JSON.stringify(fid));
+    formData.featureIds.forEach((fid, index) => {
+      // If this featureId exists but the corresponding coreFeature is now empty or removed
+      const correspondingFeature = formData.coreFeatures[index];
+      if (!correspondingFeature || correspondingFeature.trim() === "") {
+        const existingIdValue = fid.id;
+        const parsedId =
+          typeof existingIdValue === "string"
+            ? parseInt(existingIdValue, 10)
+            : typeof existingIdValue === "number"
+            ? existingIdValue
+            : NaN;
+
+        if (!isNaN(parsedId) && parsedId > 0) {
+          deletedFeatures.push({
+            id: parsedId,
+            feature: fid.name || "",
+            action: "delete",
+          });
+        }
+      }
     });
   }
 
-  console.log("🔄 Transform - Final features (backend format):", features);
+  const allFeatures = [...features, ...deletedFeatures];
+
+  console.log("🔄 Transform - Original features:", formData.coreFeatures);
+  console.log("🔄 Transform - Existing feature IDs:", formData.featureIds);
+  console.log("🔄 Transform - Final features (with actions):", allFeatures);
+
+  // Transform features to match API format: only id and feature, filter out creates without id
+  const apiFeatures = allFeatures
+    .filter((f) => f.id !== undefined)
+    .map((f) => ({
+      id: f.id,
+      feature: f.feature,
+    }));
 
   return {
     client: formData.clientId,
     projectName: formData.projectName,
     problemStatement: formData.problemStatement,
     timeline: formData.expectedTimeline,
-    features: features,
+    features: apiFeatures,
     milestones: nonEmptyMilestones.map((milestone) => ({
       title: milestone.title,
       description: milestone.description,
@@ -305,7 +300,6 @@ export function transformProjectDetailToFormData(
   console.log("Original project data:", project);
   console.log("🔍 project.keyFeatures:", project.keyFeatures);
 
-  // Log each feature
   if (project.keyFeatures) {
     project.keyFeatures.forEach((f, idx) => {
       console.log(`  Feature ${idx}:`, {
@@ -332,12 +326,11 @@ export function transformProjectDetailToFormData(
   const featuresWithIds =
     project.keyFeatures && project.keyFeatures.length > 0
       ? project.keyFeatures.map((f: ProjectDetailFeature) => ({
-          id: f.id, // Preserve the database ID
+          id: f.id,
           name: f.name,
         }))
       : [];
 
-  // For the form, we just need the feature names as strings
   const features =
     featuresWithIds.length > 0
       ? featuresWithIds.map((f) => f.name).filter((name) => name.trim() !== "")
@@ -351,13 +344,9 @@ export function transformProjectDetailToFormData(
   const milestonesSource =
     project.milestones || project.projectProgress?.milestones || [];
 
-  console.log("Milestones source:", milestonesSource);
-
   const milestones: MilestoneFormData[] =
     milestonesSource.length > 0
       ? milestonesSource.map((m: ProjectDetailMilestone, index: number) => {
-          console.log(`Processing milestone ${index}:`, m);
-
           const deliverables: Deliverable[] = [];
 
           if (
@@ -365,15 +354,19 @@ export function transformProjectDetailToFormData(
             Array.isArray(m.deliverables) &&
             m.deliverables.length > 0
           ) {
-            m.deliverables.forEach((d: any) => {
-              deliverables.push({
-                id: d.id || String(Math.random()),
-                task: d.task || "",
-              });
+            const seen = new Set<string>();
+            m.deliverables.forEach((d: { id: string; task: string }) => {
+              const task = d.task || "";
+              // Deduplicate by task text to prevent doubles from repeated saves
+              if (task.trim() !== "" && !seen.has(task.trim())) {
+                seen.add(task.trim());
+                deliverables.push({
+                  id: d.id || String(Math.random()),
+                  task,
+                });
+              }
             });
           }
-
-          console.log(`Milestone ${index} deliverables:`, deliverables);
 
           return {
             id: m.id || String(index + 1),
@@ -407,7 +400,7 @@ export function transformProjectDetailToFormData(
     problemStatement: project.problemStatement || project.description || "",
     expectedTimeline: project.timeline || project.expectedTimeline || "",
     coreFeatures: features,
-    featureIds: featuresWithIds, // Preserve IDs for editing
+    featureIds: featuresWithIds,
     prdFile: null,
     milestones,
     productManagerId: managerId,
@@ -432,7 +425,7 @@ export function transformApiProjectResponseToFormData(
       apiProject.features && apiProject.features.length > 0
         ? apiProject.features
         : ["", ""],
-    featureIds: undefined, // No IDs in API response
+    featureIds: undefined,
     prdFile: null,
     milestones:
       apiProject.milestones && apiProject.milestones.length > 0

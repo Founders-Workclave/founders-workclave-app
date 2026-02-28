@@ -65,7 +65,6 @@ const EditableMilestoneCard: React.FC<EditableMilestoneCardProps> = ({
     try {
       setIsSaving(true);
 
-      // Validate
       if (!formData.title.trim()) {
         toast.error("Title is required");
         return;
@@ -81,13 +80,31 @@ const EditableMilestoneCard: React.FC<EditableMilestoneCardProps> = ({
         return;
       }
 
-      // Format data for API
+      // Track which original deliverables were removed
+      const originalIds = new Set(
+        (milestone.deliverables || []).map((d) => d.id)
+      );
+      const currentIds = new Set(formData.deliverables.map((d) => d.id));
+
+      const updatedDeliverables = formData.deliverables
+        .filter((d) => d.task.trim() !== "")
+        .map((d) => {
+          if (d.id.startsWith("temp-")) {
+            return { task: d.task, action: "create" as const };
+          }
+          return { id: d.id, task: d.task, action: "update" as const };
+        });
+
+      const deletedDeliverables = (milestone.deliverables || [])
+        .filter((d) => !currentIds.has(d.id))
+        .map((d) => ({ id: d.id, task: d.task, action: "delete" as const }));
+
       const apiData = {
         title: formData.title,
         description: formData.description,
         price: formData.price,
         dueDate: formData.dueDate,
-        deliverables: formData.deliverables,
+        deliverables: [...updatedDeliverables, ...deletedDeliverables],
       };
 
       toast.loading("Updating milestone...", { id: "milestone-update" });
@@ -99,7 +116,7 @@ const EditableMilestoneCard: React.FC<EditableMilestoneCardProps> = ({
       });
 
       setIsEditing(false);
-      onUpdate(); // Trigger parent refresh
+      onUpdate();
     } catch (error) {
       console.error("Error updating milestone:", error);
       const errorMessage =

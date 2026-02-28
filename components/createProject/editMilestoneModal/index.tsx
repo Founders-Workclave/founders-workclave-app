@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styles from "./styles.module.css";
 import {
   milestoneService,
@@ -8,12 +8,12 @@ import {
 import { MilestoneFormData, Deliverable } from "@/types/createPrjects";
 
 interface EditMilestoneModalProps {
-  milestone?: MilestoneFormData; // Optional for create mode
-  projectId?: string; // Required for create mode
+  milestone?: MilestoneFormData;
+  projectId?: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  mode?: "edit" | "create"; // Determines if we're editing or creating
+  mode?: "edit" | "create";
 }
 
 const EditMilestoneModal: React.FC<EditMilestoneModalProps> = ({
@@ -24,41 +24,57 @@ const EditMilestoneModal: React.FC<EditMilestoneModalProps> = ({
   onSuccess,
   mode = "edit",
 }) => {
-  // Default empty milestone for create mode
-  const defaultMilestone: MilestoneFormData = {
-    id: "",
-    number: 1,
-    title: "",
-    description: "",
-    amount: "",
-    dueDate: "",
-    deliverables: [{ id: `temp-${Date.now()}`, task: "" }],
-  };
+  const getDefaultMilestone = useCallback(
+    (): MilestoneFormData => ({
+      id: "",
+      number: 1,
+      title: "",
+      description: "",
+      amount: "",
+      dueDate: "",
+      deliverables: [{ id: `temp-${Date.now()}`, task: "" }],
+    }),
+    []
+  );
 
   const [formData, setFormData] = useState<MilestoneFormData>(
-    milestone || defaultMilestone
+    milestone || getDefaultMilestone()
+  );
+  const [deletedDeliverables, setDeletedDeliverables] = useState<Deliverable[]>(
+    []
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset form when milestone changes or mode changes
   useEffect(() => {
     if (mode === "create") {
-      setFormData(defaultMilestone);
+      setFormData(getDefaultMilestone());
+      setDeletedDeliverables([]);
     } else if (milestone) {
-      setFormData(milestone);
+      // Deduplicate deliverables by task text before setting form data
+      const uniqueDeliverables = milestone.deliverables.filter(
+        (deliverable, index, self) =>
+          index ===
+          self.findIndex((d) => d.task.trim() === deliverable.task.trim())
+      );
+
+      setFormData({
+        ...milestone,
+        deliverables:
+          uniqueDeliverables.length > 0
+            ? uniqueDeliverables
+            : [{ id: `temp-${Date.now()}`, task: "" }],
+      });
+      setDeletedDeliverables([]);
     }
     setError(null);
-  }, [milestone, mode]);
+  }, [milestone, mode, getDefaultMilestone]);
 
   const handleInputChange = (
     field: keyof MilestoneFormData,
     value: string | number
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleDeliverableChange = (id: string, task: string) => {
@@ -82,6 +98,12 @@ const EditMilestoneModal: React.FC<EditMilestoneModalProps> = ({
   };
 
   const removeDeliverable = (id: string) => {
+    const deliverable = formData.deliverables.find((d) => d.id === id);
+
+    if (deliverable && !id.startsWith("temp-")) {
+      setDeletedDeliverables((prev) => [...prev, deliverable]);
+    }
+
     setFormData((prev) => ({
       ...prev,
       deliverables: prev.deliverables.filter((d) => d.id !== id),
@@ -94,35 +116,52 @@ const EditMilestoneModal: React.FC<EditMilestoneModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      // Prepare data for API
-      const payload = {
-        title: formData.title,
-        description: formData.description,
-        price: parseFloat(formData.amount) || 0,
-        dueDate: formData.dueDate,
-        deliverables: formData.deliverables
-          .filter((d) => d.task.trim() !== "") // Filter out empty deliverables
-          .map((d) => ({
-            id: d.id,
-            task: typeof d === "string" ? d : d.task,
-          })),
-      };
+      const validDeliverables = formData.deliverables.filter(
+        (d) => d.task.trim() !== ""
+      );
 
       if (mode === "create") {
-        // Create new milestone
         if (!projectId) {
           throw new Error("Project ID is required for creating milestones");
         }
-        await milestoneService.createMilestone(projectId, payload);
+
+        await milestoneService.createMilestone(projectId, {
+          title: formData.title,
+          description: formData.description,
+          price: parseFloat(formData.amount) || 0,
+          dueDate: formData.dueDate,
+          deliverables: validDeliverables.map((d) => ({
+            task: d.task,
+            action: "create" as const,
+          })),
+        });
       } else {
-        // Edit existing milestone
         if (!milestone?.id) {
           throw new Error("Milestone ID is required for editing");
         }
-        await milestoneService.editMilestone(milestone.id, payload);
+
+        const updatedDeliverables = validDeliverables.map((d) => {
+          if (d.id.startsWith("temp-")) {
+            return { task: d.task, action: "create" as const };
+          }
+          return { id: d.id, task: d.task, action: "update" as const };
+        });
+
+        const deletedPayload = deletedDeliverables.map((d) => ({
+          id: d.id,
+          task: d.task,
+          action: "delete" as const,
+        }));
+
+        await milestoneService.editMilestone(milestone.id, {
+          title: formData.title,
+          description: formData.description,
+          price: parseFloat(formData.amount) || 0,
+          dueDate: formData.dueDate,
+          deliverables: [...updatedDeliverables, ...deletedPayload],
+        });
       }
 
-      // Success
       onSuccess();
       onClose();
     } catch (err) {
