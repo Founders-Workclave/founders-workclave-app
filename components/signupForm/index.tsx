@@ -32,7 +32,6 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Handle successful registration
   useEffect(() => {
     if (success) {
       console.log("✅ Agency signup successful, redirecting...");

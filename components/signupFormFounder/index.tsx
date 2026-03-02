@@ -23,6 +23,7 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
     lastName: "",
     email: "",
     phoneNumber: "",
+    company: "",
     countryCode: "+234",
     password: "",
     agreedToTerms: false,
@@ -203,8 +204,8 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
               disabled={isLoading}
             >
               {countryCodes.map((country) => (
-                <option key={country.country} value={country.code}>
-                  {country.country} ({country.code})
+                <option key={country.code} value={country.code}>
+                  {country.code}
                 </option>
               ))}
             </select>

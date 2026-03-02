@@ -303,6 +303,7 @@ export interface SignupFounder {
   lastName: string;
   email: string;
   phoneNumber: string;
+  company?: string;
   countryCode: string;
   password: string;
   agreedToTerms: boolean;

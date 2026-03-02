@@ -41,16 +41,21 @@ export const useSignup = (options?: UseSignupOptions): UseSignupReturn => {
         firstName: String(data.firstName || ""),
         lastName: String(data.lastName || ""),
         email: String(data.email || ""),
+        company: String(data.company || ""),
         phoneNumber: String(data.phoneNumber || ""),
         countryCode: String(data.countryCode || "+234"),
         password: String(data.password || ""),
-        userType: userType, // Pass userType to API
+        userType: userType,
       };
 
       console.log("📤 Signup payload:", {
         email: payload.email,
         userType: payload.userType,
+        company: payload.company,
         hasPassword: !!payload.password,
+        phoneNumber: payload.phoneNumber, // ← add this
+        countryCode: payload.countryCode, // ← add this
+        firstName: payload.firstName, // ← add this
       });
 
       const response = await authApi.register(payload);
