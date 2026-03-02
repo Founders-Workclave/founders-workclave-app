@@ -199,13 +199,13 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
 
         {/* Company Name */}
         <div className={styles.inputGroup}>
-          <label htmlFor="companyName" className={styles.label}>
+          <label htmlFor="company" className={styles.label}>
             Company name
           </label>
           <input
             type="text"
-            id="companyName"
-            name="companyName"
+            id="company"
+            name="company"
             value={formData.company}
             onChange={handleInputChange}
             placeholder="Enter company name"
