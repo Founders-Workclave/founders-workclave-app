@@ -1,14 +1,10 @@
-// ============================================================================
-// FILE: hooks/userSignup.ts - COMPLETE FILE (Updated)
-// ============================================================================
-
 import { useState } from "react";
 import { authApi } from "@/lib/api/auth";
 import { SignupFounder } from "@/utils/data";
 import toast from "react-hot-toast";
 
 interface UseSignupOptions {
-  userType?: string; // 'agency' | 'founder'
+  userType?: string;
 }
 
 interface UseSignupReturn {

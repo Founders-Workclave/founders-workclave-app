@@ -59,6 +59,7 @@
   font-family: inherit;
   cursor: pointer;
   border: 0px;
+  width: 150px;
 }
 
 .countryCodeSelect:focus {

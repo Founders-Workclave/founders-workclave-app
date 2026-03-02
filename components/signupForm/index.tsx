@@ -23,7 +23,7 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
     firstName: "",
     lastName: "",
     email: "",
-    companyName: "",
+    company: "",
     phoneNumber: "",
     countryCode: "+234",
     password: "",
@@ -91,7 +91,7 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
       return;
     }
 
-    if (!formData.companyName.trim()) {
+    if (!formData.company.trim()) {
       setValidationError("Company name is required");
       return;
     }
@@ -115,7 +115,7 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
 
     console.log("🔐 Submitting agency signup:", {
       email: formData.email,
-      companyName: formData.companyName,
+      companyName: formData.company,
       userType: "agency",
     });
 
@@ -206,7 +206,7 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
             type="text"
             id="companyName"
             name="companyName"
-            value={formData.companyName}
+            value={formData.company}
             onChange={handleInputChange}
             placeholder="Enter company name"
             className={styles.input}

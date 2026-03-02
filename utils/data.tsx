@@ -291,7 +291,7 @@ export interface SignupFormData {
   firstName: string;
   lastName: string;
   email: string;
-  companyName: string; // Optional for agency only
+  company: string;
   phoneNumber: string;
   countryCode: string;
   password: string;
