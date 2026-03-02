@@ -131,7 +131,6 @@ export const profileService = {
         role: existingUser?.role || data.role,
         userType: data.user || existingUser?.userType,
         username: existingUser?.username || data.username,
-        // ✅ Check companyLogo first (uploaded logo), then image (profile pic)
         profileImage: toAbsoluteUrl(
           data.companyLogo ||
             data.image ||

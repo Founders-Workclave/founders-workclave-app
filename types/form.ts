@@ -3,7 +3,7 @@ export interface SignupFormData {
   lastName: string;
   fullName: string;
   email: string;
-  companyName: string;
+  company: string;
   phoneNumber: string;
   countryCode: string;
   password: string;

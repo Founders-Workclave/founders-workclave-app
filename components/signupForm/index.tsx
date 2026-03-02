@@ -115,7 +115,7 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
 
     console.log("🔐 Submitting agency signup:", {
       email: formData.email,
-      companyName: formData.company,
+      company: formData.company,
       userType: "agency",
     });
 
