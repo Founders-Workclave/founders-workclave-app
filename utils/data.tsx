@@ -460,16 +460,6 @@ export const pmMenuItems = [
     link: "/pm/messages",
   },
   {
-    icon: <Wallets />,
-    label: "Wallets",
-    link: "/pm/wallets",
-  },
-  {
-    icon: <Payments />,
-    label: "Payments",
-    link: "/pm/payments",
-  },
-  {
     icon: <Settings />,
     label: "Settings",
     link: "/pm/settings",

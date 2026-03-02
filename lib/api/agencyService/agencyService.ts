@@ -127,9 +127,8 @@ export const agencyService = {
     projectId: string,
     prdId: number
   ): Promise<{ message: string }> {
-    const id = projectId.trim();
-    console.log("🗑️ Deleting PRD:", prdId, "for project:", id);
-    return apiClient.delete(`/agency/project/${id}/prds/${prdId}/`);
+    console.log("🗑️ Deleting PRD:", prdId);
+    return apiClient.delete(`/agency/project/prd/${prdId}/delete/`);
   },
 
   /**

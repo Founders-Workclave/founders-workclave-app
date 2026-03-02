@@ -40,9 +40,22 @@ const PMLayout: React.FC<PMLayoutProps> = ({
   const isAuthenticatedUser = isAuthenticated();
   const isAuthorizedUser = isPMUser();
 
-  // ✅ Fetch full profile on mount to get profile image
   useEffect(() => {
     const loadProfileImage = async () => {
+      // ✅ If profile data already exists in cache/storage, use it directly
+      // without making a network request
+      const cachedImage = getUserProfileImage();
+      const cachedName = getUserDisplayName();
+      const cachedInitials = getUserInitials();
+
+      if (cachedName) {
+        setProfileImage(cachedImage);
+        setDisplayName(cachedName);
+        setInitials(cachedInitials);
+        return; // ✅ Skip fetch — data already available
+      }
+
+      // Only fetch if nothing is cached yet (first load)
       try {
         await profileService.fetchUserProfile();
         setProfileImage(getUserProfileImage());
@@ -56,9 +69,9 @@ const PMLayout: React.FC<PMLayoutProps> = ({
     };
 
     loadProfileImage();
-  }, []);
+  }, []); // ✅ Empty deps — runs once on mount, skips if cached
 
-  // ✅ Listen for profile updates
+  // Listen for profile updates (e.g. user edits their profile)
   useEffect(() => {
     const handleProfileUpdate = () => {
       setProfileImage(getUserProfileImage());
@@ -144,26 +157,8 @@ const PMLayout: React.FC<PMLayoutProps> = ({
             </div>
           </div>
           <div className={styles.menuGroup1}>
-            <h4>Financial</h4>
-            <div className={styles.linkContain}>
-              {menu.slice(2, 4).map((items, index) => {
-                return (
-                  <div
-                    key={index}
-                    className={`${styles.menuListing} ${
-                      pathname.startsWith(items.link) ? styles.active : ""
-                    }`}
-                  >
-                    {items.icon}
-                    <Link href={items.link}>{items.label}</Link>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          <div className={styles.menuGroup1}>
             <h4>Support</h4>
-            {menu.slice(4, 6).map((items, index) => {
+            {menu.slice(2, 4).map((items, index) => {
               return (
                 <div
                   key={index}

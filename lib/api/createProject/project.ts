@@ -70,24 +70,6 @@ export const projectService = {
         console.error("Error Data:", errorData);
         console.error("=========================");
 
-        if (response.status === 500) {
-          console.warn(
-            "⚠️ Backend returned 500, but project was likely created successfully."
-          );
-
-          return {
-            message: "Project created successfully (backend returned 500)",
-            project: {
-              id: `temp-${Date.now()}`,
-              projectName: projectData.projectName,
-              client: projectData.client,
-              manager: projectData.manager,
-              status: "created",
-              createdAt: new Date().toISOString(),
-            },
-          };
-        }
-
         throw new ApiError(
           errorData.message || errorData.error || "Failed to create project",
           response.status,

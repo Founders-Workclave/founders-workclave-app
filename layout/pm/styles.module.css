@@ -344,6 +344,15 @@
   }
 }
 
+.profileImageWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: 100px;
+  border: 2px solid #e5e7eb;
+  overflow: hidden;
+}
+
 .profileImageWrapper > img {
   border-radius: 100px;
+  object-fit: cover;
 }

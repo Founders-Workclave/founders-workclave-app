@@ -60,13 +60,13 @@ const ManagerMilestonesPage: React.FC<ManagerMilestonesPageProps> = ({
     setSelectedMilestone(null);
   };
 
-  const handleModalSuccess = (): void => {
+  const handleModalSuccess = async (): Promise<void> => {
     toast.success(
       modalMode === "create"
         ? "Milestone created successfully"
         : "Milestone updated successfully"
     );
-    refetch();
+    await refetch();
   };
 
   const handleMarkComplete = async (

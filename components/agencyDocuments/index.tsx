@@ -44,24 +44,16 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
   };
 
   const handleDelete = async (prdId: number) => {
-    if (!confirm("Are you sure you want to delete this document?")) {
-      return;
-    }
+    if (!confirm("Are you sure you want to delete this document?")) return;
 
     setDeletingId(prdId);
     try {
       await deletePRD(prdId);
     } catch (error) {
       console.error("Failed to delete PRD:", error);
-      // Error handling could show a toast notification here
     } finally {
       setDeletingId(null);
     }
-  };
-
-  const handleUpload = () => {
-    console.log("Open upload modal");
-    // TODO: Implement upload modal/functionality
   };
 
   if (isLoading) {
@@ -93,7 +85,11 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
       <div className={styles.wrapper}>
         <div className={styles.header}>
           <h2>Documents</h2>
-          <button className={styles.uploadBtn} onClick={handleUpload}>
+          {/* ✅ Fixed: was calling handleUpload (console.log only) instead of opening modal */}
+          <button
+            className={styles.uploadBtn}
+            onClick={() => setIsUploadModalOpen(true)}
+          >
             <Plus size={18} />
             Upload document
           </button>
@@ -101,13 +97,20 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
         <div className={styles.emptyState}>
           <p>No documents found for this project.</p>
         </div>
+
+        {/* ✅ Fixed: modal was missing from empty state branch */}
+        <AgencyUploadPRDModal
+          isOpen={isUploadModalOpen}
+          onClose={() => setIsUploadModalOpen(false)}
+          onSuccess={refetch}
+          projectId={projectId}
+        />
       </div>
     );
   }
 
   return (
     <div className={styles.wrapper}>
-      {/* Header */}
       <div className={styles.header}>
         <h2>Documents</h2>
         <button
@@ -119,7 +122,6 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
         </button>
       </div>
 
-      {/* List */}
       <div className={styles.list}>
         {prds.map((prd) => (
           <div key={prd.id} className={styles.card}>
@@ -127,7 +129,6 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
               <div className={styles.iconBox}>
                 <FileText size={18} />
               </div>
-
               <div>
                 <p className={styles.title}>{prd.fileName}</p>
                 <p className={styles.meta}>
@@ -170,6 +171,7 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
           </div>
         ))}
       </div>
+
       <AgencyUploadPRDModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}

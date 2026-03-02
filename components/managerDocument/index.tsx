@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import styles from "@/components/agencyDocuments/styles.module.css";
-import { Eye, Download, FileText, Plus } from "lucide-react";
+import { Eye, Download, FileText, Plus, Trash2 } from "lucide-react";
 import { useManagerPRDs } from "@/hooks/useManagerPrd";
 import {
   getGoogleDriveDownloadUrl,
@@ -16,8 +16,11 @@ interface ManagerDocumentsProps {
 }
 
 const ManagerDocuments: React.FC<ManagerDocumentsProps> = ({ projectId }) => {
-  const { prds, isLoading, error, refetch } = useManagerPRDs({ projectId });
+  const { prds, isLoading, error, refetch, deletePRD } = useManagerPRDs({
+    projectId,
+  });
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     console.log("📄 ManagerDocuments - projectId:", projectId);
@@ -40,6 +43,19 @@ const ManagerDocuments: React.FC<ManagerDocumentsProps> = ({ projectId }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDelete = async (prdId: number) => {
+    if (!confirm("Are you sure you want to delete this document?")) return;
+
+    setDeletingId(prdId);
+    try {
+      await deletePRD(prdId);
+    } catch (error) {
+      console.error("Failed to delete PRD:", error);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   if (isLoading) {
@@ -95,7 +111,6 @@ const ManagerDocuments: React.FC<ManagerDocumentsProps> = ({ projectId }) => {
 
   return (
     <div className={styles.wrapper}>
-      {/* Header */}
       <div className={styles.header}>
         <h2>Documents</h2>
         <button
@@ -107,7 +122,6 @@ const ManagerDocuments: React.FC<ManagerDocumentsProps> = ({ projectId }) => {
         </button>
       </div>
 
-      {/* List */}
       <div className={styles.list}>
         {prds.map((prd) => (
           <div key={prd.id} className={styles.card}>
@@ -115,7 +129,6 @@ const ManagerDocuments: React.FC<ManagerDocumentsProps> = ({ projectId }) => {
               <div className={styles.iconBox}>
                 <FileText size={18} />
               </div>
-
               <div>
                 <p className={styles.title}>{prd.fileName}</p>
                 <p className={styles.meta}>
@@ -141,6 +154,18 @@ const ManagerDocuments: React.FC<ManagerDocumentsProps> = ({ projectId }) => {
                 title="Download document"
               >
                 <Download size={18} />
+              </button>
+              <button
+                className={styles.delete}
+                onClick={() => handleDelete(prd.id)}
+                disabled={deletingId === prd.id}
+                title="Delete document"
+              >
+                {deletingId === prd.id ? (
+                  <span style={{ fontSize: "12px" }}>...</span>
+                ) : (
+                  <Trash2 size={18} />
+                )}
               </button>
             </div>
           </div>
