@@ -12,7 +12,7 @@ import {
 import AllLoading from "@/layout/Loader";
 
 interface ProfileData {
-  companyName: string;
+  company: string;
   firstName: string;
   lastName: string;
   phoneNumber: string;
@@ -22,7 +22,7 @@ interface ProfileData {
 
 const ProfileTab: React.FC = () => {
   const [profileData, setProfileData] = useState<ProfileData>({
-    companyName: "",
+    company: "",
     firstName: "",
     lastName: "",
     phoneNumber: "",
@@ -81,7 +81,7 @@ const ProfileTab: React.FC = () => {
           }
 
           console.log("Setting profile data with:", {
-            companyName: user.companyName || "",
+            company: user.company || "",
             firstName: user.firstName || "",
             lastName: user.lastName || "",
             phoneNumber: phoneNumber,
@@ -90,7 +90,7 @@ const ProfileTab: React.FC = () => {
           });
 
           setProfileData({
-            companyName: user.companyName || "",
+            company: user.company || "",
             firstName: user.firstName || "",
             lastName: user.lastName || "",
             phoneNumber: phoneNumber,
@@ -215,7 +215,7 @@ const ProfileTab: React.FC = () => {
         lastName: profileData.lastName,
         email: profileData.email,
         phone: fullPhoneNumber,
-        company: profileData.companyName,
+        company: profileData.company,
       });
 
       // Update local state with the updated profile
@@ -296,8 +296,8 @@ const ProfileTab: React.FC = () => {
 
       <FormInput
         label="Company name"
-        value={profileData.companyName}
-        onChange={(value) => handleChange("companyName", value)}
+        value={profileData.company}
+        onChange={(value) => handleChange("company", value)}
         placeholder="Enter company name"
       />
 

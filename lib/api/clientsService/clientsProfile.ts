@@ -18,7 +18,7 @@ export interface UserProfile {
   role: "admin" | "user" | "clients" | "manager";
   userType?: string;
   username: string;
-  companyName?: string;
+  company?: string;
   phoneNumber?: string;
   countryCode?: string;
   profileImage?: string;
@@ -144,7 +144,7 @@ export const profileService = {
             ? `${data.firstName} ${data.lastName}`
             : existingUser?.name,
         email: data.email || existingUser?.email,
-        companyName: data.companyName || data.company,
+        company: data.company || data.company,
         phoneNumber: phoneNumber || existingUser?.phoneNumber || "",
         id: existingUser?.id || data.id,
         role: existingUser?.role || data.role,
@@ -284,7 +284,7 @@ export const profileService = {
               }`
             : undefined,
         email: responseData.email || updates.email,
-        companyName: responseData.company || updates.company,
+        company: responseData.company || updates.company,
         phoneNumber: cleanPhone,
       };
 

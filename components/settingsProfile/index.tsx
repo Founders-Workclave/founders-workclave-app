@@ -14,7 +14,7 @@ import PasswordChangeComponent from "../changePassword";
 import ProfileUploadWithService from "../agencySettings/imageUpload/profileUpload";
 
 interface ProfileData {
-  companyName: string;
+  company: string;
   firstName: string;
   lastName: string;
   phoneNumber: string;
@@ -24,7 +24,7 @@ interface ProfileData {
 
 const SettingsPage: React.FC = () => {
   const [profileData, setProfileData] = useState<ProfileData>({
-    companyName: "",
+    company: "",
     firstName: "",
     lastName: "",
     phoneNumber: "",
@@ -79,7 +79,7 @@ const SettingsPage: React.FC = () => {
           }
 
           console.log("Setting profile data with:", {
-            companyName: user.companyName || "",
+            company: user.company || "",
             firstName: user.firstName || "",
             lastName: user.lastName || "",
             phoneNumber: phoneNumber,
@@ -88,7 +88,7 @@ const SettingsPage: React.FC = () => {
           });
 
           setProfileData({
-            companyName: user.companyName || "",
+            company: user.company || "",
             firstName: user.firstName || "",
             lastName: user.lastName || "",
             phoneNumber: phoneNumber,
@@ -139,7 +139,7 @@ const SettingsPage: React.FC = () => {
         lastName: profileData.lastName,
         email: profileData.email,
         phone: fullPhoneNumber,
-        company: profileData.companyName,
+        company: profileData.company,
       });
 
       // Update local state with the updated profile
