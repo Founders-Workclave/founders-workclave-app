@@ -74,9 +74,14 @@ export const useManagerMilestones = (
       const data = await response.json();
       console.log("📦 Manager milestones received:", data);
 
-      const sorted: Milestone[] = (data.milestones || []).sort(
-        (a: Milestone, b: Milestone) => a.order - b.order
-      );
+      const sorted: Milestone[] = (data.milestones || [])
+        .sort((a: Milestone, b: Milestone) => a.order - b.order)
+        .map((milestone: Milestone) => ({
+          ...milestone,
+          deliverables: milestone.deliverables.filter(
+            (d, index, self) => index === self.findIndex((x) => x.id === d.id)
+          ),
+        }));
 
       setMilestones(sorted);
     } catch (err) {
@@ -106,7 +111,6 @@ export const useManagerMilestones = (
         );
       }
 
-      // Optimistically update the milestone status in state
       setMilestones((prev) =>
         prev.map((m) =>
           String(m.id) === milestoneId

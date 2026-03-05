@@ -33,14 +33,12 @@ const AdminMilestonesPage: React.FC<AdminMilestonesPageProps> = ({
     initialMilestones,
   });
 
-  // Modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedMilestone, setSelectedMilestone] =
     useState<MilestoneFormData | null>(null);
   const [modalMode, setModalMode] = useState<"edit" | "create">("edit");
 
   const handleEditMilestone = (milestone: Milestone): void => {
-    // Transform Milestone to MilestoneFormData
     const formData: MilestoneFormData = {
       id: milestone.id.toString(),
       number: milestone.number || 1,
@@ -80,7 +78,7 @@ const AdminMilestonesPage: React.FC<AdminMilestonesPageProps> = ({
         ? "Milestone created successfully"
         : "Milestone updated successfully"
     );
-    refetch(); // Refetch milestones after successful edit
+    refetch();
   };
 
   const handleMarkComplete = async (
@@ -145,7 +143,6 @@ const AdminMilestonesPage: React.FC<AdminMilestonesPageProps> = ({
           </button>
         </div>
 
-        {/* Create Milestone Modal */}
         <EditMilestoneModal
           projectId={projectId}
           isOpen={isEditModalOpen}
@@ -168,10 +165,11 @@ const AdminMilestonesPage: React.FC<AdminMilestonesPageProps> = ({
       </div>
 
       <div className={styles.milestonesTimeline}>
-        {milestones.map((milestone) => (
+        {milestones.map((milestone, index) => (
           <AdminMilestoneCard
             key={milestone.id}
             milestone={milestone}
+            isLast={index === milestones.length - 1}
             onEdit={() => handleEditMilestone(milestone)}
             onMarkComplete={handleMarkComplete}
             onUpdateProgress={handleUpdateProgress}
@@ -179,7 +177,6 @@ const AdminMilestonesPage: React.FC<AdminMilestonesPageProps> = ({
         ))}
       </div>
 
-      {/* Edit/Create Milestone Modal */}
       <EditMilestoneModal
         milestone={
           modalMode === "edit" ? selectedMilestone ?? undefined : undefined

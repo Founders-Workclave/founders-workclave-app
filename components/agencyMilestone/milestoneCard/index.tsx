@@ -13,6 +13,7 @@ import ListIcons from "@/svgs/listIcons";
 
 interface AdminMilestoneCardProps {
   milestone: Milestone;
+  isLast?: boolean;
   onEdit?: (milestone: Milestone) => void;
   onMarkComplete?: (milestoneId: string | number) => Promise<void>;
   onUpdateProgress?: (
@@ -23,6 +24,7 @@ interface AdminMilestoneCardProps {
 
 const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
   milestone,
+  isLast = false,
   onEdit,
   onMarkComplete,
 }) => {
@@ -97,7 +99,7 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
     <div className={styles.container}>
       <div className={styles.iconLine}>
         <div className={styles.iconWrapper}>{getStatusIcon()}</div>
-        {milestone.order < 7 && <div className={styles.connectingLine} />}
+        {!isLast && <div className={styles.connectingLine} />}
       </div>
 
       <div className={styles.content}>
@@ -160,9 +162,7 @@ const AdminMilestoneCard: React.FC<AdminMilestoneCardProps> = ({
           </div>
         )}
 
-        {/* Admin Action Buttons */}
         <div className={styles.actions}>
-          {/* View deliverables — shows on all statuses */}
           {(() => {
             const uniqueDeliverables = milestone.deliverables.filter(
               (deliverable, index, self) =>

@@ -73,16 +73,20 @@ export const useClientMilestones = (
       }
 
       const data = await response.json();
-      console.log("📦 Manager milestones received:", data);
+      console.log("📦 Client milestones received:", data);
 
-      // Sort by order ascending
-      const sorted: Milestone[] = (data.milestones || []).sort(
-        (a: Milestone, b: Milestone) => a.order - b.order
-      );
+      const sorted: Milestone[] = (data.milestones || [])
+        .sort((a: Milestone, b: Milestone) => a.order - b.order)
+        .map((milestone: Milestone) => ({
+          ...milestone,
+          deliverables: milestone.deliverables.filter(
+            (d, index, self) => index === self.findIndex((x) => x.id === d.id)
+          ),
+        }));
 
       setMilestones(sorted);
     } catch (err) {
-      console.error("💥 Error fetching manager milestones:", err);
+      console.error("💥 Error fetching client milestones:", err);
       setError(
         err instanceof Error ? err.message : "Failed to fetch milestones"
       );

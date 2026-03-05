@@ -1,4 +1,5 @@
 export interface MilestoneDeliverable {
+  id: unknown;
   task: string;
 }
 

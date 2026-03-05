@@ -148,6 +148,7 @@ const ManagerMilestonesPage: React.FC<ManagerMilestonesPageProps> = ({
             milestone={milestone}
             onEdit={() => handleEditMilestone(milestone)}
             onMarkComplete={handleMarkComplete}
+            isLast={milestone.order === milestones.length}
           />
         ))}
       </div>

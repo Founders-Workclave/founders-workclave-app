@@ -13,10 +13,12 @@ import ListIcons from "@/svgs/listIcons";
 
 interface ManagerMilestoneCardProps {
   milestone: Milestone;
+  isLast?: boolean;
 }
 
 const ClientMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
   milestone,
+  isLast = false,
 }) => {
   const [showDeliverables, setShowDeliverables] = useState(false);
 
@@ -69,7 +71,7 @@ const ClientMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
     <div className={styles.container}>
       <div className={styles.iconLine}>
         <div className={styles.iconWrapper}>{getStatusIcon()}</div>
-        {milestone.order < 7 && <div className={styles.connectingLine} />}
+        {!isLast && <div className={styles.connectingLine} />}
       </div>
 
       <div className={styles.content}>

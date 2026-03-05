@@ -168,9 +168,7 @@ const ClientsProjectDetailsPage: React.FC = () => {
             <span className={styles.statLabel}>
               <Timeline /> Timeline
             </span>
-            <span className={styles.statValue}>
-              {project.timeline} Month(s)
-            </span>
+            <span className={styles.statValue}>{project.timeline} Months</span>
             <span className={styles.statSubtext}>
               Started {project.startedAgo}
             </span>

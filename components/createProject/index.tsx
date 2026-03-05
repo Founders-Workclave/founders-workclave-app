@@ -58,32 +58,26 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Initialize formData based on mode and initialData
   const [formData, setFormData] = useState<ProjectFormData>(() => {
     if (mode === "edit" && initialData) {
-      console.log("🎯 Initializing edit mode with data:", initialData);
       return initialData;
     }
     return getDefaultFormData();
   });
 
-  // Update form data when modal opens in edit mode or initialData changes
   useEffect(() => {
     if (isOpen) {
       if (mode === "edit" && initialData) {
-        console.log("🔄 Edit mode - Setting form data:", initialData);
         setFormData(initialData);
       } else if (mode === "create") {
-        console.log("✨ Create mode - Using default data");
         setFormData(getDefaultFormData());
       }
     }
   }, [isOpen, mode, initialData]);
 
-  // Reset to initial step when modal opens
   useEffect(() => {
     if (isOpen) {
-      setCurrentStep(initialStep); // Use initialStep instead of hardcoded 1
+      setCurrentStep(initialStep);
       setSubmitError(null);
     }
   }, [isOpen, initialStep]);
@@ -105,9 +99,6 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
       setIsSubmitting(true);
       setSubmitError(null);
 
-      console.log("📤 Submitting form data:", formData);
-
-      // Validate form data
       const validation = validateProjectForm(formData);
       if (!validation.isValid) {
         setSubmitError(validation.errors.join(", "));
@@ -115,78 +106,62 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
         return;
       }
 
-      // Transform form data to API request format
       const apiRequest = transformProjectFormToApiRequest(formData);
-      console.log("📦 API Request payload:", apiRequest);
-
-      // Enhanced debugging for features
-      console.log("🔍 DEBUG - Features detail:");
-      console.log("  - formData.coreFeatures:", formData.coreFeatures);
-      console.log("  - formData.featureIds:", formData.featureIds);
-      console.log("  - apiRequest.features:", apiRequest.features);
-      console.log("  - Features validation:");
-      apiRequest.features.forEach((f, i) => {
-        console.log(`    Feature ${i}:`, {
-          id: f.id,
-          idType: typeof f.id,
-          isNumber: typeof f.id === "number",
-          isValidNumber: !isNaN(Number(f.id)) && Number(f.id) > 0,
-          feature: f.feature,
-        });
-      });
-
-      // Determine if we're creating or updating
       const isEditMode = mode === "edit" && projectId;
 
       if (isEditMode) {
-        // UPDATE MODE: Only update project basic info (not milestones)
         toast.loading("Updating project details...", { id: "project-action" });
-
-        const response = await projectService.updateProject(
+        await projectService.updateProject(
           projectId,
           apiRequest,
           formData.prdFile || undefined
         );
-
         toast.success("Project details updated successfully!", {
           id: "project-action",
           duration: 4000,
         });
-
-        console.log("Project updated successfully:", response);
       } else {
-        // CREATE MODE: Create project with all data including milestones
         toast.loading("Creating project...", { id: "project-action" });
-        const response = await projectService.createProject(
+        await projectService.createProject(
           apiRequest,
           formData.prdFile || undefined
         );
-
         toast.success("🎉 Project created successfully!", {
           id: "project-action",
           duration: 4000,
         });
-
-        console.log("Project created successfully:", response);
       }
 
-      // Call parent onSubmit callback
       onSubmit(formData);
-
-      // Close modal
       onClose();
-
-      // Reset form
       resetForm();
     } catch (error) {
       console.error(
         `Error ${mode === "edit" ? "updating" : "creating"} project:`,
         error
       );
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : `Failed to ${mode === "edit" ? "update" : "create"} project`;
+
+      // Extract a clean message — avoid showing raw Django HTML error pages
+      let errorMessage = `Failed to ${
+        mode === "edit" ? "update" : "create"
+      } project`;
+
+      if (error instanceof Error) {
+        const msg = error.message;
+        if (
+          msg.trim().startsWith("<!DOCTYPE") ||
+          msg.trim().startsWith("<html")
+        ) {
+          // Backend returned an HTML traceback — show a friendly message instead
+          errorMessage =
+            mode === "edit"
+              ? "Unable to update project. Please try again or contact support."
+              : "Unable to create project. Please try again or contact support.";
+        } else {
+          errorMessage = msg;
+        }
+      }
+
       setSubmitError(errorMessage);
       toast.error(errorMessage, { id: "project-action" });
     } finally {
@@ -196,17 +171,12 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
 
   const resetForm = () => {
     setFormData(getDefaultFormData());
-    setCurrentStep(initialStep); // Reset to initialStep
+    setCurrentStep(initialStep);
     setSubmitError(null);
   };
 
   const updateFormData = (updates: Partial<ProjectFormData>) => {
-    console.log("🔧 Updating form data with:", updates);
-    setFormData((prev) => {
-      const updated = { ...prev, ...updates };
-      console.log("📋 Updated form data:", updated);
-      return updated;
-    });
+    setFormData((prev) => ({ ...prev, ...updates }));
   };
 
   const getModalTitle = () => {

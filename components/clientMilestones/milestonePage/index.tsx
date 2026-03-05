@@ -60,8 +60,12 @@ const ClientMilestonesPage: React.FC<ManagerMilestonesPageProps> = ({
       </div>
 
       <div className={styles.milestonesTimeline}>
-        {milestones.map((milestone) => (
-          <ClientMilestoneCard key={milestone.id} milestone={milestone} />
+        {milestones.map((milestone, index) => (
+          <ClientMilestoneCard
+            key={milestone.id}
+            milestone={milestone}
+            isLast={index === milestones.length - 1}
+          />
         ))}
       </div>
     </div>

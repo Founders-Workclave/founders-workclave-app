@@ -24,7 +24,6 @@ export const projectService = {
       const token = getAuthToken();
 
       const formData = new FormData();
-
       formData.append("client", projectData.client);
       formData.append("manager", projectData.manager);
       formData.append("projectName", projectData.projectName);
@@ -39,20 +38,7 @@ export const projectService = {
       formData.append("milestones", JSON.stringify(projectData.milestones));
 
       const headers: HeadersInit = {};
-
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      console.log("=== CREATE PROJECT API CALL ===");
-      console.log("  - client:", projectData.client);
-      console.log("  - projectName:", projectData.projectName);
-      console.log("  - timeline:", projectData.timeline);
-      console.log("  - document:", documentFile ? documentFile.name : "none");
-      console.log("  - features:", projectData.features);
-      console.log("  - milestones:", projectData.milestones.length, "items");
-      console.log("  - manager:", projectData.manager);
-      console.log("==============================");
+      if (token) headers.Authorization = `Bearer ${token}`;
 
       const response = await fetch(`${API_BASE_URL}/agency/create-project/`, {
         method: "POST",
@@ -65,11 +51,6 @@ export const projectService = {
           .json()
           .catch(() => ({ message: "Failed to create project" }));
 
-        console.error("=== API ERROR RESPONSE ===");
-        console.error("Status:", response.status);
-        console.error("Error Data:", errorData);
-        console.error("=========================");
-
         throw new ApiError(
           errorData.message || errorData.error || "Failed to create project",
           response.status,
@@ -78,7 +59,6 @@ export const projectService = {
       }
 
       const responseData = await response.json();
-      console.log("✅ Project created successfully:", responseData);
       return responseData;
     } catch (error) {
       if (error instanceof ApiError) throw error;
@@ -99,24 +79,23 @@ export const projectService = {
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-
-      // Features now include action field: "update" | "create" | "delete"
-      const body = JSON.stringify({
+      // Only include manager if it has a real value — backend crashes on
+      // project.manager.id when manager is None (agencies/views.py line ~1251)
+      const payload: Record<string, unknown> = {
+        client: projectData.client,
         projectName: projectData.projectName,
         problemStatement: projectData.problemStatement,
         timeline: projectData.timeline,
         features: projectData.features,
-      });
+      };
 
-      console.log("=== UPDATE PROJECT API CALL ===");
-      console.log("Project ID:", projectId);
-      console.log("Full payload:", body);
-      console.log("Features:", projectData.features);
-      console.log("==============================");
+      if (projectData.manager && projectData.manager.trim() !== "") {
+        payload.manager = projectData.manager;
+      }
+
+      const body = JSON.stringify(payload);
 
       const response = await fetch(
         `${API_BASE_URL}/agency/project/${projectId.trim()}/edit/`,
@@ -127,19 +106,15 @@ export const projectService = {
         }
       );
 
-      if (!response.ok) {
-        const errorData: ApiErrorResponse = await response
-          .json()
-          .catch(() => ({ message: "Failed to update project" }));
+      const rawText = await response.text();
 
-        console.error("=== API ERROR RESPONSE ===");
-        console.error("Status:", response.status);
-        console.error("Error Data:", errorData);
-        console.error(
-          "Full error details:",
-          JSON.stringify(errorData, null, 2)
-        );
-        console.error("=========================");
+      if (!response.ok) {
+        let errorData: ApiErrorResponse;
+        try {
+          errorData = JSON.parse(rawText);
+        } catch {
+          errorData = { message: rawText };
+        }
 
         if (
           response.status === 400 &&
@@ -147,13 +122,10 @@ export const projectService = {
           typeof errorData.error === "string" &&
           errorData.error.includes("does not belong to this project")
         ) {
-          console.warn(
-            "⚠️ Backend returned false 400 error, treating as success."
-          );
           return {
             message:
               "Project updated successfully (backend returned false error)",
-            projectId: projectId,
+            projectId,
           };
         }
 
@@ -164,8 +136,16 @@ export const projectService = {
         );
       }
 
-      const responseData = await response.json();
-      console.log("✅ Project updated successfully:", responseData);
+      let responseData: { message: string; projectId: string };
+      try {
+        responseData = JSON.parse(rawText);
+      } catch {
+        responseData = {
+          message: "Project updated successfully",
+          projectId,
+        };
+      }
+
       return responseData;
     } catch (error) {
       if (error instanceof ApiError) throw error;

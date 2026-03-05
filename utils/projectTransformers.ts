@@ -45,18 +45,35 @@ const getLastDocumentUploadText = (documentCount: number): string => {
   if (documentCount === 1) return "1 document uploaded";
   return `${documentCount} documents uploaded`;
 };
+const parseFeatureName = (feature: unknown): string => {
+  if (typeof feature === "string") {
+    const trimmed = feature.trim();
 
-const parseFeatureName = (feature: string): string => {
-  if (typeof feature === "string" && feature.trim().startsWith("{")) {
-    try {
-      const json = feature.replace(/'/g, '"').replace(/(\w+):/g, '"$1":');
-      const parsed = JSON.parse(json) as { feature?: string };
-      return parsed.feature || feature;
-    } catch {
-      return feature;
+    if (trimmed.startsWith("{")) {
+      try {
+        const json = trimmed.replace(/'/g, '"').replace(/(\w+)\s*:/g, '"$1":');
+        const parsed = JSON.parse(json) as { feature?: string };
+        return parsed.feature || trimmed;
+      } catch {
+        return trimmed;
+      }
+    }
+
+    return trimmed;
+  }
+
+  if (feature !== null && typeof feature === "object") {
+    const obj = feature as Record<string, unknown>;
+    if (typeof obj.feature === "string" && obj.feature.trim() !== "") {
+      return obj.feature.trim();
+    }
+    if (typeof obj.name === "string" && obj.name.trim() !== "") {
+      return obj.name.trim();
     }
   }
-  return feature;
+
+  // Fallback
+  return String(feature ?? "");
 };
 
 export const transformProjectDetail = (
@@ -65,6 +82,11 @@ export const transformProjectDetail = (
   const totalValue = parseFloat(apiProject.projectValue);
   const paidBalance = parseFloat(apiProject.paidBalance);
   const documentCount = apiProject.documents || 0;
+
+  console.log(
+    "🔍 Raw projectFeatures:",
+    JSON.stringify(apiProject.projectFeatures, null, 2)
+  );
 
   return {
     id: apiProject.id,
@@ -97,9 +119,9 @@ export const transformProjectDetail = (
       milestones: [],
     },
     problemStatement: apiProject.description,
-    keyFeatures: apiProject.projectFeatures.map((f, index) => ({
-      id: f.id?.toString() || `feature-${index}`,
-      name: parseFeatureName(f.feature as string),
+    keyFeatures: (apiProject.projectFeatures ?? []).map((f, index) => ({
+      id: f.id != null ? String(f.id) : `feature-${index}`,
+      name: parseFeatureName(f.feature as unknown),
     })),
   };
 };

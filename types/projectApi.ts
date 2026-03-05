@@ -3,7 +3,11 @@ export interface CreateProjectRequest {
   projectName: string;
   problemStatement: string;
   timeline: string;
-  features: Array<{ id: number; feature: string }>; // Backend expects {id, feature} format
+  features: Array<{
+    id?: number;
+    feature: string;
+    action: "create" | "update" | "delete";
+  }>; // Backend expects features with action fields
   milestones: MilestoneRequest[];
   manager: string;
 }

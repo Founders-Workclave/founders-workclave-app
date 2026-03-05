@@ -76,9 +76,7 @@ interface ProjectDetail {
  * Safely extracts task string from deliverable (handles both string and object)
  */
 function getTaskString(d: Deliverable | string | unknown): string {
-  if (typeof d === "string") {
-    return d;
-  }
+  if (typeof d === "string") return d;
   if (d && typeof d === "object" && "task" in d) {
     const deliverable = d as Deliverable;
     return typeof deliverable.task === "string" ? deliverable.task : "";
@@ -94,12 +92,10 @@ function isMilestoneEmpty(milestone: MilestoneFormData): boolean {
   const hasDescription = milestone.description.trim() !== "";
   const hasAmount = milestone.amount.trim() !== "";
   const hasDueDate = milestone.dueDate !== "";
-
   const hasValidDeliverables = milestone.deliverables.some((d) => {
     const task = getTaskString(d);
     return task.trim() !== "";
   });
-
   return (
     !hasTitle &&
     !hasDescription &&
@@ -109,19 +105,13 @@ function isMilestoneEmpty(milestone: MilestoneFormData): boolean {
   );
 }
 
-/**
- * Transforms the form data from the UI to the API request format
- * Note: File is passed separately, not in the request object
- */
 export function transformProjectFormToApiRequest(
   formData: ProjectFormData
 ): CreateProjectRequest {
-  // Filter out empty milestones using the helper function
   const nonEmptyMilestones = formData.milestones.filter(
     (milestone) => !isMilestoneEmpty(milestone)
   );
 
-  // Filter features and convert to backend format
   const filteredFeatures = formData.coreFeatures.filter(
     (feature) => feature.trim() !== ""
   );
@@ -131,7 +121,6 @@ export function transformProjectFormToApiRequest(
       ? filteredFeatures.map((feature, index) => {
           if (formData.featureIds && formData.featureIds[index]) {
             const existingIdValue = formData.featureIds[index].id;
-
             const parsedId =
               typeof existingIdValue === "string"
                 ? parseInt(existingIdValue, 10)
@@ -140,30 +129,31 @@ export function transformProjectFormToApiRequest(
                 : NaN;
 
             if (!isNaN(parsedId) && parsedId > 0) {
-              // Existing feature → update
+              // Existing feature → action: "update", include id
               return {
                 id: parsedId,
-                feature: feature,
+                feature,
                 action: "update" as const,
               };
             }
           }
-
-          // No existing ID → new feature being added
+          // New feature → action: "create", no id
           return {
-            feature: feature,
+            feature,
             action: "create" as const,
           };
         })
       : [{ feature: "Feature", action: "create" as const }];
 
-  // Handle deleted features — features that had IDs but are no longer in the form
-  const deletedFeatures: { id: number; feature: string; action: "delete" }[] =
-    [];
+  // Deleted features — features that had IDs but were removed from the form
+  const deletedFeatures: {
+    id: number;
+    feature: string;
+    action: "delete";
+  }[] = [];
 
   if (formData.featureIds) {
     formData.featureIds.forEach((fid, index) => {
-      // If this featureId exists but the corresponding coreFeature is now empty or removed
       const correspondingFeature = formData.coreFeatures[index];
       if (!correspondingFeature || correspondingFeature.trim() === "") {
         const existingIdValue = fid.id;
@@ -187,24 +177,16 @@ export function transformProjectFormToApiRequest(
 
   const allFeatures = [...features, ...deletedFeatures];
 
-  console.log("🔄 Transform - Original features:", formData.coreFeatures);
-  console.log("🔄 Transform - Existing feature IDs:", formData.featureIds);
-  console.log("🔄 Transform - Final features (with actions):", allFeatures);
-
-  // Transform features to match API format: only id and feature, filter out creates without id
-  const apiFeatures = allFeatures
-    .filter((f) => f.id !== undefined)
-    .map((f) => ({
-      id: f.id,
-      feature: f.feature,
-    }));
+  console.log("🔄 Transform - coreFeatures:", formData.coreFeatures);
+  console.log("🔄 Transform - featureIds:", formData.featureIds);
+  console.log("🔄 Transform - final features payload:", allFeatures);
 
   return {
     client: formData.clientId,
     projectName: formData.projectName,
     problemStatement: formData.problemStatement,
     timeline: formData.expectedTimeline,
-    features: apiFeatures,
+    features: allFeatures,
     milestones: nonEmptyMilestones.map((milestone) => ({
       title: milestone.title,
       description: milestone.description,
@@ -227,67 +209,45 @@ export function validateProjectForm(formData: ProjectFormData): {
 } {
   const errors: string[] = [];
 
-  if (!formData.clientId) {
-    errors.push("Please select a client");
-  }
-
-  if (!formData.projectName.trim()) {
-    errors.push("Project name is required");
-  }
-
-  if (!formData.problemStatement.trim()) {
+  if (!formData.clientId) errors.push("Please select a client");
+  if (!formData.projectName.trim()) errors.push("Project name is required");
+  if (!formData.problemStatement.trim())
     errors.push("Problem statement is required");
-  }
-
-  if (!formData.expectedTimeline) {
-    errors.push("Expected timeline is required");
-  }
+  if (!formData.expectedTimeline) errors.push("Expected timeline is required");
 
   const validFeatures = formData.coreFeatures.filter((f) => f.trim() !== "");
-  if (validFeatures.length === 0) {
+  if (validFeatures.length === 0)
     errors.push("At least one core feature is required");
-  }
 
   const nonEmptyMilestones = formData.milestones.filter(
     (milestone) => !isMilestoneEmpty(milestone)
   );
 
-  if (nonEmptyMilestones.length === 0) {
+  if (nonEmptyMilestones.length === 0)
     errors.push("At least one milestone is required");
-  }
 
   nonEmptyMilestones.forEach((milestone) => {
     const milestoneNumber = formData.milestones.indexOf(milestone) + 1;
-
-    if (!milestone.title.trim()) {
+    if (!milestone.title.trim())
       errors.push(`Milestone ${milestoneNumber}: Title is required`);
-    }
-    if (!milestone.description.trim()) {
+    if (!milestone.description.trim())
       errors.push(`Milestone ${milestoneNumber}: Description is required`);
-    }
-    if (!milestone.amount || parseFloat(milestone.amount) <= 0) {
+    if (!milestone.amount || parseFloat(milestone.amount) <= 0)
       errors.push(`Milestone ${milestoneNumber}: Valid amount is required`);
-    }
-    if (!milestone.dueDate) {
+    if (!milestone.dueDate)
       errors.push(`Milestone ${milestoneNumber}: Due date is required`);
-    }
 
     const validDeliverables = milestone.deliverables.filter((d) => {
       const task = getTaskString(d);
       return task.trim() !== "";
     });
-
-    if (validDeliverables.length === 0) {
+    if (validDeliverables.length === 0)
       errors.push(
         `Milestone ${milestoneNumber}: At least one deliverable is required`
       );
-    }
   });
 
-  return {
-    isValid: errors.length === 0,
-    errors,
-  };
+  return { isValid: errors.length === 0, errors };
 }
 
 /**
@@ -297,18 +257,7 @@ export function transformProjectDetailToFormData(
   project: ProjectDetail
 ): ProjectFormData {
   console.log("🔄 Transforming ProjectDetail to FormData");
-  console.log("Original project data:", project);
   console.log("🔍 project.keyFeatures:", project.keyFeatures);
-
-  if (project.keyFeatures) {
-    project.keyFeatures.forEach((f, idx) => {
-      console.log(`  Feature ${idx}:`, {
-        id: f.id,
-        idType: typeof f.id,
-        name: f.name,
-      });
-    });
-  }
 
   const clientId =
     typeof project.client === "object"
@@ -322,7 +271,6 @@ export function transformProjectDetailToFormData(
     project.managerId ||
     "";
 
-  // Extract features WITH their IDs for editing
   const featuresWithIds =
     project.keyFeatures && project.keyFeatures.length > 0
       ? project.keyFeatures.map((f: ProjectDetailFeature) => ({
@@ -357,7 +305,6 @@ export function transformProjectDetailToFormData(
             const seen = new Set<string>();
             m.deliverables.forEach((d: { id: string; task: string }) => {
               const task = d.task || "";
-              // Deduplicate by task text to prevent doubles from repeated saves
               if (task.trim() !== "" && !seen.has(task.trim())) {
                 seen.add(task.trim());
                 deliverables.push({
@@ -394,7 +341,7 @@ export function transformProjectDetailToFormData(
           },
         ];
 
-  const formData = {
+  return {
     clientId,
     projectName: project.projectName || project.name || "",
     problemStatement: project.problemStatement || project.description || "",
@@ -405,9 +352,6 @@ export function transformProjectDetailToFormData(
     milestones,
     productManagerId: managerId,
   };
-
-  console.log("✅ Transformed FormData:", formData);
-  return formData;
 }
 
 /**
@@ -468,6 +412,5 @@ export function transformApiProjectToFormData(
   if ("projectProgress" in project) {
     return transformProjectDetailToFormData(project as ProjectDetail);
   }
-
   return transformApiProjectResponseToFormData(project as ApiProjectResponse);
 }
