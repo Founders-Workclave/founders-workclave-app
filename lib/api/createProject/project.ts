@@ -81,8 +81,6 @@ export const projectService = {
       };
       if (token) headers.Authorization = `Bearer ${token}`;
 
-      // Only include manager if it has a real value — backend crashes on
-      // project.manager.id when manager is None (agencies/views.py line ~1251)
       const payload: Record<string, unknown> = {
         client: projectData.client,
         projectName: projectData.projectName,

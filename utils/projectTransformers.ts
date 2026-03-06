@@ -45,10 +45,30 @@ const getLastDocumentUploadText = (documentCount: number): string => {
   if (documentCount === 1) return "1 document uploaded";
   return `${documentCount} documents uploaded`;
 };
+
 const parseFeatureName = (feature: unknown): string => {
   if (typeof feature === "string") {
     const trimmed = feature.trim();
 
+    // Handle stringified empty array or empty-looking values
+    if (trimmed === "[]" || trimmed === "" || trimmed === "null") {
+      return "";
+    }
+
+    // Handle stringified array with values e.g. '["feature1"]'
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed) as unknown[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return String(parsed[0]);
+        }
+        return "";
+      } catch {
+        return trimmed;
+      }
+    }
+
+    // Handle stringified Python dict e.g. "{'feature': 'something'}"
     if (trimmed.startsWith("{")) {
       try {
         const json = trimmed.replace(/'/g, '"').replace(/(\w+)\s*:/g, '"$1":');
@@ -72,7 +92,6 @@ const parseFeatureName = (feature: unknown): string => {
     }
   }
 
-  // Fallback
   return String(feature ?? "");
 };
 
@@ -82,11 +101,6 @@ export const transformProjectDetail = (
   const totalValue = parseFloat(apiProject.projectValue);
   const paidBalance = parseFloat(apiProject.paidBalance);
   const documentCount = apiProject.documents || 0;
-
-  console.log(
-    "🔍 Raw projectFeatures:",
-    JSON.stringify(apiProject.projectFeatures, null, 2)
-  );
 
   return {
     id: apiProject.id,
@@ -119,9 +133,11 @@ export const transformProjectDetail = (
       milestones: [],
     },
     problemStatement: apiProject.description,
-    keyFeatures: (apiProject.projectFeatures ?? []).map((f, index) => ({
-      id: f.id != null ? String(f.id) : `feature-${index}`,
-      name: parseFeatureName(f.feature as unknown),
-    })),
+    keyFeatures: (apiProject.projectFeatures ?? [])
+      .map((f, index) => ({
+        id: f.id != null ? String(f.id) : `feature-${index}`,
+        name: parseFeatureName(f.feature as unknown),
+      }))
+      .filter((f) => f.name !== ""),
   };
 };

@@ -129,7 +129,6 @@ export function transformProjectFormToApiRequest(
                 : NaN;
 
             if (!isNaN(parsedId) && parsedId > 0) {
-              // Existing feature → action: "update", include id
               return {
                 id: parsedId,
                 feature,
@@ -137,13 +136,12 @@ export function transformProjectFormToApiRequest(
               };
             }
           }
-          // New feature → action: "create", no id
           return {
             feature,
             action: "create" as const,
           };
         })
-      : [{ feature: "Feature", action: "create" as const }];
+      : []; // No fallback — empty means empty, validation will catch it
 
   // Deleted features — features that had IDs but were removed from the form
   const deletedFeatures: {
@@ -178,6 +176,7 @@ export function transformProjectFormToApiRequest(
   const allFeatures = [...features, ...deletedFeatures];
 
   console.log("🔄 Transform - coreFeatures:", formData.coreFeatures);
+  console.log("🔄 Transform - filteredFeatures:", filteredFeatures);
   console.log("🔄 Transform - featureIds:", formData.featureIds);
   console.log("🔄 Transform - final features payload:", allFeatures);
 
@@ -256,9 +255,6 @@ export function validateProjectForm(formData: ProjectFormData): {
 export function transformProjectDetailToFormData(
   project: ProjectDetail
 ): ProjectFormData {
-  console.log("🔄 Transforming ProjectDetail to FormData");
-  console.log("🔍 project.keyFeatures:", project.keyFeatures);
-
   const clientId =
     typeof project.client === "object"
       ? project.client.id
@@ -285,9 +281,6 @@ export function transformProjectDetailToFormData(
       : project.features && project.features.length > 0
       ? project.features
       : ["", ""];
-
-  console.log("🔄 Extracted features with IDs:", featuresWithIds);
-  console.log("🔄 Extracted features:", features);
 
   const milestonesSource =
     project.milestones || project.projectProgress?.milestones || [];

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import styles from "./styles.module.css";
 import {
@@ -65,22 +65,24 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
     return getDefaultFormData();
   });
 
+  // Track previous isOpen to only reset when modal transitions from closed → open
+  const prevIsOpenRef = useRef(false);
+
   useEffect(() => {
-    if (isOpen) {
+    const wasOpen = prevIsOpenRef.current;
+    prevIsOpenRef.current = isOpen;
+
+    // Only reset when modal just opened (closed → open transition)
+    if (isOpen && !wasOpen) {
       if (mode === "edit" && initialData) {
         setFormData(initialData);
       } else if (mode === "create") {
         setFormData(getDefaultFormData());
       }
-    }
-  }, [isOpen, mode, initialData]);
-
-  useEffect(() => {
-    if (isOpen) {
       setCurrentStep(initialStep);
       setSubmitError(null);
     }
-  }, [isOpen, initialStep]);
+  }, [isOpen, mode, initialData, initialStep]);
 
   const handleNext = () => {
     if (currentStep < 4) {
@@ -141,7 +143,6 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
         error
       );
 
-      // Extract a clean message — avoid showing raw Django HTML error pages
       let errorMessage = `Failed to ${
         mode === "edit" ? "update" : "create"
       } project`;
@@ -152,7 +153,6 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
           msg.trim().startsWith("<!DOCTYPE") ||
           msg.trim().startsWith("<html")
         ) {
-          // Backend returned an HTML traceback — show a friendly message instead
           errorMessage =
             mode === "edit"
               ? "Unable to update project. Please try again or contact support."
