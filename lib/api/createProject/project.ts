@@ -34,7 +34,16 @@ export const projectService = {
         formData.append("document", documentFile);
       }
 
-      formData.append("features", JSON.stringify(projectData.features));
+      // Backend expects plain string array: ["feature 1", "feature 2"]
+      formData.append(
+        "features",
+        JSON.stringify(
+          projectData.features.map((f) =>
+            typeof f === "string" ? f : f.feature
+          )
+        )
+      );
+
       formData.append("milestones", JSON.stringify(projectData.milestones));
 
       const headers: HeadersInit = {};
