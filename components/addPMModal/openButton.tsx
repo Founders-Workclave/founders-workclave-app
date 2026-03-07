@@ -20,9 +20,9 @@ export default function CreateButton({ buttonName }: CreateButtonProps) {
       password: data.password,
     });
     console.log("API result:", result);
-    toast.success("Client registered successfully!");
-    toast.error("Error registering client!", { id: "registerClient" });
-    toast.loading("Registering client...", { id: "registerClient" });
+    toast.success("Manager registered successfully!");
+    toast.error("Error registering Manager!");
+    toast.loading("Registering Manager...");
   };
 
   return (

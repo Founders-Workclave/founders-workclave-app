@@ -65,14 +65,18 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
     return getDefaultFormData();
   });
 
-  // Track previous isOpen to only reset when modal transitions from closed → open
+  // Always keep a ref in sync so handleSubmit never reads stale state
+  const formDataRef = useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  });
+
   const prevIsOpenRef = useRef(false);
 
   useEffect(() => {
     const wasOpen = prevIsOpenRef.current;
     prevIsOpenRef.current = isOpen;
 
-    // Only reset when modal just opened (closed → open transition)
     if (isOpen && !wasOpen) {
       if (mode === "edit" && initialData) {
         setFormData(initialData);
@@ -101,14 +105,17 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
       setIsSubmitting(true);
       setSubmitError(null);
 
-      const validation = validateProjectForm(formData);
+      // Use ref to get latest formData — avoids stale closure bug
+      const latestFormData = formDataRef.current;
+
+      const validation = validateProjectForm(latestFormData);
       if (!validation.isValid) {
         setSubmitError(validation.errors.join(", "));
         toast.error("Please fix the validation errors");
         return;
       }
 
-      const apiRequest = transformProjectFormToApiRequest(formData);
+      const apiRequest = transformProjectFormToApiRequest(latestFormData);
       const isEditMode = mode === "edit" && projectId;
 
       if (isEditMode) {
@@ -116,7 +123,7 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
         await projectService.updateProject(
           projectId,
           apiRequest,
-          formData.prdFile || undefined
+          latestFormData.prdFile || undefined
         );
         toast.success("Project details updated successfully!", {
           id: "project-action",
@@ -126,7 +133,7 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
         toast.loading("Creating project...", { id: "project-action" });
         await projectService.createProject(
           apiRequest,
-          formData.prdFile || undefined
+          latestFormData.prdFile || undefined
         );
         toast.success("🎉 Project created successfully!", {
           id: "project-action",
@@ -134,7 +141,7 @@ const CreateProjectModal: React.FC<ExtendedCreateProjectProps> = ({
         });
       }
 
-      onSubmit(formData);
+      onSubmit(latestFormData);
       onClose();
       resetForm();
     } catch (error) {
