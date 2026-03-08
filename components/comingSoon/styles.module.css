@@ -1,0 +1,179 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Instrument+Sans:wght@400;500&display=swap");
+
+.root {
+  width: 100%;
+  height: 80vh;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  border: 1.5px solid #5865f2;
+  border-radius: 50px;
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5865f2;
+  background: rgba(18, 121, 246, 0.05);
+  margin-bottom: 1.75rem;
+  animation: fadeInDown 0.6s ease-out both;
+}
+
+.badgeDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #5865f2;
+  animation: ripple 2.2s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(18, 124, 246, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(18, 140, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(18, 113, 246, 0);
+  }
+}
+
+/* Headline */
+.headline {
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(2.25rem, 5vw, 3rem);
+  font-weight: 600;
+  color: #111;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0 0 1rem;
+  animation: fadeIn 0.7s ease-out 0.15s both;
+}
+
+/* Thin accent line */
+.content::after {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 2px;
+  background: linear-gradient(90deg, #1f628e, #5865f2);
+  border-radius: 2px;
+  margin: 0 auto 1.25rem;
+  animation: scaleIn 0.5s ease-out 0.3s both;
+  order: 3;
+}
+
+.badge {
+  order: 1;
+}
+.headline {
+  order: 2;
+}
+.subtext {
+  order: 4;
+}
+.dots {
+  order: 5;
+}
+
+/* Subtext */
+.subtext {
+  font-family: "Instrument Sans", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.7;
+  color: #999;
+  margin: 0 0 2rem;
+  animation: fadeIn 0.7s ease-out 0.4s both;
+}
+
+/* Animated dots */
+.dots {
+  display: flex;
+  gap: 0.5rem;
+  animation: fadeIn 0.7s ease-out 0.55s both;
+}
+
+.dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ddd;
+}
+
+.dots span:nth-child(1) {
+  animation: bounce 1.4s ease-in-out 0s infinite;
+}
+.dots span:nth-child(2) {
+  animation: bounce 1.4s ease-in-out 0.2s infinite;
+}
+.dots span:nth-child(3) {
+  animation: bounce 1.4s ease-in-out 0.4s infinite;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    background: #ddd;
+  }
+  40% {
+    transform: translateY(-6px);
+    background: #1f628e;
+  }
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}

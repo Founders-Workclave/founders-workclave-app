@@ -48,7 +48,10 @@ export const transformMilestone = (
     completed: apiMilestone.completed,
     order: apiMilestone.order,
     number: index !== undefined ? index + 1 : apiMilestone.order,
-    deliverables: apiMilestone.deliverables.map((d) => ({ task: d.task })),
+    deliverables: apiMilestone.deliverables.map((d, i) => ({
+      id: `${apiMilestone.id}-deliverable-${i}`,
+      task: d.task,
+    })),
     status, // Pass through raw status
     completedDate: apiMilestone.completedDate,
     progress: apiMilestone.progress,

@@ -366,7 +366,7 @@ export const agencyMenuItems = [
   },
   {
     icon: <Prd />,
-    label: "All PRDs",
+    label: "AI PRDs (BridgeAI)",
     link: `/agency/prds`,
   },
   {

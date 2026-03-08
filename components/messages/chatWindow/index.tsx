@@ -515,7 +515,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     {/* Reply Preview */}
                     {message.replyToMessage && (
                       <div className={styles.replyPreview}>
-                        <div className={styles.replyBar}></div>
+                        {/* <div className={styles.replyBar}></div> */}
                         <div className={styles.replyContent}>
                           <div className={styles.replyAuthor}>
                             {message.replyToMessage.senderName || "Unknown"}
