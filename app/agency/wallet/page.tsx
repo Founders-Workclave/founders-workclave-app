@@ -1,4 +1,5 @@
-import WalletPage from "@/components/wallet";
+import ComingSoon from "@/components/comingSoon";
+// import WalletPage from "@/components/wallet";
 import AgencyLayout from "@/layout/agency";
 
 interface WalletModalProps {
@@ -10,7 +11,8 @@ interface WalletModalProps {
 const AgencyWalletModal = ({ params }: WalletModalProps) => {
   return (
     <AgencyLayout pageTitle="Wallet" pageText="">
-      <WalletPage params={params} />
+      {/* <WalletPage params={params} /> */}
+      <ComingSoon />
     </AgencyLayout>
   );
 };

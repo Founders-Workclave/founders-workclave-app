@@ -6,6 +6,7 @@ import { subscriptionPlans } from "@/utils/settingsTab";
 import SubscriptionCard from "../subscriptionCard";
 import PlanCard from "../planCard";
 import Crown from "@/svgs/crown";
+import ComingSoon from "@/components/comingSoon";
 
 interface Subscription {
   planName: string;
@@ -72,7 +73,8 @@ const BillingTab: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <section className={styles.subscriptionSection}>
+      <ComingSoon />
+      {/* <section className={styles.subscriptionSection}>
         <h2 className={styles.sectionTitle}>Active subscription</h2>
         {activeSubscription ? (
           <SubscriptionCard
@@ -102,7 +104,7 @@ const BillingTab: React.FC = () => {
             />
           ))}
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };
