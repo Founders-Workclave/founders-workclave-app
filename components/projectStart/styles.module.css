@@ -45,11 +45,10 @@
 
 .otherTexts > h3 {
   font-weight: 900;
-  padding-top: 8px;
   font-size: 20px;
   line-height: 28px;
   color: #ffffff;
-  text-align: center;
+  text-align: left;
 }
 
 .btnContainer {

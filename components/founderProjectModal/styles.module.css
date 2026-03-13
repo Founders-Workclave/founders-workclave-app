@@ -1,0 +1,314 @@
+.triggerBtn {
+  background: #ffffff;
+  color: #5865f2;
+  font-family: "inter", sans-serif;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.triggerBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(91, 87, 209, 0.5);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: #03060d99;
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 560px;
+  padding: 32px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  position: relative;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.title {
+  font-size: 24px;
+  font-family: "Test Calibre", sans-serif;
+  font-weight: 800;
+  color: #090202;
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #555;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.15s;
+}
+
+.closeBtn:hover {
+  color: #111;
+}
+
+.stepLabel {
+  font-size: 12px;
+  font-family: "inter", sans-serif;
+  color: #888;
+  margin: 0 0 12px;
+}
+
+.stepDivider {
+  color: #ccc;
+}
+
+.progressTrack {
+  position: relative;
+  height: 6px;
+  background: #e5e5e5;
+  border-radius: 99px;
+  margin-bottom: 32px;
+}
+
+.progressFill {
+  height: 100%;
+  background: #5865f2;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.avatarDot {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #5865f2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(91, 87, 209, 0.35);
+  transition: left 0.4s ease;
+  overflow: hidden;
+}
+
+.avatarInner {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.body {
+  margin-bottom: 24px;
+  min-height: 160px;
+  font-family: "inter", sans-serif;
+}
+
+.input {
+  width: 100%;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  color: #333;
+  outline: none;
+  box-sizing: border-box;
+  margin-bottom: 24px;
+  transition: border-color 0.2s;
+  font-family: inherit;
+}
+
+.input:focus {
+  border-color: #5b57d1;
+}
+
+.categoryLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #999;
+  margin: 0 0 12px;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.pill {
+  border: 1.5px solid #ddd;
+  border-radius: 99px;
+  padding: 9px 18px;
+  font-size: 14px;
+  color: #555;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-weight: 500;
+  font-family: inherit;
+}
+
+.pill:hover {
+  border-color: #5b57d1;
+  color: #5b57d1;
+}
+
+.pillActive {
+  background: #5b57d1;
+  border-color: #5b57d1;
+  color: #fff;
+}
+
+.fieldLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px;
+}
+
+.textarea {
+  width: 100%;
+  border: 1.5px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  font-size: 15px;
+  color: #333;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+}
+
+.textarea:focus {
+  border-color: #5865f2;
+}
+
+.reviewLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #999;
+  margin: 0 0 14px;
+}
+
+.reviewCard {
+  border: 1.5px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.reviewFieldLabel {
+  font-size: 12px;
+  color: #aaa;
+  margin: 0 0 4px;
+}
+
+.reviewFieldValue {
+  font-size: 15px;
+  color: #222;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.continueBtn {
+  width: 100%;
+  font-family: "inter", sans-serif;
+  background: #5865f2;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 17px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.continueBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+.continueBtnDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Success state */
+.successBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.successIcon {
+  font-size: 40px;
+  color: #5865f2;
+}
+
+.successText {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  font-family: "inter", sans-serif;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 18px;
+  }
+  .triggerBtn {
+    font-size: 12px;
+  }
+  .closeBtn {
+    font-size: 12px;
+  }
+  .avatarDot {
+    width: 20px;
+    height: 20px;
+  }
+  .avatarInner {
+    font-size: 4px;
+  }
+  .input {
+    font-size: 12px;
+  }
+  .pill {
+    font-size: 12px;
+  }
+  .continueBtn {
+    font-size: 14px;
+  }
+  .textarea {
+    font-size: 12px;
+  }
+  .reviewFieldValue {
+    font-size: 12px;
+  }
+}

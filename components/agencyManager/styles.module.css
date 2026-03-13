@@ -151,6 +151,8 @@
 .pmName {
   font-weight: 500;
   color: #111827;
+  font-family: "inter", sans-serif;
+  font-size: 14px;
 }
 
 .statusBadge {
@@ -216,6 +218,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  gap: 10px;
 }
 
 .cardRow:last-of-type {
@@ -230,7 +233,7 @@
 }
 
 .cardValue {
-  font-size: 15px;
+  font-size: 14px;
   color: #111827;
   font-weight: 500;
   font-family: "Inter", sans-serif;
@@ -316,5 +319,9 @@
 
   .cardsContainer {
     display: block;
+  }
+  .cardValue {
+    font-family: "Inter", sans-serif;
+    font-size: 12px;
   }
 }

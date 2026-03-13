@@ -5,7 +5,6 @@ import styles from "./styles.module.css";
 import { Pagination } from "../agencyProject/pagination";
 import MessageApp from "@/svgs/messageApp";
 import PrdView from "@/svgs/prdView";
-import Profile from "@/svgs/profile";
 import { managerService, ApiError } from "@/lib/api/agencyService/pmService";
 import { ProductManager } from "@/types/agencyPm";
 import AllLoading from "@/layout/Loader";
@@ -352,7 +351,7 @@ const AllProductManagersPage: React.FC = () => {
                     onClick={() => handleViewProfile(pm.id)}
                     className={styles.viewProfileButton}
                   >
-                    <Profile />
+                    <PrdView />
                     View profile
                   </button>
                 </div>

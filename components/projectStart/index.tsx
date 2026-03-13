@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./styles.module.css";
 import SettingsTwo from "@/svgs/settingsTwo";
 import Link from "next/link";
+import FounderProjectModal from "../founderProjectModal";
 
 const ProjectStart = () => {
   return (
@@ -14,8 +15,8 @@ const ProjectStart = () => {
                 <SettingsTwo /> Start a New Project
               </h2>
               <div className={styles.otherTextsMobile}>
-                <p>Average Time</p>
-                <h3>8mins</h3>
+                <p>Average Response</p>
+                <h3>24 Hours</h3>
               </div>
             </span>
 
@@ -26,14 +27,12 @@ const ProjectStart = () => {
             </p>
           </div>
           <div className={styles.otherTexts}>
-            <p>Average Time</p>
-            <h3>8mins</h3>
+            <p>Average Response</p>
+            <h3>24 Hours</h3>
           </div>
         </div>
         <div className={styles.btnContainer}>
-          <Link href="/" className={styles.actionBtn}>
-            + Start AI consultation
-          </Link>
+          <FounderProjectModal />
         </div>
       </div>
     </div>
