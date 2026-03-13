@@ -1,5 +1,4 @@
 "use client";
-import React from "react";
 import styles from "./styles.module.css";
 import TestimonialSlider from "../testimonialSlider";
 import Back from "@/svgs/back";

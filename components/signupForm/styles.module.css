@@ -202,9 +202,10 @@
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   display: flex;
+  font-family: "inter", sans-serif;
   align-items: center;
   gap: 8px;
 }
@@ -212,11 +213,12 @@
 .errorMessage {
   background: #fee2e2;
   border: 1px solid #ef4444;
+  font-family: "inter", sans-serif;
   color: #991b1b;
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   display: flex;
   align-items: center;

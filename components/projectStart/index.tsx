@@ -1,7 +1,6 @@
 import React from "react";
 import styles from "./styles.module.css";
 import SettingsTwo from "@/svgs/settingsTwo";
-import Link from "next/link";
 import FounderProjectModal from "../founderProjectModal";
 
 const ProjectStart = () => {
@@ -21,9 +20,8 @@ const ProjectStart = () => {
             </span>
 
             <p>
-              Have a product idea? Let our AI consultant guide you through a
-              structured conversation to create a comprehensive Product
-              Requirement Document in minutes.
+              Tell us what you&apos;re building. Our team will review your idea
+              and get you onboarded — no AI consultant needed.
             </p>
           </div>
           <div className={styles.otherTexts}>

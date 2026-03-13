@@ -95,6 +95,12 @@
   opacity: 1;
 }
 
+.card:hover .hoverMessage,
+.card.selected .hoverMessage {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .card.selected {
   border: 1px solid #5865f2;
   background: #17172d;
@@ -115,6 +121,26 @@
   margin: 0;
   position: relative;
   z-index: 1;
+}
+
+.hoverMessage {
+  position: absolute;
+  font-family: "inter", sans-serif;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  color: #a6abe8;
+  background: rgba(88, 101, 242, 0.15);
+  border: 1px solid rgba(88, 101, 242, 0.3);
+  border-radius: 99px;
+  padding: 4px 12px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  pointer-events: none;
 }
 
 .proceedButton {
@@ -188,7 +214,6 @@
   }
 
   .cardContainer {
-    /* grid-template-columns: 1fr; */
     gap: 16px;
     margin-bottom: 32px;
   }

@@ -407,7 +407,61 @@ const extractNameFields = (data: AuthResponse, email: string) => {
   return { firstName, lastName, displayName };
 };
 
-// API METHODS
+// ─── Error helpers ────────────────────────────────────────────────────────────
+
+const isDuplicateEmailMessage = (msg: string): boolean => {
+  const lower = msg.toLowerCase();
+  return (
+    lower.includes("already exists") ||
+    lower.includes("already registered") ||
+    lower.includes("already taken") ||
+    lower.includes("email taken") ||
+    lower.includes("email in use")
+  );
+};
+
+const friendlyEmailError =
+  "An account with this email already exists. Please log in instead.";
+
+/**
+ * Parses a 400 error body from Django REST Framework.
+ *
+ * Handles both shapes:
+ *   Root-level:  { "email": ["msg"] }          ← what this API returns
+ *   Nested:      { "errors": { "email": [...] } }
+ */
+const parseErrorBody = (body: Record<string, unknown>): string => {
+  // Use nested errors key if present, otherwise treat the whole body as the error map
+  const source =
+    body.errors &&
+    typeof body.errors === "object" &&
+    !Array.isArray(body.errors)
+      ? (body.errors as Record<string, unknown>)
+      : body;
+
+  const messages: string[] = [];
+
+  for (const [field, value] of Object.entries(source)) {
+    // Skip scalar fields that aren't error lists (e.g. "success", "message")
+    const list: string[] = Array.isArray(value)
+      ? value.map(String)
+      : typeof value === "string"
+      ? [value]
+      : [];
+
+    for (const msg of list) {
+      if (field === "email" && isDuplicateEmailMessage(msg)) {
+        messages.push(friendlyEmailError);
+      } else {
+        messages.push(msg);
+      }
+    }
+  }
+
+  return messages.join(" ").trim();
+};
+
+// ─── API METHODS ──────────────────────────────────────────────────────────────
 
 export const authApi = {
   register: async (payload: RegisterPayload): Promise<AuthResponse> => {
@@ -440,7 +494,6 @@ export const authApi = {
           )}`
         : `${API_BASE_URL}/register/`;
 
-      // 🔍 DEBUG: Log exactly what we're sending
       console.log("🚀 Register URL:", url);
       console.log(
         "📦 Actual request body:",
@@ -449,9 +502,7 @@ export const authApi = {
 
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
 
@@ -468,38 +519,38 @@ export const authApi = {
 
       const data = await response.json();
 
-      // 🔍 DEBUG: Log the full raw response from the backend
       console.log(
         "🔴 Raw API response:",
         response.status,
         JSON.stringify(data, null, 2)
       );
 
-      if (response.status === 400 && data.errors) {
-        const errorMessages = Object.entries(data.errors)
-          .map(
-            ([field, messages]) =>
-              `${field}: ${(messages as string[]).join(", ")}`
-          )
-          .join("\n");
-
+      // ── 400: parse root-level DRF errors e.g. { "email": ["..."] } ──────────
+      if (response.status === 400) {
+        const errorMessage = parseErrorBody(data as Record<string, unknown>);
         return {
           success: false,
-          message: errorMessages || "Validation failed",
-          error: errorMessages,
-          errors: data.errors,
+          message:
+            errorMessage || "Validation failed. Please check your details.",
+          error: errorMessage,
         };
       }
 
+      // ── Other non-2xx ─────────────────────────────────────────────────────
       if (!response.ok) {
+        const rawMessage =
+          data.message || data.error || `Request failed (${response.status})`;
+        const friendlyMessage = isDuplicateEmailMessage(rawMessage)
+          ? friendlyEmailError
+          : rawMessage;
         return {
           success: false,
-          message: data.message || data.error || `Error: ${response.status}`,
-          error: data.error || data.message || `HTTP ${response.status}`,
+          message: friendlyMessage,
+          error: friendlyMessage,
         };
       }
 
-      // Store tokens
+      // ── Success ───────────────────────────────────────────────────────────
       const accessToken =
         data.access || data.data?.access || data.data?.token || data.token;
       const refreshToken = data.refresh || data.data?.refresh;
@@ -557,9 +608,7 @@ export const authApi = {
 
       const response = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestBody),
       });
 
@@ -576,19 +625,14 @@ export const authApi = {
 
       const data: AuthResponse = await response.json();
 
-      if (response.status === 400 && data.errors) {
-        const errorMessages = Object.entries(data.errors)
-          .map(
-            ([field, messages]) =>
-              `${field}: ${(messages as string[]).join(", ")}`
-          )
-          .join("\n");
-
+      if (response.status === 400) {
+        const errorMessage = parseErrorBody(
+          data as unknown as Record<string, unknown>
+        );
         return {
           success: false,
-          message: errorMessages || "Validation failed",
-          error: errorMessages,
-          errors: data.errors,
+          message: errorMessage || "Validation failed",
+          error: errorMessage,
         };
       }
 
@@ -819,19 +863,13 @@ export const authApi = {
 
       const data = await response.json();
 
-      if (response.status === 400 && data.errors) {
-        const errorMessages = Object.entries(data.errors)
-          .map(
-            ([field, messages]) =>
-              `${field}: ${(messages as string[]).join(", ")}`
-          )
-          .join("\n");
-
+      if (response.status === 400) {
+        const errorMessage = parseErrorBody(data as Record<string, unknown>);
         return {
           success: false,
-          message: errorMessages || "Validation failed",
-          error: errorMessages,
-          errors: data.errors,
+          message:
+            errorMessage || "Validation failed. Please check your details.",
+          error: errorMessage,
         };
       }
 

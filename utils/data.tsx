@@ -318,7 +318,7 @@ export const founderMenuItems = (userId: string, projectId: string) => [
   },
   {
     icon: <Prd />,
-    label: "My PRDs",
+    label: "My AI PRDs (Bridge_AI)",
     link: `/founder/prds`,
   },
   {

@@ -32,7 +32,6 @@ export const useSignup = (options?: UseSignupOptions): UseSignupReturn => {
     const loadingToast = toast.loading("Creating your account...");
 
     try {
-      // Get userType from options or default to 'founder'
       const userType = options?.userType || "founder";
 
       console.log("🔐 useSignup: Creating account with userType:", userType);
@@ -53,9 +52,9 @@ export const useSignup = (options?: UseSignupOptions): UseSignupReturn => {
         userType: payload.userType,
         company: payload.company,
         hasPassword: !!payload.password,
-        phoneNumber: payload.phoneNumber, // ← add this
-        countryCode: payload.countryCode, // ← add this
-        firstName: payload.firstName, // ← add this
+        phoneNumber: payload.phoneNumber,
+        countryCode: payload.countryCode,
+        firstName: payload.firstName,
       });
 
       const response = await authApi.register(payload);
@@ -77,23 +76,30 @@ export const useSignup = (options?: UseSignupOptions): UseSignupReturn => {
           hasToken: !!response.data?.token,
           userId: response.data?.userId || response.data?.id,
         });
-
-        // Token is already stored by authApi.register
-        // No need to manually store it here
       } else {
+        // auth.ts already returns a friendly message — use it directly
         const errorMsg = response.message || "Registration failed";
         setError(errorMsg);
-        toast.error(errorMsg, {
-          id: loadingToast,
-        });
+        toast.error(errorMsg, { id: loadingToast });
         console.error("❌ Signup failed:", errorMsg);
       }
-    } catch (err) {
-      const errorMsg = "Something went wrong. Please try again.";
+    } catch (err: unknown) {
+      // Fallback — authApi.register rarely throws, but handle it just in case
+      let errorMsg = "Something went wrong. Please try again.";
+
+      if (err instanceof Error) {
+        errorMsg = err.message;
+      } else if (
+        typeof err === "object" &&
+        err !== null &&
+        "message" in err &&
+        typeof (err as { message: unknown }).message === "string"
+      ) {
+        errorMsg = (err as { message: string }).message;
+      }
+
       setError(errorMsg);
-      toast.error(errorMsg, {
-        id: loadingToast,
-      });
+      toast.error(errorMsg, { id: loadingToast });
       console.error("❌ Signup error:", err);
     } finally {
       setIsLoading(false);
@@ -109,18 +115,10 @@ export const useSignup = (options?: UseSignupOptions): UseSignupReturn => {
   return { isLoading, error, success, signup, resetState };
 };
 
-/**
- * Convenience hook for agency signup
- * Automatically sets userType to 'agency'
- */
 export const useAgencySignup = (): UseSignupReturn => {
   return useSignup({ userType: "agency" });
 };
 
-/**
- * Convenience hook for founder signup
- * Automatically sets userType to 'founder'
- */
 export const useFounderSignup = (): UseSignupReturn => {
   return useSignup({ userType: "founder" });
 };

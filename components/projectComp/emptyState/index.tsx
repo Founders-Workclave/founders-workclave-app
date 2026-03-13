@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "./styles.module.css";
 import StartProject from "@/svgs/startProject";
-import Link from "next/link";
+import FounderProjectModal from "@/components/founderProjectModal";
 
 const EmptyState = () => {
   return (
@@ -10,9 +10,7 @@ const EmptyState = () => {
         <StartProject />
         <h2>No Project yet!</h2>
         <p>Start your first project to bring your ideas to life</p>
-        <Link href="/" className={styles.actionBtn}>
-          + Start AI consultation
-        </Link>
+        <FounderProjectModal />
       </div>
     </div>
   );

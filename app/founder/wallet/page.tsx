@@ -1,4 +1,5 @@
-import WalletPage from "@/components/wallet";
+import ComingSoon from "@/components/comingSoon";
+// import WalletPage from "@/components/wallet";
 import FounderLayout from "@/layout/founder";
 
 interface WalletModalProps {
@@ -7,10 +8,11 @@ interface WalletModalProps {
   };
 }
 
-const WalletModal = ({ params }: WalletModalProps) => {
+const WalletModal = ({}: WalletModalProps) => {
   return (
     <FounderLayout pageTitle="Wallet" pageText="">
-      <WalletPage params={params} />
+      {/* <WalletPage params={params} /> */}
+      <ComingSoon />
     </FounderLayout>
   );
 };

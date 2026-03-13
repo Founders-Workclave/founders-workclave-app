@@ -49,6 +49,9 @@ const SignupComp = () => {
                 <FounderIcon />
               </div>
               <h3 className={styles.cardTitle}>As A Founder</h3>
+              <span className={styles.hoverMessage}>
+                I want to build a Product
+              </span>
             </button>
 
             {/* Agency Card */}
@@ -62,6 +65,9 @@ const SignupComp = () => {
                 <AgencyIcon />
               </div>
               <h3 className={styles.cardTitle}>As An Agency</h3>
+              <span className={styles.hoverMessage}>
+                I want to Manage my Clients
+              </span>
             </button>
           </div>
 
