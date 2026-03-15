@@ -25,7 +25,6 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ email }) => {
   const { isLoading, error, success, verifyOtp, resetState } = useVerifyOtp();
 
   useEffect(() => {
-    // If no email found, redirect back to reset password page
     if (!userEmail) {
       router.push("/reset-password");
     }
@@ -92,13 +91,8 @@ const OTPVerification: React.FC<OTPVerificationProps> = ({ email }) => {
     if (otpValue.length === 6) {
       // Verify the OTP with the backend
       const result = await verifyOtp(otpValue);
-
-      // If verification successful, redirect to password reset page
       if (result.success) {
-        // Wait a moment for user to see success message
-        setTimeout(() => {
-          router.push(`/change-password/otp/${otpValue}`);
-        }, 1500);
+        router.push(`/change-password/otp/${otpValue}`);
       }
     }
   };
