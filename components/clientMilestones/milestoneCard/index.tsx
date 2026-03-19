@@ -10,6 +10,7 @@ import SmallCalender from "@/svgs/smallCalender";
 import Payment from "@/svgs/payment";
 import CompletedNew from "@/svgs/completedNew";
 import ListIcons from "@/svgs/listIcons";
+import PaymentModal from "@/components/paymentPopup/paymentModal";
 
 interface ManagerMilestoneCardProps {
   milestone: Milestone;
@@ -21,6 +22,7 @@ const ClientMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
   isLast = false,
 }) => {
   const [showDeliverables, setShowDeliverables] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const status = milestone.status || "pending";
   const normalizedStatus = status.toLowerCase();
@@ -53,6 +55,11 @@ const ClientMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
         return <Pending />;
     }
   };
+
+  const isInProgress =
+    normalizedStatus === "in-progress" ||
+    normalizedStatus === "in_progress" ||
+    normalizedStatus === "ongoing";
 
   const parsePrice = (priceStr: string): number => {
     return parseFloat(priceStr.replace(/,/g, ""));
@@ -110,52 +117,45 @@ const ClientMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
           )}
         </div>
 
-        {normalizedStatus === "in-progress" &&
-          milestone.progress !== undefined && (
-            <div className={styles.progressSection}>
-              <div className={styles.progressHeader}>
-                <span className={styles.progressLabel}>Progress</span>
-                <span className={styles.progressPercentage}>
-                  {milestone.progress}%
-                </span>
-              </div>
-              <div className={styles.progressBar}>
-                <div
-                  className={styles.progressFill}
-                  style={{ width: `${milestone.progress}%` }}
-                />
-              </div>
-            </div>
-          )}
-
         {milestone.note && (
           <div className={styles.note}>
             <strong>Note:</strong> {milestone.note}
           </div>
         )}
 
-        {/* PM Actions - view deliverables only */}
-        {milestone.deliverables.length > 0 && (
+        {/* Actions */}
+        {(milestone.deliverables.length > 0 || isInProgress) && (
           <div className={styles.actions}>
-            <button
-              onClick={() => setShowDeliverables(!showDeliverables)}
-              className={styles.viewDeliverablesButton}
-            >
-              View deliverables
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className={
-                  showDeliverables ? styles.chevronUp : styles.chevronDown
-                }
+            {milestone.deliverables.length > 0 && (
+              <button
+                onClick={() => setShowDeliverables(!showDeliverables)}
+                className={styles.viewDeliverablesButton}
               >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
+                View deliverables
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={
+                    showDeliverables ? styles.chevronUp : styles.chevronDown
+                  }
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+            )}
+
+            {isInProgress && (
+              <button
+                onClick={() => setIsPaymentModalOpen(true)}
+                className={styles.viewDetailsButton}
+              >
+                Pay for milestone
+              </button>
+            )}
           </div>
         )}
 
@@ -172,6 +172,26 @@ const ClientMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
           </div>
         )}
       </div>
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        milestone={{
+          title: milestone.title,
+          description: milestone.description,
+          dueDate: milestone.dueDate,
+          amount: parsePrice(milestone.price),
+          deliverables: milestone.deliverables.map((d) => d.task),
+        }}
+        walletBalance={0}
+        onPayWithWallet={() => {
+          console.log("Wallet payment for:", milestone.title);
+          setIsPaymentModalOpen(false);
+        }}
+        onPayWithPaystack={() => {
+          console.log("Paystack payment for:", milestone.title);
+          setIsPaymentModalOpen(false);
+        }}
+      />
     </div>
   );
 };

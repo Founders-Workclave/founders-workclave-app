@@ -1,12 +1,16 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 import styles from "./styles.module.css";
 import MessageApp from "@/svgs/messageApp";
 import PrdDownload from "@/svgs/prdDownload";
 import Pause from "@/svgs/pause";
 import Terminate from "@/svgs/terminate";
 import { ProjectService } from "@/lib/api/projectService";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://foundersapi.up.railway.app";
 
 interface ProjectHeaderProps {
   id: string;
@@ -15,10 +19,10 @@ interface ProjectHeaderProps {
   createdOn: string;
   lastUpdated: string;
   dueDate?: string;
+  projectManagerId?: string;
   onBack: () => void;
-  onMessagePM: () => void;
   onDownloadPRD: () => void;
-  onProjectUpdated?: () => void; // Callback to refresh project data
+  onProjectUpdated?: () => void;
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
@@ -28,16 +32,17 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   createdOn,
   lastUpdated,
   dueDate,
+  projectManagerId,
   onBack,
-  onMessagePM,
   onDownloadPRD,
   onProjectUpdated,
 }) => {
+  const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -53,6 +58,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   }, []);
 
   const getStatusClass = () => {
+    if (!status) return "";
     const normalizedStatus = status.toLowerCase().replace(/\s+/g, "-");
     switch (normalizedStatus) {
       case "ongoing":
@@ -71,16 +77,48 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
     }
   };
 
+  const handleMessagePM = async () => {
+    if (!projectManagerId) {
+      toast.error("No product manager assigned to this project");
+      return;
+    }
+
+    try {
+      setIsStartingConversation(true);
+      const token = localStorage.getItem("access_token");
+
+      const formData = new FormData();
+      formData.append("userID", projectManagerId);
+
+      const response = await fetch(`${API_BASE_URL}/chat/conversation/`, {
+        method: "POST",
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Failed to start conversation");
+
+      const data = await response.json();
+      router.push(
+        `/founder/messages?conversationId=${data.conversationID}&userId=${projectManagerId}`
+      );
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+      toast.error("Failed to start conversation with PM");
+    } finally {
+      setIsStartingConversation(false);
+    }
+  };
+
   const handlePauseProject = async () => {
     setIsDropdownOpen(false);
-
     if (isProcessing) return;
 
-    // Show confirmation dialog
     const confirmed = window.confirm(
       "Are you sure you want to pause this project? Work will be temporarily suspended."
     );
-
     if (!confirmed) return;
 
     setIsProcessing(true);
@@ -91,11 +129,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
       toast.success(response.message || "Project paused successfully", {
         id: loadingToast,
       });
-
-      // Refresh project data
-      if (onProjectUpdated) {
-        onProjectUpdated();
-      }
+      if (onProjectUpdated) onProjectUpdated();
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to pause project",
@@ -108,14 +142,11 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
 
   const handleTerminateProject = async () => {
     setIsDropdownOpen(false);
-
     if (isProcessing) return;
 
-    // Show confirmation dialog
     const confirmed = window.confirm(
       "Are you sure you want to terminate this project? This action cannot be undone."
     );
-
     if (!confirmed) return;
 
     setIsProcessing(true);
@@ -126,15 +157,10 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
       toast.success(response.message || "Project terminated successfully", {
         id: loadingToast,
       });
-
-      // Refresh project data or navigate away
       if (onProjectUpdated) {
         onProjectUpdated();
       } else {
-        // Optionally navigate back to projects list after termination
-        setTimeout(() => {
-          onBack();
-        }, 2000);
+        setTimeout(() => onBack(), 2000);
       }
     } catch (error) {
       toast.error(
@@ -177,10 +203,15 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
         </div>
 
         <div className={styles.actions}>
-          <button onClick={onMessagePM} className={styles.messageButton}>
+          <button
+            onClick={handleMessagePM}
+            className={styles.messageButton}
+            disabled={isStartingConversation || !projectManagerId}
+          >
             <MessageApp />
-            Message PM
+            {isStartingConversation ? "Starting..." : "Message PM"}
           </button>
+
           <button onClick={onDownloadPRD} className={styles.downloadButton}>
             <PrdDownload />
             Download PRD

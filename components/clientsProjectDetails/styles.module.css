@@ -690,3 +690,39 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.progressStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  font-family: "inter", sans-serif;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.progressStatCard {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.progressStatValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.progressStatLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .progressStats {
+    grid-template-columns: 1fr;
+  }
+}

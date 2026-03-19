@@ -1,6 +1,6 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styles from "./styles.module.css";
 import Image from "next/image";
 import { founderMenuItems } from "@/utils/data";
@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/auth";
 import Link from "next/link";
 import HeaderNotification from "@/components/notificationDropdown/notificationComp";
+import { profileService } from "@/lib/api/clientsService/clientsProfile";
 
 interface FounderLayoutProps {
   pageTitle: string;
@@ -38,15 +39,68 @@ const FounderLayout: React.FC<FounderLayoutProps> = ({
   const [displayName, setDisplayName] = useState<string>("");
   const [initials, setInitials] = useState<string>("");
 
-  // Fetch profile on mount
+  const handleLogout = useCallback(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    router.replace("/login");
+  }, [router]);
+
+  const isTokenExpired = useCallback(() => {
+    try {
+      const token =
+        localStorage.getItem("access_token") ||
+        sessionStorage.getItem("access_token");
+      if (!token) return true;
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const expiryMs = payload.exp * 1000;
+      return Date.now() >= expiryMs;
+    } catch {
+      return true;
+    }
+  }, []);
+
   useEffect(() => {
-    const loadProfile = () => {
-      setProfileImage(getUserProfileImage());
-      setDisplayName(getUserDisplayName());
-      setInitials(getUserInitials());
+    if (isTokenExpired()) {
+      handleLogout();
+      return;
+    }
+
+    try {
+      const token =
+        localStorage.getItem("access_token") ||
+        sessionStorage.getItem("access_token");
+      if (!token) return;
+
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const expiryMs = payload.exp * 1000;
+      const delay = expiryMs - Date.now();
+
+      const timer = setTimeout(() => {
+        handleLogout();
+      }, delay);
+
+      return () => clearTimeout(timer);
+    } catch {
+      handleLogout();
+    }
+  }, [handleLogout, isTokenExpired]);
+
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        await profileService.fetchUserProfile();
+        setProfileImage(getUserProfileImage());
+        setDisplayName(getUserDisplayName());
+        setInitials(getUserInitials());
+      } catch {
+        setProfileImage(getUserProfileImage());
+        setDisplayName(getUserDisplayName());
+        setInitials(getUserInitials());
+      }
     };
 
-    loadProfile();
+    loadProfileImage();
   }, []);
 
   // Listen for profile updates
@@ -66,7 +120,6 @@ const FounderLayout: React.FC<FounderLayoutProps> = ({
     };
   }, []);
 
-  // Auth + role check
   useEffect(() => {
     if (!isAuthenticated()) {
       router.replace("/login");

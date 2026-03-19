@@ -4,8 +4,8 @@ import styles from "./styles.module.css";
 import DocumentCard from "./documentsCard";
 import DocEmpty from "@/svgs/docEmpty";
 import { DocumentService, Document } from "@/lib/api/documentService";
-import Loader from "../loader";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import AllLoading from "@/layout/Loader";
 
 interface PageProps {
   params: {
@@ -66,12 +66,7 @@ const DocumentsPage = ({ params }: PageProps) => {
   };
 
   if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
-        <p>Loading documents...</p>
-      </div>
-    );
+    return <AllLoading text="Loading documents..." />;
   }
 
   if (error) {

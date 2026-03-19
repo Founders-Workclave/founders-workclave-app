@@ -2,6 +2,7 @@ import {
   ManagerProject,
   TransformedManagerProject,
   ManagerProjectDetails,
+  ClientProjectDetails,
 } from "@/types/managersDashbord";
 
 const getInitials = (name: string): string => {
@@ -138,5 +139,95 @@ export const transformManagerProjectDetails = (
           initials: getInitials(project.managerName as string),
         }
       : undefined,
+  };
+};
+
+export const transformClientProjectDetails = (
+  data: Record<string, unknown>
+): ClientProjectDetails => {
+  const project = data.project as Record<string, unknown>;
+  const nextMilestone = data.nextMilestone as Record<string, unknown> | null;
+
+  const features = (
+    (project.projectFeatures as { id: number; feature: string }[]) || []
+  )
+    .map((f) => ({
+      id: String(f.id),
+      name: parseFeatureName(f.feature),
+    }))
+    .filter((f) => Boolean(f.name));
+
+  const milestones = nextMilestone
+    ? [
+        {
+          id: nextMilestone.id as string,
+          name: nextMilestone.title as string,
+          status: (nextMilestone.completed ? "completed" : "in-progress") as
+            | "completed"
+            | "in-progress"
+            | "pending",
+        },
+      ]
+    : [];
+
+  // Calculate days until deadline
+  const daysUntilDeadline = (() => {
+    const due = project.dueDate as string | null;
+    if (!due) return 0;
+    const diff = new Date(due).getTime() - new Date().getTime();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  })();
+
+  return {
+    id: project.id as string,
+    projectName: (project.name as string) || "",
+    status: (project.status as string) || "",
+    startedAgo: formatTimeAgo(project.dateCreated as string | null),
+    lastUpdated: formatTimeAgo(project.updatedDate as string | null),
+    dueDate: formatDate(project.dueDate as string | null),
+    timeline: (project.timeline as string) || "",
+    totalBudget: parseFloat((project.projectValue as string) || "0"),
+    budgetPaid: parseFloat((project.paidBalance as string) || "0"),
+    documents: (project.documents as number) || 0,
+    lastDocumentUpload: "No uploads yet",
+    totalMilestone: (project.totalMilestone as number) || 0,
+    completedMilestone: (project.completedMilestone as number) || 0,
+    daysUntilDeadline,
+    projectProgress: {
+      overallCompletion: (project.progressPercentage as number) || 0,
+      milestones,
+    },
+    problemStatement: (project.description as string) || undefined,
+    keyFeatures: features.length > 0 ? features : undefined,
+    client: {
+      id: (project.client as string) || "",
+      name: (project.clientName as string) || "",
+      initials: getInitials((project.clientName as string) || ""),
+    },
+    productManager: project.managerName
+      ? {
+          id: (project.manager as string) || "",
+          name: project.managerName as string,
+          initials: getInitials(project.managerName as string),
+        }
+      : undefined,
+    nextMilestone: nextMilestone
+      ? {
+          id: nextMilestone.id as string,
+          title: nextMilestone.title as string,
+          description: nextMilestone.description as string,
+          price: nextMilestone.price as string,
+          dueDate: nextMilestone.dueDate as string,
+          paid: nextMilestone.paid as boolean,
+          completed: nextMilestone.completed as boolean,
+          order: nextMilestone.order as number,
+          status: nextMilestone.status as string,
+          deliverables:
+            (nextMilestone.deliverables as Array<{
+              id: string;
+              task: string;
+            }>) || [],
+        }
+      : null,
   };
 };

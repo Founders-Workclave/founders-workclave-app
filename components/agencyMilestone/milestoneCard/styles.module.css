@@ -189,7 +189,8 @@
 
 .viewDeliverablesButton,
 .editMilestoneButton,
-.markCompleteButton {
+.markCompleteButton,
+.viewDetailsButton {
   font-size: 16px;
   font-weight: 400;
   cursor: pointer;
@@ -226,7 +227,8 @@
   border-color: #d1d5db;
 }
 
-.markCompleteButton {
+.markCompleteButton,
+.viewDetailsButton {
   background: #5865f2;
   color: white;
   border: 1px solid #5865f2;

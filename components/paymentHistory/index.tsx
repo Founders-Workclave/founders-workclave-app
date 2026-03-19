@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from "react";
 import styles from "./styles.module.css";
 import { PaymentService, PaymentTransaction } from "@/lib/api/paymentService";
-import Loader from "../loader";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import AllLoading from "@/layout/Loader";
 
 interface PaymentHistoryProps {
   projectId?: string;
@@ -38,7 +38,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ projectId }) => {
           projectValue: data.projectValue,
           paid: data.paid,
           remaining: data.remaining,
-          paymentHistory: data.paymentHistory,
+          paymentHistory: data.paymentHistory ?? [],
         });
       } catch (err) {
         setError(
@@ -54,12 +54,7 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({ projectId }) => {
   }, [projectId]);
 
   if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
-        <p>Loading payment history...</p>
-      </div>
-    );
+    return <AllLoading text="Loading payment history..." />;
   }
 
   if (error) {

@@ -166,3 +166,12 @@
     font-size: 14px;
   }
 }
+
+.projectMilestone {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 4px 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

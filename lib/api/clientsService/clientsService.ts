@@ -3,10 +3,12 @@ import {
   ManagerStats,
   TransformedManagerProject,
   ManagerProjectDetails,
+  ClientProjectDetails,
 } from "@/types/managersDashbord";
 import {
   transformManagerProjects,
   transformManagerProjectDetails,
+  transformClientProjectDetails, // ← add this
 } from "@/utils/managersTransformers";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -17,10 +19,6 @@ console.log("🔍 Client Service - Environment check:", {
   nodeEnv: process.env.NODE_ENV,
 });
 
-/**
- * Get authentication token from storage or cookies
- * Adjust this based on your auth implementation
- */
 const getAuthToken = (): string | null => {
   if (typeof window !== "undefined") {
     const possibleKeys = [
@@ -66,9 +64,6 @@ const getAuthToken = (): string | null => {
 };
 
 class ClientService {
-  /**
-   * Build headers with authentication
-   */
   private getHeaders(): HeadersInit {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
@@ -83,9 +78,6 @@ class ClientService {
     return headers;
   }
 
-  /**
-   * Fetch Client dashboard data
-   */
   async getDashboard(): Promise<{
     stats: ManagerStats;
     projects: TransformedManagerProject[];
@@ -126,7 +118,6 @@ class ClientService {
           console.error("❌ Token appears to be invalid or expired");
           console.error("💡 Try logging out and logging back in");
         }
-
         throw new Error(
           `HTTP ${response.status}: ${response.statusText || "Request failed"}`
         );
@@ -146,7 +137,6 @@ class ClientService {
       console.error("💥 Error type:", error?.constructor?.name);
       console.error("💥 Error message:", (error as Error)?.message);
 
-      // Provide more specific error messages
       if (error instanceof TypeError && error.message === "Failed to fetch") {
         const errorMessage =
           "❌ Network error: Unable to connect to the server.\n\n";
@@ -160,9 +150,6 @@ class ClientService {
     }
   }
 
-  /**
-   * Fetch project details for a Client
-   */
   async getProjectDetails(projectId: string): Promise<ManagerProjectDetails> {
     const url = `${BASE_URL}/client/project/${projectId}/`;
 
@@ -192,15 +179,44 @@ class ClientService {
     } catch (error) {
       console.error("💥 Error fetching project details:", error);
 
-      // Provide more specific error messages
       if (error instanceof TypeError && error.message === "Failed to fetch") {
         const errorMessage =
           "❌ Network error: Unable to connect to the server.";
-
         console.error(errorMessage);
         throw new Error(errorMessage);
       }
 
+      throw error instanceof Error
+        ? error
+        : new Error("Failed to fetch project details");
+    }
+  }
+
+  async getClientProjectDetails(
+    projectId: string
+  ): Promise<ClientProjectDetails> {
+    const url = `${BASE_URL}/client/project/${projectId}/`;
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("❌ Error response:", errorText);
+        throw new Error(
+          `HTTP ${response.status}: ${response.statusText || "Request failed"}`
+        );
+      }
+
+      const data = await response.json();
+      return transformClientProjectDetails(data);
+    } catch (error) {
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        throw new Error("Network error: Unable to connect to the server.");
+      }
       throw error instanceof Error
         ? error
         : new Error("Failed to fetch project details");

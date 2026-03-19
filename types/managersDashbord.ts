@@ -19,7 +19,6 @@ export interface ManagerStats {
   activeProjects: number;
 }
 
-// Transformed types for UI consumption
 export interface TransformedManagerProject {
   id: string;
   projectName: string;
@@ -38,7 +37,6 @@ export interface TransformedManagerProject {
   status: string;
 }
 
-// Manager Project Details Types
 export interface ManagerMilestone {
   id: string;
   name: string;
@@ -80,4 +78,50 @@ export interface ManagerProjectDetails {
     name: string;
     initials: string;
   };
+}
+
+// ─── Client Project Details ───────────────────────────────────────────────────
+
+export interface ClientNextMilestone {
+  id: string;
+  title: string;
+  description: string;
+  price: string;
+  dueDate: string;
+  paid: boolean;
+  completed: boolean;
+  order: number;
+  status: string;
+  deliverables: Array<{ id: string; task: string }>;
+}
+
+export interface ClientProjectDetails {
+  id: string;
+  projectName: string;
+  status: string;
+  startedAgo: string;
+  lastUpdated: string;
+  dueDate: string;
+  timeline: string;
+  totalBudget: number;
+  budgetPaid: number;
+  documents: number;
+  lastDocumentUpload: string;
+  totalMilestone: number;
+  completedMilestone: number;
+  daysUntilDeadline: number;
+  projectProgress: ManagerProjectProgress;
+  problemStatement?: string;
+  keyFeatures?: ManagerKeyFeature[];
+  client: {
+    id: string;
+    name: string;
+    initials: string;
+  };
+  productManager?: {
+    id: string;
+    name: string;
+    initials: string;
+  };
+  nextMilestone: ClientNextMilestone | null;
 }

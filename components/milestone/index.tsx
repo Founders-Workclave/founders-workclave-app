@@ -4,10 +4,9 @@ import styles from "./styles.module.css";
 import { Milestone } from "@/types/project";
 import { MilestoneService } from "@/lib/api/milestoneService";
 import MilestoneCard from "./milestoneCard";
-import Loader from "../loader";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import AllLoading from "@/layout/Loader";
 
-// API response type
 interface APIDeliverable {
   task: string;
 }
@@ -21,13 +20,13 @@ interface APIMilestone {
   paid: boolean;
   completed: boolean;
   order: number;
+  status: string;
   deliverables: APIDeliverable[];
   completedDate?: string | null;
   progress?: number;
   note?: string;
 }
 
-// API response wrapper
 interface MilestonesResponse {
   message: string;
   project: string;
@@ -43,13 +42,18 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({ projectId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Transform API milestone to app Milestone type
   const transformMilestone = (apiMilestone: APIMilestone): Milestone => {
-    // Derive status from paid and completed flags
     let status: "completed" | "in-progress" | "pending";
-    if (apiMilestone.completed) {
+
+    const apiStatus = apiMilestone.status?.toLowerCase().trim();
+
+    if (apiMilestone.completed || apiStatus === "completed") {
       status = "completed";
-    } else if (apiMilestone.paid) {
+    } else if (
+      apiStatus === "in-progress" ||
+      apiStatus === "in_progress" ||
+      apiStatus === "active"
+    ) {
       status = "in-progress";
     } else {
       status = "pending";
@@ -67,7 +71,7 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({ projectId }) => {
       dueDate: apiMilestone.dueDate,
       completedDate: apiMilestone.completedDate || null,
       payment: parseFloat(apiMilestone.price.replace(/,/g, "")) || 0,
-      status: status,
+      status,
       progress: apiMilestone.progress || 0,
       deliverables: apiMilestone.deliverables.map((d) => d.task),
       note: apiMilestone.note,
@@ -87,25 +91,20 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({ projectId }) => {
         setError(null);
 
         const response = await MilestoneService.getMilestones(projectId);
-
-        // Handle response - could be array or wrapped object
         let apiMilestones: APIMilestone[];
 
         if (Array.isArray(response)) {
-          // Direct array response - use unknown as intermediate type
           apiMilestones = response as unknown as APIMilestone[];
         } else if (
           response &&
           typeof response === "object" &&
           "milestones" in response
         ) {
-          // Wrapped response with milestones property
           apiMilestones = (response as MilestonesResponse).milestones;
         } else {
           throw new Error("Invalid response format");
         }
 
-        // Transform API data to app Milestone type
         const transformedData = apiMilestones.map(transformMilestone);
         setMilestones(transformedData);
       } catch (err) {
@@ -123,28 +122,21 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({ projectId }) => {
 
   const handleViewDetails = (milestoneId: string | number) => {
     console.log("View details for milestone:", milestoneId);
-    // TODO: Navigate to milestone details page or open modal
   };
 
   const handleRequestUpdate = (milestoneId: string | number) => {
     console.log("Request update for milestone:", milestoneId);
-    // TODO: Implement update request functionality
   };
 
   if (isLoading) {
-    return (
-      <div className={styles.container}>
-        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
-        <p>Loading milestones...</p>
-      </div>
-    );
+    return <AllLoading text="Loading milestones..." />;
   }
 
   if (error) {
     return (
       <ServiceUnavailable
-        title="Couldn't load PRDs"
-        message="We're having trouble loading your PRDs. Please try again."
+        title="Couldn't load milestones"
+        message="We're having trouble loading your milestones. Please try again."
         showRetry
         onRetry={() => window.location.reload()}
       />

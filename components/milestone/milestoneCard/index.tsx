@@ -9,6 +9,7 @@ import Payment from "@/svgs/payment";
 import CompletedNew from "@/svgs/completedNew";
 import ListIcons from "@/svgs/listIcons";
 import { Milestone } from "@/types/project";
+import PaymentModal from "@/components/paymentPopup/paymentModal";
 
 interface MilestoneCardProps {
   milestone: Milestone;
@@ -16,14 +17,9 @@ interface MilestoneCardProps {
   onRequestUpdate?: () => void;
 }
 
-const MilestoneCard: React.FC<MilestoneCardProps> = ({
-  milestone,
-  onViewDetails,
-  onRequestUpdate,
-}) => {
+const MilestoneCard: React.FC<MilestoneCardProps> = ({ milestone }) => {
   const [showDeliverables, setShowDeliverables] = useState(false);
-
-  // Use status directly from milestone data
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const status = milestone.status;
 
   const getStatusBadge = () => {
@@ -54,7 +50,6 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
     return parseFloat(priceStr.replace(/,/g, ""));
   };
 
-  // Format date to readable format
   const formatDate = (dateStr: string): string => {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-US", {
@@ -77,8 +72,8 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
             <span className={styles.milestoneNumber}>
               Milestone {milestone.number}
             </span>
-            <span className={`${styles.statusBadge} ${statusBadge.class}`}>
-              {statusBadge.text}
+            <span className={`${styles.statusBadge} ${statusBadge?.class}`}>
+              {statusBadge?.text}
             </span>
           </div>
         </div>
@@ -107,31 +102,15 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
           )}
         </div>
 
-        {status === "in-progress" && milestone.progress !== undefined && (
-          <div className={styles.progressSection}>
-            <div className={styles.progressHeader}>
-              <span className={styles.progressLabel}>Progress</span>
-              <span className={styles.progressPercentage}>
-                {milestone.progress}%
-              </span>
-            </div>
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${milestone.progress}%` }}
-              />
-            </div>
-          </div>
-        )}
-
         {milestone.note && (
           <div className={styles.note}>
             <strong>Note:</strong> {milestone.note}
           </div>
         )}
 
-        <div className={styles.actions}>
-          {status === "completed" && milestone.deliverables.length > 0 && (
+        {/* Actions */}
+        {milestone.deliverables.length > 0 && (
+          <div className={styles.actions}>
             <button
               onClick={() => setShowDeliverables(!showDeliverables)}
               className={styles.viewDeliverablesButton}
@@ -151,25 +130,29 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
-          )}
 
-          {status === "in-progress" && (
-            <>
+            {status === "in-progress" && (
               <button
-                onClick={onViewDetails}
+                onClick={() => setIsPaymentModalOpen(true)}
                 className={styles.viewDetailsButton}
               >
-                View details
+                Pay for milestone
               </button>
-              <button
-                onClick={onRequestUpdate}
-                className={styles.requestUpdateButton}
-              >
-                Request update
-              </button>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        )}
+
+        {/* Show pay button even if no deliverables */}
+        {milestone.deliverables.length === 0 && status === "in-progress" && (
+          <div className={styles.actions}>
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className={styles.viewDetailsButton}
+            >
+              Pay for milestone
+            </button>
+          </div>
+        )}
 
         {showDeliverables && milestone.deliverables.length > 0 && (
           <div className={styles.deliverables}>
@@ -184,6 +167,28 @@ const MilestoneCard: React.FC<MilestoneCardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        milestone={{
+          title: milestone.title,
+          description: milestone.description,
+          dueDate: milestone.dueDate,
+          amount: parsePrice(milestone.price),
+          deliverables: milestone.deliverables,
+        }}
+        walletBalance={0}
+        onPayWithWallet={() => {
+          console.log("Wallet payment for:", milestone.title);
+          setIsPaymentModalOpen(false);
+        }}
+        onPayWithPaystack={() => {
+          console.log("Paystack payment for:", milestone.title);
+          setIsPaymentModalOpen(false);
+        }}
+      />
     </div>
   );
 };

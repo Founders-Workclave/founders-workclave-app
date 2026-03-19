@@ -28,21 +28,15 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects }) => {
     }
   };
 
-  const getStage = (project: Project) => {
-    // Use latest_milestone if available
-    if (project.latestMilestone) {
-      return `Milestone ${project.latestMilestone}`;
+  const getCurrentMilestone = (project: Project) => {
+    if (project.latestMilestone) return project.latestMilestone;
+
+    if (project.completedMilestone > 0 && project.totalMilestone > 0) {
+      return `Milestone ${project.completedMilestone} of ${project.totalMilestone}`;
     }
 
-    // Fallback to completedMilestone/totalMilestone if available
-    if (project.totalMilestone > 0) {
-      if (project.completedMilestone === 0) {
-        return "Not started";
-      }
-      return `Milestone ${project.completedMilestone}/${project.totalMilestone}`;
-    }
+    if (project.status) return project.status;
 
-    // Default based on status
     return "Not started";
   };
 
@@ -54,7 +48,7 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects }) => {
         {projects.map((project: Project) => (
           <Link
             key={project.id}
-            href={`/projects/${project.id}`}
+            href={`/founder/${project.id}`}
             className={styles.projectLinkWrapper}
           >
             <div className={styles.projectCard}>
@@ -70,7 +64,9 @@ const RecentProjects: React.FC<RecentProjectsProps> = ({ projects }) => {
               </div>
 
               <h3 className={styles.projectTitle}>{project.name}</h3>
-              <p className={styles.projectPhase}>{getStage(project)}</p>
+              <p className={styles.projectMilestone}>
+                {getCurrentMilestone(project)}
+              </p>
 
               <div className={styles.progressSection}>
                 <div className={styles.progressHeader}>

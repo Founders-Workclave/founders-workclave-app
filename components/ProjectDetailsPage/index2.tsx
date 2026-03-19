@@ -1,16 +1,19 @@
 "use client";
 import { useState, useEffect } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { ProjectService } from "@/lib/api/projectService";
-import { Project } from "@/types/project";
+import { Project, NextMilestoneData } from "@/types/project";
 import styles from "./styles.module.css";
 import ProjectProgress from "../projectDetail/projectProgress";
 import ProblemStatement from "../projectDetail/problemStatement";
 import KeyFeatures from "../projectDetail/keyfeatures";
 import NextMilestone from "../projectDetail/nextMilestone";
 import ProductManager from "../projectDetail/productManager";
-import Loader from "../loader";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
+import AllLoading from "@/layout/Loader";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "https://foundersapi.up.railway.app";
 
 interface PageProps {
   params: {
@@ -20,17 +23,26 @@ interface PageProps {
 }
 
 export default function TabOneComponent({ params }: PageProps) {
+  const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
+  const [nextMilestone, setNextMilestone] = useState<NextMilestoneData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [, setIsMessageLoading] = useState(false);
 
   useEffect(() => {
     const fetchProject = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await ProjectService.getProjectById(params.projectId);
-        setProject(data);
+
+        const { project: projectData, nextMilestone: milestoneData } =
+          await ProjectService.getProjectById(params.projectId);
+
+        setProject(projectData);
+        setNextMilestone(milestoneData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load project");
       } finally {
@@ -43,29 +55,57 @@ export default function TabOneComponent({ params }: PageProps) {
     }
   }, [params.projectId]);
 
-  const handleMessagePM = () => {
-    console.log("Message PM clicked");
-    // TODO: Implement messaging functionality
+  const handleMessagePM = async () => {
+    if (!project?.projectManagerID) {
+      console.error("No PM ID available");
+      return;
+    }
+
+    try {
+      setIsMessageLoading(true);
+      const token = localStorage.getItem("access_token");
+
+      const formData = new FormData();
+      formData.append("userID", project.projectManagerID);
+
+      const response = await fetch(`${API_BASE_URL}/chat/conversation/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create conversation");
+      }
+
+      const data = await response.json();
+      const conversationId = data.conversationID;
+      const userId = project.projectManagerID;
+
+      router.push(
+        `/founder/messages?conversationId=${conversationId}&userId=${userId}`
+      );
+    } catch (err) {
+      console.error("Error starting conversation:", err);
+    } finally {
+      setIsMessageLoading(false);
+    }
   };
 
   const handleViewFullPRD = () => {
     console.log("View full PRD clicked");
-    // TODO: Navigate to full PRD view or open modal
   };
 
   if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <Loader type="pulse" loading={isLoading} size={15} color="#5865F2" />
-        <p>Loading...</p>
-      </div>
-    );
+    return <AllLoading text="Loading project details..." />;
   }
 
   if (error) {
     return (
       <ServiceUnavailable
-        title="Couldn't load "
+        title="Couldn't load project"
         message="We're having trouble loading. Please try again."
         showRetry
         onRetry={() => window.location.reload()}
@@ -77,7 +117,6 @@ export default function TabOneComponent({ params }: PageProps) {
     notFound();
   }
 
-  // Helper function to get initials from name
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -87,16 +126,14 @@ export default function TabOneComponent({ params }: PageProps) {
       .slice(0, 2);
   };
 
-  // Map API response to component structure
   const projectProgress = {
     overall: project.progressPercentage || 0,
     milestonesCompleted: project.completedMilestone || 0,
     totalMilestones: project.totalMilestone || 0,
-    daysLeftUntilDeadline: 0, // TODO: Calculate from dueDate
-    documentTotal: 0, // TODO: Get from documents API
+    daysLeftUntilDeadline: 0,
+    documentTotal: 0,
   };
 
-  // Extract features from projectFeatures array
   const keyFeatures = project.projectFeatures?.map((f) => f.feature) || [];
 
   return (
@@ -115,14 +152,17 @@ export default function TabOneComponent({ params }: PageProps) {
       </div>
 
       <div className={styles.rightColumn}>
-        <NextMilestone />
+        <NextMilestone
+          milestone={nextMilestone}
+          walletBalance={parseFloat(project.paidBalance) || 0}
+        />
 
         {project.projectManager && (
           <ProductManager
             manager={{
               name: project.projectManager,
               initials: getInitials(project.projectManager),
-              avatar: null, // API doesn't provide avatar
+              avatar: null,
             }}
             onMessagePM={handleMessagePM}
           />

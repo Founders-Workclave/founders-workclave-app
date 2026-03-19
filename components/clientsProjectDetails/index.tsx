@@ -8,26 +8,24 @@ import Timeline from "@/svgs/timeline";
 import Budget from "@/svgs/budget";
 import Document from "@/svgs/document";
 import CheckPassive from "@/svgs/checkPassive";
-import CheckActive from "@/svgs/checkActive";
-import { useManagerProjectDetails } from "@/hooks/useClientProjectDetails";
+import { useClientProjectDetails } from "@/hooks/useClientProjectDetails";
 import AllLoading from "@/layout/Loader";
 import { formatStatus, formatCurrency } from "@/utils/formatters";
 import WhiteMessage from "@/svgs/whiteMessage";
-import { useClientMilestones } from "@/hooks/useClientMilestones";
 import ClientMilestonesPage from "../clientMilestones/milestonePage";
 import ClientDocuments from "../clientsDocument";
 import ClientPayments from "../clientPayments";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 import { getAuthToken } from "@/lib/utils/auth";
 import toast from "react-hot-toast";
+import NextMilestone from "@/components/projectDetail/nextMilestone";
 
 const ClientsProjectDetailsPage: React.FC = () => {
   const params = useParams();
   const router = useRouter();
   const projectId = params?.id as string;
-  const { milestones } = useClientMilestones(projectId);
   const { project, isLoading, error, refetch } =
-    useManagerProjectDetails(projectId);
+    useClientProjectDetails(projectId);
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [isStartingConversation, setIsStartingConversation] = useState(false);
 
@@ -91,18 +89,6 @@ const ClientsProjectDetailsPage: React.FC = () => {
     }
   };
 
-  const getMilestoneIcon = (status: string) => {
-    if (status === "completed") return <CheckActive />;
-    if (status === "in-progress") return <CheckPassive />;
-    return <CheckPassive />;
-  };
-
-  const getMilestoneClass = (status: string): string => {
-    if (status === "completed") return styles.milestoneCompleted;
-    if (status === "in-progress") return styles.milestoneInProgress;
-    return styles.milestonePending;
-  };
-
   if (isLoading) {
     return (
       <div className={styles.container}>
@@ -122,6 +108,21 @@ const ClientsProjectDetailsPage: React.FC = () => {
     );
   }
 
+  const nextMilestoneData = project.nextMilestone
+    ? {
+        id: project.nextMilestone.id,
+        title: project.nextMilestone.title,
+        description: project.nextMilestone.description,
+        price: project.nextMilestone.price,
+        dueDate: project.nextMilestone.dueDate,
+        paid: project.nextMilestone.paid,
+        completed: project.nextMilestone.completed,
+        order: project.nextMilestone.order,
+        status: project.nextMilestone.status,
+        deliverables: project.nextMilestone.deliverables,
+      }
+    : null;
+
   return (
     <div className={styles.container}>
       {/* Header */}
@@ -140,7 +141,6 @@ const ClientsProjectDetailsPage: React.FC = () => {
               {formatStatus(project.status)}
             </span>
           </div>
-
           <div className={styles.actionButtons}>
             <button
               className={styles.messageButton}
@@ -157,7 +157,6 @@ const ClientsProjectDetailsPage: React.FC = () => {
           <span>•</span>
           <span>Last updated {project.lastUpdated}</span>
         </div>
-
         <div className={styles.dueDate}>Due: {project.dueDate}</div>
       </div>
 
@@ -174,7 +173,6 @@ const ClientsProjectDetailsPage: React.FC = () => {
             </span>
           </div>
         </div>
-
         <div className={styles.statCard}>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>
@@ -188,7 +186,6 @@ const ClientsProjectDetailsPage: React.FC = () => {
             </span>
           </div>
         </div>
-
         <div className={styles.statCard}>
           <div className={styles.statContent}>
             <span className={styles.statLabel}>
@@ -204,38 +201,17 @@ const ClientsProjectDetailsPage: React.FC = () => {
 
       {/* Tabs */}
       <div className={styles.tabs}>
-        <button
-          className={`${styles.tab} ${
-            activeTab === "overview" ? styles.tabActive : ""
-          }`}
-          onClick={() => setActiveTab("overview")}
-        >
-          Overview
-        </button>
-        <button
-          className={`${styles.tab} ${
-            activeTab === "milestones" ? styles.tabActive : ""
-          }`}
-          onClick={() => setActiveTab("milestones")}
-        >
-          Milestones
-        </button>
-        <button
-          className={`${styles.tab} ${
-            activeTab === "documents" ? styles.tabActive : ""
-          }`}
-          onClick={() => setActiveTab("documents")}
-        >
-          Documents
-        </button>
-        <button
-          className={`${styles.tab} ${
-            activeTab === "payment" ? styles.tabActive : ""
-          }`}
-          onClick={() => setActiveTab("payment")}
-        >
-          Payment
-        </button>
+        {["overview", "milestones", "documents", "payment"].map((tab) => (
+          <button
+            key={tab}
+            className={`${styles.tab} ${
+              activeTab === tab ? styles.tabActive : ""
+            }`}
+            onClick={() => setActiveTab(tab)}
+          >
+            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          </button>
+        ))}
       </div>
 
       {/* Content Area */}
@@ -244,6 +220,7 @@ const ClientsProjectDetailsPage: React.FC = () => {
           {activeTab === "overview" && (
             <div className={styles.overviewTab}>
               <div className={styles.colOne}>
+                {/* Project Progress */}
                 <div className={styles.section}>
                   <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>Project Progress</h2>
@@ -266,27 +243,37 @@ const ClientsProjectDetailsPage: React.FC = () => {
                       }}
                     />
                   </div>
-                  {milestones.length > 0 && (
-                    <div className={styles.milestonesList}>
-                      {milestones.slice(0, 5).map((milestone) => (
-                        <div
-                          key={milestone.id}
-                          className={`${styles.milestone} ${getMilestoneClass(
-                            milestone.status || ""
-                          )}`}
-                        >
-                          <span className={styles.milestoneIcon}>
-                            {getMilestoneIcon(milestone.status || "")}
-                          </span>
-                          <span className={styles.milestoneName}>
-                            {milestone.title}
-                          </span>
-                        </div>
-                      ))}
+
+                  {/* Stat cards */}
+                  <div className={styles.progressStats}>
+                    <div className={styles.progressStatCard}>
+                      <span className={styles.progressStatValue}>
+                        {project.completedMilestone}/{project.totalMilestone}
+                      </span>
+                      <span className={styles.progressStatLabel}>
+                        Milestones Completed
+                      </span>
                     </div>
-                  )}
+                    <div className={styles.progressStatCard}>
+                      <span className={styles.progressStatValue}>
+                        {project.daysUntilDeadline}
+                      </span>
+                      <span className={styles.progressStatLabel}>
+                        Days left until deadline
+                      </span>
+                    </div>
+                    <div className={styles.progressStatCard}>
+                      <span className={styles.progressStatValue}>
+                        {project.documents}
+                      </span>
+                      <span className={styles.progressStatLabel}>
+                        Document total file
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
+                {/* Problem Statement */}
                 {project.problemStatement && (
                   <div className={styles.section}>
                     <div className={styles.sectionHeader}>
@@ -301,6 +288,7 @@ const ClientsProjectDetailsPage: React.FC = () => {
                   </div>
                 )}
 
+                {/* Key Features */}
                 {project.keyFeatures && project.keyFeatures.length > 0 && (
                   <div className={styles.section}>
                     <h2 className={styles.sectionTitle}>Key Features</h2>
@@ -321,6 +309,13 @@ const ClientsProjectDetailsPage: React.FC = () => {
               </div>
 
               <div className={styles.sidebar}>
+                {/* Next Milestone */}
+                <NextMilestone
+                  milestone={nextMilestoneData}
+                  walletBalance={project.budgetPaid}
+                />
+
+                {/* Product Manager */}
                 {project.productManager ? (
                   <div className={styles.card}>
                     <h3 className={styles.cardTitle}>Product Manager</h3>
@@ -356,11 +351,9 @@ const ClientsProjectDetailsPage: React.FC = () => {
           {activeTab === "milestones" && (
             <ClientMilestonesPage projectId={projectId} />
           )}
-
           {activeTab === "documents" && (
             <ClientDocuments projectId={projectId} />
           )}
-
           {activeTab === "payment" && <ClientPayments projectId={projectId} />}
         </div>
       </div>

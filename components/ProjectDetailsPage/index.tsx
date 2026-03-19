@@ -28,15 +28,16 @@ export default function ProjectDetailPage({ params }: PageProps) {
         setIsLoading(true);
         setError(null);
 
-        const data = await ProjectService.getProjectById(params.projectId);
-        setProject(data);
+        const { project: projectData } = await ProjectService.getProjectById(
+          params.projectId
+        );
+        setProject(projectData);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to load project";
         setError(errorMessage);
         console.error("Error fetching project:", err);
 
-        // If unauthorized, redirect to login
         if (
           errorMessage.includes("Authentication failed") ||
           errorMessage.includes("log in")
@@ -55,11 +56,6 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
   const handleBack = () => {
     router.back();
-  };
-
-  const handleMessagePM = () => {
-    console.log("Message PM clicked");
-    // TODO: Implement messaging functionality
   };
 
   const handleDownloadPRD = async () => {
@@ -106,8 +102,10 @@ export default function ProjectDetailPage({ params }: PageProps) {
       setIsLoading(true);
       setError(null);
 
-      const data = await ProjectService.getProjectById(params.projectId);
-      setProject(data);
+      const { project: projectData } = await ProjectService.getProjectById(
+        params.projectId
+      );
+      setProject(projectData);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to load project";
@@ -164,8 +162,8 @@ export default function ProjectDetailPage({ params }: PageProps) {
         createdOn={formatDate(project.dateCreated)}
         lastUpdated={formatDate(project.updatedDate)}
         dueDate={project.dueDate ? formatDate(project.dueDate) : undefined}
+        projectManagerId={project.projectManagerID}
         onBack={handleBack}
-        onMessagePM={handleMessagePM}
         onDownloadPRD={handleDownloadPRD}
         onProjectUpdated={handleProjectUpdated}
       />

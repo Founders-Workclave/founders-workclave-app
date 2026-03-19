@@ -1,4 +1,4 @@
-import { Project, ApiProject } from "@/types/project";
+import { Project, ApiProject, ProjectDetailResponse } from "@/types/project";
 import { getUser, handleSessionTimeout } from "@/lib/api/auth";
 
 const API_BASE_URL =
@@ -10,9 +10,6 @@ function getAuthenticatedUserId(): string {
   return user.id;
 }
 
-/**
- * Transform API project response to frontend Project type
- */
 function transformProject(apiProject: ApiProject): Project {
   let status: string = "Pending";
 
@@ -20,7 +17,6 @@ function transformProject(apiProject: ApiProject): Project {
     status = "Completed";
   } else if (apiProject.status) {
     const statusLower = apiProject.status.toLowerCase();
-
     switch (statusLower) {
       case "terminated":
         status = "Terminated";
@@ -54,10 +50,10 @@ function transformProject(apiProject: ApiProject): Project {
 
   const projectManager =
     typeof apiProject.product_manager === "object" && apiProject.product_manager
-      ? apiProject.product_manager.name || "Unassigned"
+      ? (apiProject.product_manager as { name?: string }).name || "Unassigned"
       : typeof apiProject.product_manager === "string"
       ? apiProject.product_manager
-      : "Unassigned";
+      : apiProject.projectManager || "Unassigned";
 
   return {
     id: apiProject.id,
@@ -65,12 +61,13 @@ function transformProject(apiProject: ApiProject): Project {
     name: apiProject.name,
     description: apiProject.description,
     dateCreated: apiProject.dateCreated || apiProject.created_at || "",
-    projectManager: projectManager,
+    projectManager,
+    projectManagerID: apiProject.projectManagerID || "",
     dueDate: apiProject.due_date ?? null,
     updatedDate: apiProject.updated_at || apiProject.dateCreated || "",
     projectValue: apiProject.projectValue || "0",
     paidBalance: apiProject.paidBalance || "0",
-    status: status,
+    status,
     progressPercentage: apiProject.progressPercentage || 0,
     completed: apiProject.completed || false,
     totalMilestone: apiProject.totalMilestone || 0,
@@ -80,22 +77,14 @@ function transformProject(apiProject: ApiProject): Project {
   };
 }
 
-/**
- * Refreshes the access token using the refresh token
- */
 async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = localStorage.getItem("refresh_token");
-
-  if (!refreshToken) {
-    return null;
-  }
+  if (!refreshToken) return null;
 
   try {
     const response = await fetch(`${API_BASE_URL}/token/refresh/`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh: refreshToken }),
     });
 
@@ -116,9 +105,6 @@ async function refreshAccessToken(): Promise<string | null> {
   return null;
 }
 
-/**
- * Makes an authenticated API request with automatic token refresh
- */
 async function authenticatedFetch(
   url: string,
   options: RequestInit = {}
@@ -140,7 +126,6 @@ async function authenticatedFetch(
     cache: "no-store",
   });
 
-  // If unauthorized, try to refresh token and retry
   if (response.status === 401) {
     const newToken = await refreshAccessToken();
 
@@ -168,7 +153,6 @@ async function authenticatedFetch(
     return retryResponse;
   }
 
-  // If forbidden, token may be invalid or expired — force re-login
   if (response.status === 403) {
     console.error("403 Forbidden — token may be invalid or user unauthorized");
     handleSessionTimeout("/login");
@@ -183,9 +167,6 @@ async function authenticatedFetch(
 }
 
 export class ProjectService {
-  /**
-   * Fetches all projects for the logged-in user
-   */
   static async getUserProjects(): Promise<Project[]> {
     try {
       const response = await authenticatedFetch(
@@ -193,7 +174,6 @@ export class ProjectService {
       );
 
       const data = await response.json();
-
       let projectsArray: ApiProject[] = [];
 
       if (Array.isArray(data)) {
@@ -216,16 +196,16 @@ export class ProjectService {
     }
   }
 
-  /**
-   * Fetches a single project by ID
-   */
-  static async getProjectById(projectId: string): Promise<Project> {
+  static async getProjectById(
+    projectId: string
+  ): Promise<ProjectDetailResponse> {
     try {
       const response = await authenticatedFetch(
         `${API_BASE_URL}/founder/project/${projectId}/`
       );
 
       const data = await response.json();
+      console.log("🔍 Raw API response:", data); // ← add this temporarily
 
       let apiProject: ApiProject;
 
@@ -237,34 +217,29 @@ export class ProjectService {
         apiProject = data;
       }
 
-      return transformProject(apiProject);
+      return {
+        project: transformProject(apiProject),
+        nextMilestone: data.nextMilestone ?? null,
+      };
     } catch (error) {
       console.error("Failed to fetch project:", error);
       throw error;
     }
   }
 
-  /**
-   * Pause a project
-   */
   static async pauseProject(projectId: string): Promise<{ message: string }> {
     try {
       const response = await authenticatedFetch(
         `${API_BASE_URL}/founder/pause/project/${projectId}/`,
         { method: "POST" }
       );
-
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (error) {
       console.error("Error in pauseProject:", error);
       throw error;
     }
   }
 
-  /**
-   * Terminate a project
-   */
   static async terminateProject(
     projectId: string
   ): Promise<{ message: string }> {
@@ -273,9 +248,7 @@ export class ProjectService {
         `${API_BASE_URL}/founder/terminate/project/${projectId}/`,
         { method: "POST" }
       );
-
-      const data = await response.json();
-      return data;
+      return await response.json();
     } catch (error) {
       console.error("Error in terminateProject:", error);
       throw error;

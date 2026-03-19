@@ -9,28 +9,24 @@ import Loader from "../loader";
 import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 const ProjectComponent = () => {
-  // State management for projects, loading, and errors
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // useEffect runs when component mounts to fetch data
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        setIsLoading(true); // Show loading state
-        setError(null); // Clear any previous errors
+        setIsLoading(true);
+        setError(null);
 
         const data = await ProjectService.getUserProjects();
         setProjects(data);
       } catch (err) {
-        // Handle any errors that occur during fetch
         setError(
           err instanceof Error ? err.message : "Failed to load projects"
         );
         console.error("Error fetching projects:", err);
       } finally {
-        // Always set loading to false, whether success or failure
         setIsLoading(false);
       }
     };
@@ -47,7 +43,6 @@ const ProjectComponent = () => {
     );
   }
 
-  // Show error state if fetch failed
   if (error) {
     return (
       <ServiceUnavailable

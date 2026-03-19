@@ -22,7 +22,6 @@ export interface ProjectDetailsTypes {
   };
   walletBalance: number;
   onViewDetails: () => void;
-
   problemStatement: string;
   keyFeatures: string[];
   productManager: {
@@ -42,7 +41,7 @@ export interface Milestone {
   description: string;
   dueDate: string;
   completedDate?: string | null;
-  deliverables: string[]; // Changed from Array<{ task: string }>
+  deliverables: string[];
   status: "completed" | "in-progress" | "pending";
   number: number;
   progress?: number;
@@ -57,7 +56,6 @@ export interface ProjectMilestoneData {
   milestones: Milestone[];
 }
 
-// For Payment Modal
 export interface PaymentMilestoneData {
   title: string;
   description: string;
@@ -73,6 +71,7 @@ export interface Project {
   description: string;
   dateCreated: string;
   projectManager: string;
+  projectManagerID: string;
   dueDate: string | null;
   updatedDate: string;
   projectValue: string;
@@ -96,6 +95,8 @@ export interface ApiProject {
   name: string;
   description: string;
   dateCreated?: string;
+  projectManager?: string;
+  projectManagerID?: string;
   projectValue?: string;
   paidBalance?: string | null;
   status: string;
@@ -110,7 +111,7 @@ export interface ApiProject {
   latest_milestone?: string | null;
   problem_statement?: string;
   key_features?: string[];
-  product_manager?: ProductManager;
+  product_manager?: ProductManager | string;
 }
 
 export interface ProductManager {
@@ -119,4 +120,22 @@ export interface ProductManager {
   email: string;
   avatar?: string;
   role?: string;
+}
+
+export interface NextMilestoneData {
+  id: string;
+  title: string;
+  description: string;
+  price: string;
+  dueDate: string;
+  paid: boolean;
+  completed: boolean;
+  order: number;
+  status: string;
+  deliverables: Array<{ id: string; task: string }>;
+}
+
+export interface ProjectDetailResponse {
+  project: Project;
+  nextMilestone: NextMilestoneData | null;
 }

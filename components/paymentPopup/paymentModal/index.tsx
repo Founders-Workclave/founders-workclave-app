@@ -1,4 +1,3 @@
-// components/paymentPopup/paymentModal.tsx
 "use client";
 import React, { useState, useEffect } from "react";
 import MilestoneDetailsStep from "../milestoneDetails/index";
