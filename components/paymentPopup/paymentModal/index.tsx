@@ -5,6 +5,7 @@ import PaymentOptionsStep from "../paymentOption/index";
 import styles from "./styles.module.css";
 
 export interface MilestoneData {
+  id: string;
   title: string;
   description: string;
   dueDate: string;
@@ -32,8 +33,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   onPayWithPaystack,
 }) => {
   const [currentStep, setCurrentStep] = useState<Step>("milestone-details");
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -58,9 +60,54 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   const handleClose = () => {
-    // Reset to first step when closing
     setCurrentStep("milestone-details");
+    setInitError(null);
     onClose();
+  };
+
+  const handlePayWithFlutterwave = async () => {
+    try {
+      setIsInitializing(true);
+      setInitError(null);
+
+      const token = localStorage.getItem("access_token");
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_BASE_URL ||
+        "https://foundersapi.up.railway.app";
+
+      const response = await fetch(
+        `${baseUrl}/payment/milestone/${milestone.id}/initialize/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(
+          data.error || data.detail || "Failed to initialize payment"
+        );
+      }
+
+      const data = await response.json();
+
+      if (!data.payment_link) {
+        throw new Error("No payment link received");
+      }
+
+      window.location.href = data.payment_link;
+    } catch (err) {
+      console.error("Payment initialization error:", err);
+      setInitError(
+        err instanceof Error ? err.message : "Failed to initialize payment"
+      );
+    } finally {
+      setIsInitializing(false);
+    }
   };
 
   return (
@@ -91,8 +138,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           {currentStep === "payment-options" && (
             <PaymentOptionsStep
               walletBalance={walletBalance}
+              isInitializing={isInitializing}
+              initError={initError}
               onSelectWallet={onPayWithWallet}
-              onSelectPaystack={onPayWithPaystack}
+              onSelectPaystack={handlePayWithFlutterwave}
             />
           )}
         </div>

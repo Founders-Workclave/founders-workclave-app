@@ -41,6 +41,7 @@ const NextMilestone = ({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         milestone={{
+          id: milestone.id,
           title: milestone.title,
           description: milestone.description,
           dueDate: milestone.dueDate,
@@ -52,10 +53,7 @@ const NextMilestone = ({
           console.log("Wallet payment");
           setIsOpen(false);
         }}
-        onPayWithPaystack={() => {
-          console.log("Paystack payment");
-          setIsOpen(false);
-        }}
+        onPayWithPaystack={() => {}}
       />
     </div>
   );

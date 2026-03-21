@@ -176,6 +176,7 @@ const ClientMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
         milestone={{
+          id: milestone.id,
           title: milestone.title,
           description: milestone.description,
           dueDate: milestone.dueDate,

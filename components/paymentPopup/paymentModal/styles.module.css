@@ -82,3 +82,48 @@
     padding: 24px;
   }
 }
+
+.optionCardDisabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.optionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.comingSoonBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #5865f2;
+  background: #eef0fe;
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top-color: #5865f2;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.errorText {
+  font-size: 0.875rem;
+  color: #dc2626;
+  margin-top: 12px;
+  text-align: center;
+}

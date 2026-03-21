@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import styles from "./styles.module.css";
 
@@ -21,6 +20,8 @@ export default function FounderProjectModal() {
   const [category, setCategory] = useState("");
   const [vision, setVision] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
@@ -32,6 +33,7 @@ export default function FounderProjectModal() {
       setCategory("");
       setVision("");
       setSubmitted(false);
+      setSubmitError(null);
     }, 300);
   };
 
@@ -39,46 +41,62 @@ export default function FounderProjectModal() {
     if (step < STEPS.length - 1) setStep((s) => s + 1);
   };
 
-  const handleSubmit = () => {
-    setSubmitted(true);
-    setTimeout(() => handleClose(), 2000);
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const res = await fetch("/api/submit-project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idea, category, vision }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      setSubmitted(true);
+      setTimeout(() => handleClose(), 2000);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Failed to submit. Try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const canContinueStep0 = idea.trim().length > 0 && category.length > 0;
   const canContinueStep1 = vision.trim().length > 0;
 
   const isContinueDisabled =
-    (step === 0 && !canContinueStep0) || (step === 1 && !canContinueStep1);
+    (step === 0 && !canContinueStep0) ||
+    (step === 1 && !canContinueStep1) ||
+    isSubmitting;
 
   return (
     <>
-      {/* Trigger Button */}
       <div className={styles.page}>
         <button className={styles.triggerBtn} onClick={() => setOpen(true)}>
           + Submit Your Ideas
         </button>
       </div>
-
-      {/* Backdrop */}
       {open && (
         <div className={styles.backdrop} onClick={handleClose}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            {/* Header */}
             <div className={styles.header}>
               <h2 className={styles.title}>What are you building?</h2>
               <button className={styles.closeBtn} onClick={handleClose}>
                 ✕
               </button>
             </div>
-
-            {/* Step label */}
             <p className={styles.stepLabel}>
               Step {step + 1} of {STEPS.length}
               <span className={styles.stepDivider}> | </span>
               {STEPS[step]}
             </p>
-
-            {/* Progress bar */}
             <div className={styles.progressTrack}>
               <div
                 className={styles.progressFill}
@@ -91,8 +109,6 @@ export default function FounderProjectModal() {
                 <span className={styles.avatarInner}>👤</span>
               </div>
             </div>
-
-            {/* Step content */}
             <div className={styles.body}>
               {submitted ? (
                 <div className={styles.successBox}>
@@ -152,8 +168,7 @@ export default function FounderProjectModal() {
                 </>
               )}
             </div>
-
-            {/* Footer button */}
+            {submitError && <p className={styles.errorText}>{submitError}</p>}
             {!submitted && (
               <button
                 className={`${styles.continueBtn} ${
@@ -164,7 +179,11 @@ export default function FounderProjectModal() {
                   step === STEPS.length - 1 ? handleSubmit : handleContinue
                 }
               >
-                {step === STEPS.length - 1 ? "Submit" : "Continue"}
+                {step === STEPS.length - 1
+                  ? isSubmitting
+                    ? "Submitting..."
+                    : "Submit"
+                  : "Continue"}
               </button>
             )}
           </div>
