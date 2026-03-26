@@ -30,7 +30,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   milestone,
   walletBalance,
   onPayWithWallet,
-  onPayWithPaystack,
 }) => {
   const [currentStep, setCurrentStep] = useState<Step>("milestone-details");
   const [isInitializing, setIsInitializing] = useState(false);
@@ -71,40 +70,71 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       setInitError(null);
 
       const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        throw new Error("No access token found. Please log in again.");
+      }
+
+      if (!milestone?.id) {
+        throw new Error("Milestone ID is missing.");
+      }
+
       const baseUrl =
         process.env.NEXT_PUBLIC_API_BASE_URL ||
         "https://foundersapi.up.railway.app";
 
-      const response = await fetch(
-        `${baseUrl}/payment/milestone/${milestone.id}/initialize/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const url = `${baseUrl}/payment/milestone/${milestone.id}/initialize/`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: milestone.amount,
+          milestone_id: milestone.id,
+        }),
+      });
+
+      const rawText = await response.text();
+      console.log("=== SERVER RESPONSE ===");
+      console.log("Status:", response.status);
+      console.log("Body:", rawText);
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(
-          data.error || data.detail || "Failed to initialize payment"
-        );
+        // Try to parse as JSON for a cleaner error message
+        let errorMessage = `Request failed with status ${response.status}`;
+        try {
+          const errorData = JSON.parse(rawText);
+          errorMessage =
+            errorData.error ||
+            errorData.detail ||
+            errorData.message ||
+            JSON.stringify(errorData);
+        } catch {
+          // rawText was not JSON — use it directly if it has content
+          if (rawText) errorMessage = rawText;
+        }
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      let data: { payment_link?: string; tx_ref?: string };
+      try {
+        data = JSON.parse(rawText);
+      } catch {
+        throw new Error("Server returned an invalid response.");
+      }
 
       if (!data.payment_link) {
-        throw new Error("No payment link received");
+        throw new Error("No payment link received from server.");
       }
 
       window.location.href = data.payment_link;
     } catch (err) {
-      console.error("Payment initialization error:", err);
-      setInitError(
-        err instanceof Error ? err.message : "Failed to initialize payment"
-      );
+      const message =
+        err instanceof Error ? err.message : "Failed to initialize payment";
+      setInitError(message);
     } finally {
       setIsInitializing(false);
     }

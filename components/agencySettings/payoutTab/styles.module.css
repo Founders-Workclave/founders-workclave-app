@@ -33,3 +33,15 @@
 .saveButton:hover {
   background-color: #4f46e5;
 }
+
+.errorText {
+  color: #e53e3e;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.successText {
+  color: #38a169;
+  font-size: 14px;
+  margin-top: 4px;
+}

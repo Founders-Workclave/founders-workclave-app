@@ -15,28 +15,32 @@ export default function PaymentVerifyPage() {
       : "failed"
     : "loading";
 
+  const getRedirectPath = () => {
+    const user = getUser();
+    const role = user?.role?.toLowerCase();
+    const userType = user?.userType?.toLowerCase();
+
+    if (role === "clients" || userType === "client") return "/clients";
+    if (role === "agency" || userType === "agency") return "/agency";
+    return "/founder";
+  };
+
   useEffect(() => {
-    const getRedirectPath = () => {
-      const user = getUser();
-      const role = user?.role?.toLowerCase();
-      const userType = user?.userType?.toLowerCase();
+    if (status === "success") {
+      // Just show the success page — no auto-redirect
+      return;
+    }
 
-      if (role === "clients" || userType === "client") {
-        return "/client/projects";
-      }
-      if (role === "manager") {
-        return "/agency/projects";
-      }
-      // Default: founder
-      return "/founder/projects";
-    };
-
+    // Auto-redirect only for failed or loading states
     const timer = setTimeout(() => {
       router.push(getRedirectPath());
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [searchParams, router]);
+  }, [status, router]);
+  const handleGoHome = () => {
+    router.push(getRedirectPath());
+  };
 
   return (
     <div className={styles.container}>
@@ -49,14 +53,15 @@ export default function PaymentVerifyPage() {
 
       {status === "success" && (
         <div className={styles.card}>
-          <div className={styles.successIcon}>✓</div>
           <h2 className={styles.title}>Payment Successful!</h2>
           <p className={styles.message}>
-            Your milestone payment has been received. Redirecting you now...
+            Your milestone payment has been received.
           </p>
+          <button className={styles.homeButton} onClick={handleGoHome}>
+            Go to Dashboard
+          </button>
         </div>
       )}
-
       {status === "failed" && (
         <div className={styles.card}>
           <div className={styles.failedIcon}>✕</div>
@@ -64,6 +69,9 @@ export default function PaymentVerifyPage() {
           <p className={styles.message}>
             Something went wrong with your payment. Redirecting you now...
           </p>
+          <button className={styles.homeButton} onClick={handleGoHome}>
+            Go to Dashboard
+          </button>
         </div>
       )}
     </div>

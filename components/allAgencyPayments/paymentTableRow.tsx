@@ -6,17 +6,16 @@ interface Payment {
   transactionId: string;
   date: string | null;
   projectName: string;
-  milestoneNumber: number;
-  milestoneTitle: string;
   progress: {
-    current: number;
-    total: number;
     percentage: number;
   };
   amount: number;
   currency: string;
   percentagePaid: number;
   status: "completed" | "in-progress" | "pending";
+  paymentMethod: string | null;
+  paymentDate: string | null;
+  clientName?: string;
 }
 
 interface PaymentTableRowProps {
@@ -45,18 +44,27 @@ const PaymentTableRow: React.FC<PaymentTableRowProps> = ({
     return status
       .split("-")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join("-");
+      .join(" ");
+  };
+
+  const clipTransactionId = (id: string) => {
+    if (id.length <= 16) return id;
+    return `${id.slice(0, 8)}...${id.slice(-4)}`;
   };
 
   return (
     <tr className={styles.tableRow}>
-      <td className={styles.transactionId}>{payment.transactionId}</td>
+      <td>
+        <span className={styles.transactionId} title={payment.transactionId}>
+          {clipTransactionId(payment.transactionId)}
+        </span>
+      </td>
       <td>{payment.date || "—"}</td>
       <td>{payment.projectName}</td>
       <td>
         <div className={styles.progressCell}>
           <span className={styles.progressText}>
-            {payment.progress.current}/{payment.progress.total} Milestones
+            {payment.progress.percentage}% complete
           </span>
           <div className={styles.progressBar}>
             <div
@@ -73,7 +81,7 @@ const PaymentTableRow: React.FC<PaymentTableRowProps> = ({
             {payment.amount.toLocaleString()}
           </span>
           <span className={styles.percentagePaid}>
-            {payment.percentagePaid}% paid
+            {payment.percentagePaid.toFixed(0)}% paid
           </span>
         </div>
       </td>

@@ -1,0 +1,273 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 2, 2, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.2s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 24px 0;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modalTitle {
+  font-family: "inter", sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #090202;
+  margin: 0;
+}
+
+.closeButton {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #e4e4e4;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.closeButton:hover {
+  background: #f9fafb;
+  color: #090202;
+  border-color: #d1d5db;
+}
+
+/* Amount Hero */
+.amountHero {
+  margin: 24px;
+  background: linear-gradient(135deg, #5865f2 0%, #4f46e5 100%);
+  border-radius: 14px;
+  padding: 24px;
+  text-align: center;
+}
+
+.amountLabel {
+  font-family: "inter", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.amountValue {
+  font-family: "inter", sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.amountSub {
+  font-family: "inter", sans-serif;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0;
+}
+
+/* Details Grid */
+.detailsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #f3f4f6;
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 0 24px 20px;
+  border: 1px solid #e4e4e4;
+}
+
+.detailItem {
+  background: #ffffff;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.detailItem:first-child {
+  grid-column: 1 / -1;
+}
+
+.detailLabel {
+  font-family: "inter", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: #8e98a8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.detailValue {
+  font-family: "inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #090202;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+/* Progress */
+.progressSection {
+  margin: 0 24px 24px;
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e4e4e4;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.progressPercent {
+  font-family: "inter", sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #5865f2;
+}
+
+.progressTrack {
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #5865f2, #818cf8);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.progressSub {
+  font-family: "inter", sans-serif;
+  font-size: 12px;
+  color: #8e98a8;
+  margin: 0;
+}
+
+/* Status badges */
+.statusBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: "inter", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.statusCompleted {
+  background: #e1ffed;
+  color: #00b049;
+}
+
+.statusInProgress {
+  background: #ffefcb;
+  color: #7b580c;
+}
+
+.statusPending {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* Footer */
+.modalFooter {
+  padding: 0 24px 24px;
+}
+
+.closeBtn {
+  width: 100%;
+  padding: 14px;
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  border-radius: 10px;
+  font-family: "inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.closeBtn:hover {
+  background: #e5e7eb;
+}
+
+@media (max-width: 480px) {
+  .modal {
+    border-radius: 16px;
+  }
+
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .detailItem:first-child {
+    grid-column: 1;
+  }
+
+  .amountValue {
+    font-size: 28px;
+  }
+}
