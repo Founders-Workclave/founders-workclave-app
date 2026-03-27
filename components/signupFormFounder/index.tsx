@@ -34,14 +34,9 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
   // Handle successful registration
   useEffect(() => {
     if (success) {
-      console.log("✅ Founder signup successful, redirecting...");
-
-      // Call parent onSubmit if provided
       if (onSubmit) {
         onSubmit(formData);
       }
-
-      // Redirect to founder dashboard after short delay
       setTimeout(() => {
         router.push(`/founder`);
       }, 1500);
@@ -107,12 +102,6 @@ const SignupFormFounder: React.FC<SignupFormProps> = ({ onSubmit }) => {
       return;
     }
 
-    console.log("🔐 Submitting founder signup:", {
-      email: formData.email,
-      userType: "founder",
-    });
-
-    // Call signup function
     await signup(formData);
   };
 

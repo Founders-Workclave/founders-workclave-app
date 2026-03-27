@@ -67,18 +67,14 @@ const AdminFounderComp: React.FC = () => {
   }, [currentPage, searchQuery]);
 
   const handleFounderSelect = async (founderId: string) => {
-    console.log("🔍 See Details founder:", founderId);
-
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const founderFromTable = founders.find((f) => f.id === founderId);
-    console.log("📋 Founder from table:", founderFromTable);
 
     setSelectedUserId(founderId);
     setProfileLoading(true);
     setCurrentView("profile");
 
     const result = await fetchFounderById(founderId);
-
-    console.log("📊 Fetch result:", result);
 
     if (result.success && result.founder) {
       const validStatus: "Active" | "Inactive" | "Suspended" = [
@@ -114,14 +110,11 @@ const AdminFounderComp: React.FC = () => {
         prds: [],
       };
 
-      console.log("👤 Setting user data:", userData);
       setSelectedUserData(userData);
     } else {
       console.error("❌ Failed to fetch founder details:", result.error);
       const basicFounder = founders.find((f) => f.id === founderId);
       if (basicFounder) {
-        console.log("⚠️ Using fallback data from table");
-
         const validStatus: "Active" | "Inactive" | "Suspended" = [
           "Active",
           "Inactive",

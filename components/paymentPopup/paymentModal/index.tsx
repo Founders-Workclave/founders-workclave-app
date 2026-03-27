@@ -96,14 +96,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           milestone_id: milestone.id,
         }),
       });
-
       const rawText = await response.text();
-      console.log("=== SERVER RESPONSE ===");
-      console.log("Status:", response.status);
-      console.log("Body:", rawText);
 
       if (!response.ok) {
-        // Try to parse as JSON for a cleaner error message
         let errorMessage = `Request failed with status ${response.status}`;
         try {
           const errorData = JSON.parse(rawText);
@@ -113,7 +108,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             errorData.message ||
             JSON.stringify(errorData);
         } catch {
-          // rawText was not JSON — use it directly if it has content
           if (rawText) errorMessage = rawText;
         }
         throw new Error(errorMessage);

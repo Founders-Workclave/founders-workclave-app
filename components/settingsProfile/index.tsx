@@ -53,8 +53,6 @@ const SettingsPage: React.FC = () => {
         if (user) {
           setUserInfo(user);
 
-          console.log("User data loaded:", user);
-
           // Parse phone number to separate country code and number
           let phoneNumber = user.phoneNumber || "";
           let countryCode = "+234"; // default
@@ -77,15 +75,6 @@ const SettingsPage: React.FC = () => {
               }
             }
           }
-
-          console.log("Setting profile data with:", {
-            company: user.company || "",
-            firstName: user.firstName || "",
-            lastName: user.lastName || "",
-            phoneNumber: phoneNumber,
-            countryCode: countryCode,
-            email: user.email || "",
-          });
 
           setProfileData({
             company: user.company || "",

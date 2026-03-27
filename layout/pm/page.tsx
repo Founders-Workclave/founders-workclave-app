@@ -90,20 +90,16 @@ const PMLayout: React.FC<PMLayoutProps> = ({
 
   useEffect(() => {
     if (!isAuthenticatedUser) {
-      console.log("❌ User not authenticated, redirecting to login");
       router.replace("/login");
       return;
     }
 
     if (!isAuthorizedUser) {
-      console.log("❌ User is not a PM, access denied");
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const user = getUser();
-      console.log("Current user type:", user?.userType);
       router.replace("/unauthorized");
       return;
     }
-
-    console.log("✅ PM user authenticated and authorized");
   }, [isAuthenticatedUser, isAuthorizedUser, router]);
 
   const toggleMobileMenu = () => {

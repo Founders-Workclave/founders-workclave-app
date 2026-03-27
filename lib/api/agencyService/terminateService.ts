@@ -32,10 +32,6 @@ export const agencyTerminateService = {
       }
 
       const url = `${API_BASE_URL}/agency/project/${projectId}/terminate/`;
-      console.log("🚀 Terminating project:", projectId);
-      console.log("📍 API URL:", url);
-      console.log("🔑 Token present:", !!token);
-
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -49,10 +45,6 @@ export const agencyTerminateService = {
           `Failed to fetch: ${fetchError.message || "Network error"}`
         );
       });
-
-      console.log("📊 Response status:", response.status);
-      console.log("📊 Response ok:", response.ok);
-
       if (!response.ok) {
         let errorData: ApiErrorResponse;
 
@@ -86,7 +78,6 @@ export const agencyTerminateService = {
       }
 
       const data = await response.json();
-      console.log("✅ Terminate project API response:", data);
       return data;
     } catch (error) {
       console.error("🔥 Terminate project error:", error);

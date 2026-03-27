@@ -37,6 +37,7 @@ export function useNotifications(
   const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
+  const intentionalCloseRef = useRef<boolean>(false);
 
   const fetchNotifications = useCallback(async () => {
     setIsLoading(true);
@@ -56,12 +57,7 @@ export function useNotifications(
 
   const handleIncomingNotification = useCallback(
     (notification: Notification) => {
-      console.log("📨 handleIncomingNotification called:", notification);
-
-      if (!notification.id) {
-        console.warn("⚠️ No id, skipping");
-        return;
-      }
+      if (!notification.id) return;
 
       setNotifications((prev) => {
         const exists = prev.find((n) => n.id === notification.id);
@@ -71,32 +67,25 @@ export function useNotifications(
 
       if (!seenIdsRef.current.has(notification.id)) {
         seenIdsRef.current.add(notification.id);
-        console.log("🔔 Calling notify for:", notification.title);
         if (!notification.isRead) {
           notify(notification.title ?? "New notification", {
             body: notification.description ?? "",
             url: notification.link ?? "/",
           });
         }
-      } else {
-        console.log("👀 Already seen:", notification.id);
       }
     },
     [notify]
   );
 
   const connectWebSocket = useCallback(() => {
-    if (!token) {
-      console.warn("⚠️ No token, skipping WS connection");
-      return;
-    }
+    if (!token) return;
 
     if (
       wsRef.current &&
       (wsRef.current.readyState === WebSocket.OPEN ||
         wsRef.current.readyState === WebSocket.CONNECTING)
     ) {
-      console.log("⚡ WebSocket already connected, skipping...");
       return;
     }
 
@@ -105,52 +94,49 @@ export function useNotifications(
       reconnectTimeoutRef.current = null;
     }
 
-    console.log("🔌 Connecting WebSocket...");
+    intentionalCloseRef.current = false;
 
     const ws = new WebSocket(
       `wss://foundersapi.up.railway.app/ws/notifications/?token=${token}`
     );
     wsRef.current = ws;
 
-    ws.onopen = () => {
-      console.log("✅ Notification WebSocket connected");
-    };
+    ws.onopen = () => {};
 
     ws.onmessage = (event: MessageEvent) => {
-      console.log("📩 Raw WS message received:", event.data);
       try {
         const raw = JSON.parse(event.data as string) as Record<string, unknown>;
-        console.log("📦 Parsed WS data:", raw);
-
-        // Handle nested { message: { notification: {...} } } or { notification: {...} } or flat
         const inner = (raw.message ?? raw) as Record<string, unknown>;
         const payload = (inner.notification ??
           inner) as NotificationApiResponse;
 
-        console.log("🎯 Payload:", payload);
-
-        if (!payload.id) {
-          console.warn("⚠️ No id in payload, skipping:", payload);
-          return;
-        }
+        if (!payload.id) return;
 
         const notification = mapApiNotificationToComponent(payload);
-        console.log("✅ Mapped notification:", notification);
         handleIncomingNotification(notification);
       } catch (err) {
         console.error("❌ Failed to parse WS message:", err);
       }
     };
 
-    ws.onerror = () => {
-      console.error("❌ Notification WebSocket error");
-    };
+    // onerror always fires before onclose and gives no useful info beyond
+    // "something went wrong" — onclose has the code and reason, so we
+    // handle everything there and silence onerror entirely.
+    ws.onerror = () => {};
 
     ws.onclose = (event: CloseEvent) => {
-      console.log("🔴 WebSocket closed:", event.code);
       wsRef.current = null;
+
+      if (intentionalCloseRef.current) {
+        // Closed by us (unmount / navigation / Fast Refresh) — do nothing
+        return;
+      }
+
       if (event.code !== 1000) {
-        console.log("🔄 Reconnecting in 5s...");
+        // Unexpected disconnect — log once and schedule reconnect
+        console.warn(
+          `⚠️ Notification WebSocket closed unexpectedly (code ${event.code}). Reconnecting in 5s...`
+        );
         reconnectTimeoutRef.current = setTimeout(() => {
           connectWebSocket();
         }, 5000);
@@ -158,20 +144,20 @@ export function useNotifications(
     };
   }, [token, handleIncomingNotification]);
 
-  // Initial fetch
   useEffect(() => {
     if (autoFetch) {
       fetchNotifications();
     }
   }, [autoFetch, fetchNotifications]);
 
-  // WebSocket connection
   useEffect(() => {
     if (!token) return;
 
     connectWebSocket();
 
     return () => {
+      intentionalCloseRef.current = true;
+
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
         reconnectTimeoutRef.current = null;

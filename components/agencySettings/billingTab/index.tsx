@@ -47,7 +47,7 @@ const BillingTab: React.FC = () => {
       });
 
       if (response.ok) {
-        console.log("Plan selected:", planId);
+        const subscriptionData = await response.json();
       }
     } catch (error) {
       console.error("Error selecting plan:", error);
@@ -63,7 +63,6 @@ const BillingTab: React.FC = () => {
 
         if (response.ok) {
           setActiveSubscription(null);
-          console.log("Subscription cancelled");
         }
       } catch (error) {
         console.error("Error cancelling subscription:", error);

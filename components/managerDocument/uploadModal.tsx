@@ -84,11 +84,6 @@ const ManagerUploadPRDModal: React.FC<ManagerUploadPRDModalProps> = ({
         const errorText = await response.text();
         throw new Error(errorText || "Failed to upload PRD");
       }
-
-      const data = await response.json();
-      console.log("✅ PRD uploaded:", data);
-
-      // Reset form
       setFile(null);
       setDescription("");
       onSuccess();

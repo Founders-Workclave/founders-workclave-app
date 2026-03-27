@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 import styles from "./styles.module.css";
-import { ProjectFormData } from "@/types/createPrjects";
 import CreateProjectModal from "../createProject";
 
 interface CreateProjectButtonProps {
@@ -13,8 +12,7 @@ export default function CreateProjectButton({
 }: CreateProjectButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleCreateProject = (data: ProjectFormData) => {
-    console.log("Project Data:", data);
+  const handleCreateProject = () => {
     setIsModalOpen(false);
     if (onSuccess) onSuccess();
   };

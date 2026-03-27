@@ -60,8 +60,6 @@ export const useManagerPRDs = ({
     setError(null);
 
     try {
-      console.log("📄 Fetching manager PRDs for project:", projectId);
-
       const response = await fetch(
         `${BASE_URL}/manager/project/${projectId}/prds/`,
         { method: "GET", headers: getHeaders() }
@@ -76,16 +74,12 @@ export const useManagerPRDs = ({
       }
 
       const data = await response.json();
-      console.log("📄 Manager PRDs API response:", data);
-
       const transformed = transformPRDs(data.prds || []);
-      console.log("📄 Transformed PRDs:", transformed);
       setPRDs(transformed);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch PRDs";
       setError(errorMessage);
-      console.error("❌ Error fetching manager PRDs:", err);
       setPRDs([]);
     } finally {
       setIsLoading(false);
@@ -99,8 +93,6 @@ export const useManagerPRDs = ({
   const deletePRD = useCallback(
     async (prdId: number) => {
       try {
-        console.log("🗑️ Deleting manager PRD:", prdId);
-
         const response = await fetch(
           `${BASE_URL}/manager/project/prd/${prdId}/delete/`,
           { method: "DELETE", headers: getHeaders() }
@@ -115,9 +107,6 @@ export const useManagerPRDs = ({
             }`
           );
         }
-
-        console.log("✅ PRD deleted successfully:", prdId);
-        // Optimistically remove from UI
         setPRDs((prev) => prev.filter((prd) => prd.id !== prdId));
       } catch (err) {
         console.error("❌ Error deleting manager PRD:", err);

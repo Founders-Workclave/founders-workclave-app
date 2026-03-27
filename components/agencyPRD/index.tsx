@@ -78,9 +78,7 @@ const AllPRDsPage: React.FC = () => {
     document.body.removeChild(link);
   };
 
-  const handleDelete = (prd: PRD): void => {
-    console.log("Delete PRD:", prd);
-  };
+  const handleDelete = (prd: PRD): void => {};
 
   const handlePageChange = (page: number): void => {
     setCurrentPage(page);

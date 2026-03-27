@@ -74,28 +74,19 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({
 
   useEffect(() => {
     if (!isAuthenticated()) {
-      console.log("❌ User not authenticated, redirecting to login");
       router.replace("/login");
       return;
     }
 
     const user = getUser();
-    console.log("🔍 ClientLayout - Checking user authorization:", {
-      role: user?.role,
-      userType: user?.userType,
-    });
-
     const isClient =
       user?.role === "clients" || user?.userType?.toLowerCase() === "client";
     const isPM = user?.role === "manager";
 
     if (!isClient && !isPM) {
-      console.log("❌ User is not a Client or PM, access denied");
       router.replace("/unauthorized");
       return;
     }
-
-    console.log("✅ Client user authenticated and authorized");
   }, [router]);
 
   const toggleMobileMenu = () => {

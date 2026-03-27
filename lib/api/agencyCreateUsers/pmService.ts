@@ -24,22 +24,6 @@ export const pmService = {
   async registerPM(pmData: RegisterPMRequest): Promise<RegisterPMResponse> {
     try {
       const token = getAuthToken();
-
-      // 🐛 DEBUG: Log what we're sending (development only)
-      if (process.env.NODE_ENV === "development") {
-        console.log("=== REGISTER PM API CALL ===");
-        console.log("Endpoint:", `${API_BASE_URL}/agency/register-pm/`);
-        console.log("Data:", {
-          firstName: pmData.firstName,
-          lastName: pmData.lastName,
-          email: pmData.email,
-          phone: pmData.phone,
-          // Don't log password for security
-          password: "[REDACTED]",
-        });
-        console.log("============================");
-      }
-
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
@@ -58,16 +42,6 @@ export const pmService = {
         const errorData: ApiErrorResponse = await response
           .json()
           .catch(() => ({ message: "Failed to register PM" }));
-
-        // 🐛 DEBUG: Log detailed error (development only)
-        if (process.env.NODE_ENV === "development") {
-          console.error("=== API ERROR RESPONSE ===");
-          console.error("Status:", response.status);
-          console.error("Error Data:", errorData);
-          console.error("=========================");
-        }
-
-        // Parse error messages
         let errorMessage = "Failed to register PM";
 
         // Handle 409 Conflict (duplicate entry)
@@ -144,7 +118,6 @@ export const pmService = {
 
       const responseData: RegisterPMResponse = await response.json();
       if (process.env.NODE_ENV === "development") {
-        console.log("✅ PM registered successfully:", responseData);
       }
       return responseData;
     } catch (error) {

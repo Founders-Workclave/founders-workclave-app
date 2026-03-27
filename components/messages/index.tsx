@@ -41,8 +41,8 @@ const MessagesPage = ({ params }: PageProps) => {
   const { isConnected, sendMessage: sendWebSocketMessage } = useWebSocket({
     conversationId: selectedConversationId,
     onMessage: handleWebSocketMessage,
-    onConnect: () => console.log("✅ Chat WebSocket connected"),
-    onDisconnect: () => console.log("🔌 Chat WebSocket disconnected"),
+    onConnect: () => {},
+    onDisconnect: () => {},
     onError: (error) => console.error("❌ Chat WebSocket error:", error),
     autoConnect: true,
   });

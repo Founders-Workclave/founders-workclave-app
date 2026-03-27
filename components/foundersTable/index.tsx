@@ -87,7 +87,6 @@ const FoundersTable: React.FC<FoundersTableProps> = ({
 
   const handleAction = (action: string, founder: Founder) => {
     const founderId = getFounderId(founder);
-    console.log(`${action} founder:`, founderId);
     setOpenActionMenuId(null);
 
     switch (action) {
@@ -111,7 +110,6 @@ const FoundersTable: React.FC<FoundersTableProps> = ({
         break;
 
       default:
-        console.log("Unknown action:", action);
     }
   };
 

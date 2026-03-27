@@ -493,13 +493,6 @@ export const authApi = {
             payload.userType.toLowerCase()
           )}`
         : `${API_BASE_URL}/register/`;
-
-      console.log("🚀 Register URL:", url);
-      console.log(
-        "📦 Actual request body:",
-        JSON.stringify(requestBody, null, 2)
-      );
-
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -519,13 +512,6 @@ export const authApi = {
 
       const data = await response.json();
 
-      console.log(
-        "🔴 Raw API response:",
-        response.status,
-        JSON.stringify(data, null, 2)
-      );
-
-      // ── 400: parse root-level DRF errors e.g. { "email": ["..."] } ──────────
       if (response.status === 400) {
         const errorMessage = parseErrorBody(data as Record<string, unknown>);
         return {
@@ -535,8 +521,6 @@ export const authApi = {
           error: errorMessage,
         };
       }
-
-      // ── Other non-2xx ─────────────────────────────────────────────────────
       if (!response.ok) {
         const rawMessage =
           data.message || data.error || `Request failed (${response.status})`;
@@ -549,8 +533,6 @@ export const authApi = {
           error: friendlyMessage,
         };
       }
-
-      // ── Success ───────────────────────────────────────────────────────────
       const accessToken =
         data.access || data.data?.access || data.data?.token || data.token;
       const refreshToken = data.refresh || data.data?.refresh;

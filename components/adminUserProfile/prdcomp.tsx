@@ -39,8 +39,6 @@ const PrdComp: React.FC<UserProfileProps> = ({ user }) => {
 
   // Convert PRD data to match PRDCard interface
   const convertPRDToCardFormat = (prd: PRD) => {
-    console.log("Original PRD data:", prd);
-
     // Map status to match PRDCard's expected format
     const getCardStatus = (status: string): "In-Progress" | "Completed" => {
       if (status === "Published" || status === "Approved") {
@@ -71,8 +69,6 @@ const PrdComp: React.FC<UserProfileProps> = ({ user }) => {
       documentUrl: prd.prdUrl || "#",
       uploadedAt: prd.createdDate,
     };
-
-    console.log("Converted PRD data:", converted);
     return converted;
   };
 
@@ -95,13 +91,9 @@ const PrdComp: React.FC<UserProfileProps> = ({ user }) => {
     // Navigate to PRD detail page or open modal
   };
 
-  const handleEdit = (id: number) => {
-    console.log("Editing PRD:", id);
-    // Navigate to PRD edit page
-  };
+  const handleEdit = (_id: number) => {};
 
   const handleDownload = (id: number) => {
-    console.log("Downloading PRD:", id);
     const prd = user.prds.find((p) => parseInt(p.id) === id);
     if (prd && prd.prdUrl) {
       const link = window.document.createElement("a");

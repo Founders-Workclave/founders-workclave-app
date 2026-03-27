@@ -16,7 +16,11 @@ interface Payment {
   transactionId: string;
   date: string | null;
   projectName: string;
+  milestoneNumber: number;
+  milestoneTitle: string;
   progress: {
+    current: number;
+    total: number;
     percentage: number;
   };
   amount: number;
@@ -42,22 +46,25 @@ const AllAgencyPayments = () => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Check if mobile on mount
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
+  // Fetch payments from API
   useEffect(() => {
     const fetchPayments = async () => {
       try {
         setIsLoading(true);
         setError(null);
         const response = await paymentService.getPayments();
-
-        const transformedPayments: Payment[] = response.paymentHistory.map(
-          (payment, index) => ({
+        const transformedPayments: Payment[] = response.paymentHistory
+          .map((payment, index) => ({
             id: index + 1,
             transactionId: payment.transactionID,
             date: payment.paymentDate
@@ -68,26 +75,30 @@ const AllAgencyPayments = () => {
                 })
               : null,
             projectName: payment.projectName,
+            milestoneNumber: 0,
+            milestoneTitle: "",
             progress: {
-              percentage: payment.progressPercentage ?? 0,
+              current: 0,
+              total: 100,
+              percentage: payment.progressPercentage,
             },
             amount: parseFloat(payment.amount.replace(/,/g, "")),
             currency: "NGN",
-            percentagePaid: payment.percentagePaid ?? 0,
-            status:
-              payment.status === "ongoing"
-                ? "in-progress"
-                : (payment.status as "completed" | "pending"),
+            percentagePaid: payment.percentagePaid,
+            status: (payment.status === "ongoing"
+              ? "in-progress"
+              : payment.status === "successful"
+              ? "successful"
+              : "pending") as "completed" | "in-progress" | "pending",
             paymentMethod: null,
             paymentDate: payment.paymentDate,
             clientName: payment.clientName,
-          })
-        );
+          }))
+          .reverse();
 
         setPayments(transformedPayments);
       } catch (err) {
         if (err instanceof ApiError) {
-          setError(err.message);
         } else if (err instanceof Error) {
           setError(err.message);
         } else {
@@ -107,6 +118,7 @@ const AllAgencyPayments = () => {
     return (
       payment.transactionId.toLowerCase().includes(searchLower) ||
       payment.projectName.toLowerCase().includes(searchLower) ||
+      payment.milestoneTitle.toLowerCase().includes(searchLower) ||
       payment.status.toLowerCase().includes(searchLower) ||
       payment.clientName?.toLowerCase().includes(searchLower)
     );
@@ -114,13 +126,14 @@ const AllAgencyPayments = () => {
 
   const totalPages = Math.ceil(filteredPayments.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentPayments = filteredPayments.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentPayments = filteredPayments.slice(startIndex, endIndex);
 
-  const handlePageChange = (page: number) => setCurrentPage(page);
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
+  // Open modal with selected payment
   const handleSeeDetails = (paymentId: number) => {
     const payment = payments.find((p) => p.id === paymentId) ?? null;
     setSelectedPayment(payment);
@@ -129,13 +142,16 @@ const AllAgencyPayments = () => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    // Small delay before clearing data so close animation plays cleanly
     setTimeout(() => setSelectedPayment(null), 200);
   };
 
   if (isLoading) {
     return (
       <div className={styles.container}>
-        <AllLoading text="Loading payments..." />
+        <div className={styles.loadingState}>
+          <AllLoading text="Loading payments..." />
+        </div>
       </div>
     );
   }
@@ -172,11 +188,11 @@ const AllAgencyPayments = () => {
           </svg>
           <input
             type="text"
-            placeholder="Search by project, transaction ID, status..."
+            placeholder="Search"
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setCurrentPage(1);
+              setCurrentPage(1); // reset to page 1 on new search
             }}
             className={styles.searchInput}
           />
@@ -219,6 +235,7 @@ const AllAgencyPayments = () => {
           </div>
         )}
 
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className={styles.pagination}>
             <span className={styles.pageInfo}>
@@ -259,7 +276,7 @@ const AllAgencyPayments = () => {
           </div>
         )}
 
-        {filteredPayments.length === 0 && (
+        {filteredPayments.length === 0 && !isLoading && (
           <div className={styles.emptyState}>
             <p>No payments found</p>
           </div>

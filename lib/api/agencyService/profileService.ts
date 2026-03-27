@@ -101,16 +101,8 @@ export const profileService = {
       }
 
       const response_data = await response.json();
-      console.log("Fetched user profile RAW:", response_data);
       const hasDataWrapper = response_data.data !== undefined;
       const data = hasDataWrapper ? response_data.data : response_data;
-      console.log("Extracted data:", data);
-      console.log("🖼️ Image fields from API:", {
-        image: data.image,
-        companyLogo: data.companyLogo,
-        profileImage: data.profileImage,
-      });
-
       const existingUser = getUserFromStorage() as UserProfile | null;
 
       let phoneNumber =
@@ -139,11 +131,9 @@ export const profileService = {
         ),
       };
 
-      console.log("Updated profile to store:", updatedProfile);
       this.updateUserProfile(updatedProfile);
 
       const finalUser = this.getUserProfile();
-      console.log("Final user in storage after update:", finalUser);
       return finalUser as UserProfile;
     } catch (error) {
       if (error instanceof ApiError) throw error;
@@ -228,7 +218,6 @@ export const profileService = {
       }
 
       const response_data = await response.json();
-      console.log("Success response:", response_data);
 
       const responseData = response_data.data || {};
 
@@ -308,9 +297,6 @@ export const profileService = {
       }
 
       const data: LogoUploadResponse = await response.json();
-      console.log("🖼️ Upload logo response:", JSON.stringify(data));
-
-      // ✅ Check all possible field names the API might return
       const imageUrl = data.logoUrl || data.companyLogo || data.image;
       if (imageUrl) {
         this.updateUserProfile({ profileImage: toAbsoluteUrl(imageUrl) });

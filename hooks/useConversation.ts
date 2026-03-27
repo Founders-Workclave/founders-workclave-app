@@ -62,9 +62,7 @@ export const useConversations = ({
     new Map()
   );
 
-  useEffect(() => {
-    console.log("🔍 currentUserId:", currentUserId);
-  }, [currentUserId]);
+  useEffect(() => {}, [currentUserId]);
 
   const updateParticipantStatus = useCallback(
     (
@@ -79,7 +77,6 @@ export const useConversations = ({
         } else {
           next.delete(userId);
         }
-        console.log("📋 Online users:", Array.from(next));
         return next;
       });
 
@@ -406,27 +403,21 @@ export const useConversations = ({
 
   const handleWebSocketMessage = useCallback(
     (wsMessage: WebSocketMessage) => {
-      console.log("📨 WebSocket message:", wsMessage);
-
       if (wsMessage.type === "message" && wsMessage.conversationId) {
         const chatMessage = wsMessage.data as ChatMessageData;
 
         if (chatMessage.type === "connection_established") {
-          console.log("🔗 Connected:", chatMessage.conversation_id);
           return;
         }
         if (chatMessage.type === "online_users") {
           const userIds = chatMessage.user_ids as string[];
           if (!Array.isArray(userIds)) return;
 
-          console.log("👥 Online users batch received:", userIds);
-
           setOnlineUsers((prev) => {
             const next = new Set(prev);
             userIds.forEach((uid) => {
               if (uid !== currentUserId) next.add(uid);
             });
-            console.log("📋 Online users after batch:", Array.from(next));
             return next;
           });
 
@@ -453,13 +444,8 @@ export const useConversations = ({
           const status = chatMessage.status as "online" | "offline";
 
           if (userId === currentUserId) {
-            console.log("🔕 Ignoring own user_status");
             return;
           }
-
-          console.log(
-            `👤 ${userId} is now ${status} in conversation ${wsMessage.conversationId}`
-          );
 
           const mappedConvId = userConversationMap.current.get(userId);
 

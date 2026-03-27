@@ -54,8 +54,6 @@ export const useClientPRDs = ({
     setError(null);
 
     try {
-      console.log("📄 Fetching manager PRDs for project:", projectId);
-
       const token = getAuthToken();
       const headers: HeadersInit = {
         "Content-Type": "application/json",
@@ -78,10 +76,8 @@ export const useClientPRDs = ({
       }
 
       const data = await response.json();
-      console.log("📄 Clients PRDs API response:", data);
 
       const transformed = transformPRDs(data.prds || []);
-      console.log("📄 Transformed PRDs:", transformed);
       setPRDs(transformed);
     } catch (err) {
       const errorMessage =

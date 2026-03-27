@@ -40,19 +40,8 @@ export const useMilestones = ({
     setError(null);
 
     try {
-      console.log("📋 Fetching milestones for project:", projectId);
       const response = await agencyService.getProjectMilestones(projectId);
       const transformed = transformMilestones(response.milestones);
-
-      console.log(
-        "📊 Transformed milestones:",
-        transformed.map((m) => ({
-          id: m.id,
-          title: m.title,
-          status: m.status,
-          order: m.order || m.number,
-        }))
-      );
 
       setMilestones(transformed);
     } catch (err) {
@@ -101,16 +90,7 @@ export const useMilestones = ({
   const markMilestoneComplete = useCallback(
     async (milestoneId: string) => {
       try {
-        console.log("🎯 Marking milestone as complete:", {
-          milestoneId,
-          projectId,
-        });
-
-        // FIXED: Pass projectId to the completeMilestone function
         await milestoneService.completeMilestone(milestoneId, projectId);
-        console.log("✅ Milestone marked as complete successfully");
-
-        // OPTIMISTIC UPDATE: Update UI immediately
         setMilestones((prevMilestones) => {
           const sortedMilestones = [...prevMilestones].sort((a, b) => {
             const orderA = a.order || a.number || 0;
@@ -122,17 +102,8 @@ export const useMilestones = ({
             (m) => String(m.id) === String(milestoneId)
           );
 
-          console.log("📊 Updating milestone states:", {
-            currentIndex,
-            totalMilestones: sortedMilestones.length,
-            currentMilestone: sortedMilestones[currentIndex]?.title,
-            nextMilestone: sortedMilestones[currentIndex + 1]?.title,
-          });
-
           return sortedMilestones.map((milestone, index) => {
-            // Mark current milestone as completed
             if (String(milestone.id) === String(milestoneId)) {
-              console.log("✅ Marking as completed:", milestone.title);
               return {
                 ...milestone,
                 status: "completed",
@@ -143,7 +114,6 @@ export const useMilestones = ({
 
             // Mark next milestone as in-progress if current one is completed
             if (index === currentIndex + 1 && milestone.status === "pending") {
-              console.log("▶️ Starting next milestone:", milestone.title);
               return {
                 ...milestone,
                 status: "in-progress",
@@ -157,22 +127,14 @@ export const useMilestones = ({
 
         // Add small delay to let backend process
         await new Promise((resolve) => setTimeout(resolve, 300));
-
-        // Refetch from server to ensure data consistency
-        console.log("🔄 Refetching milestones from server...");
         await fetchMilestones();
-        console.log("✅ Milestones refetched successfully");
       } catch (err) {
         console.error("❌ Error marking milestone as complete:", err);
-
-        // Check if it's a 404 error suggesting we need project ID
         if (err instanceof Error && err.message.includes("project ID")) {
           console.error(
             "💡 Hint: The API endpoint requires the project ID in the URL"
           );
         }
-
-        // Refetch anyway to ensure UI is in sync
         await fetchMilestones();
         throw err;
       }

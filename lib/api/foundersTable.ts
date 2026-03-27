@@ -1,7 +1,6 @@
 import { getAuthHeaders } from "../utils/auth";
 import type { FounderApiResponse, FoundersListResponse } from "@/types/founder";
 
-// Extended Founder type to include founderID
 interface Founder {
   id: string;
   founderID?: string;
@@ -64,8 +63,8 @@ interface FounderProjectsResponse {
  */
 const transformFounderData = (apiFounder: FounderApiResponse): Founder => {
   return {
-    id: apiFounder.userId, // Use userId for API calls, not founderID
-    founderID: apiFounder.founderID, // Keep founderID for reference
+    id: apiFounder.userId,
+    founderID: apiFounder.founderID,
     name: `${apiFounder.firstName} ${apiFounder.lastName}`.trim() || "Unknown",
     email: apiFounder.email,
     phone: apiFounder.phone || "N/A",
@@ -102,9 +101,6 @@ export const fetchFounders = async (
 ): Promise<FetchFoundersResult> => {
   try {
     const { page = 1, limit = 10, search = "" } = options;
-
-    console.log("🔵 Fetching founders...", { page, limit, search });
-
     const response = await fetch(`${API_BASE_URL}/superadmin/founders/`, {
       method: "GET",
       headers: getAuthHeaders(),
@@ -126,14 +122,9 @@ export const fetchFounders = async (
     }
 
     const data: FoundersListResponse = await response.json();
-    console.log("🟢 Founders fetched successfully:", data);
-    console.log("📝 First founder raw data:", data.founders[0]); // Debug: see raw founder structure
 
     // Transform API data to UI format
     let founders = data.founders.map(transformFounderData);
-    console.log("🔄 Transformed founders:", founders.slice(0, 2)); // Debug: see transformed data
-
-    // Apply search filter if provided
     if (search.trim()) {
       const query = search.toLowerCase();
       founders = founders.filter(
@@ -190,8 +181,6 @@ export const fetchFounderById = async (
   error?: string;
 }> => {
   try {
-    console.log("🔵 Fetching founder by ID with projects:", founderId);
-
     const response = await fetch(
       `${API_BASE_URL}/superadmin/founder/${founderId}/projects/`,
       {
@@ -218,7 +207,6 @@ export const fetchFounderById = async (
     }
 
     const data: FounderProjectsResponse = await response.json();
-    console.log("🟢 Founder with projects fetched:", data);
 
     // Transform founder data
     const founder: Founder = {
@@ -227,14 +215,12 @@ export const fetchFounderById = async (
       email: data.founder.email,
       phone: data.founder.phone || "N/A",
       joinedDate: formatDate(data.founder.dateJoined),
-      status: "Active", // You might need to get this from another source
+      status: "Active",
       agency: data.founder.agency || undefined,
       firstName: data.founder.firstName,
       lastName: data.founder.lastName,
       projectsCount: data.projects.length,
     };
-
-    // Transform projects to match UI format
     const projects = data.projects.map((project) => {
       let status: "In-Progress" | "Completed" | "Pending" = "Pending";
 
@@ -247,16 +233,13 @@ export const fetchFounderById = async (
       }
 
       return {
-        id: project.id, // Keep as string UUID
+        id: project.id,
         title: project.name,
         stage: project.latest_milestone || "Not Started",
         progress: project.progressPercentage,
         status: status,
       };
     });
-
-    console.log("🟢 Transformed projects:", projects);
-
     return {
       success: true,
       founder,
@@ -279,8 +262,6 @@ export const activateFounder = async (
   founderId: string
 ): Promise<{ success: boolean; message: string; error?: string }> => {
   try {
-    console.log("🔵 Activating founder:", founderId);
-
     const response = await fetch(
       `${API_BASE_URL}/activate-user/${founderId}/`,
       {
@@ -301,8 +282,6 @@ export const activateFounder = async (
     }
 
     const data = await response.json();
-    console.log("🟢 Founder activated successfully:", data);
-
     return {
       success: true,
       message: data.message || "Founder activated successfully",
@@ -325,8 +304,6 @@ export const deactivateFounder = async (
   founderId: string
 ): Promise<{ success: boolean; message: string; error?: string }> => {
   try {
-    console.log("🔵 Deactivating founder:", founderId);
-
     const response = await fetch(
       `${API_BASE_URL}/deactivate-user/${founderId}/`,
       {
@@ -347,8 +324,6 @@ export const deactivateFounder = async (
     }
 
     const data = await response.json();
-    console.log("🟢 Founder deactivated successfully:", data);
-
     return {
       success: true,
       message: data.message || "Founder deactivated successfully",
@@ -385,8 +360,6 @@ export const deleteFounder = async (
   founderId: string
 ): Promise<{ success: boolean; message: string; error?: string }> => {
   try {
-    console.log("🔵 Deleting founder:", founderId);
-
     const response = await fetch(
       `${API_BASE_URL}/superadmin/founders/${founderId}/`,
       {
@@ -407,8 +380,6 @@ export const deleteFounder = async (
     }
 
     const data = await response.json();
-    console.log("🟢 Founder deleted successfully:", data);
-
     return {
       success: true,
       message: data.message || "Founder deleted successfully",

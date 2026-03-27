@@ -9,7 +9,6 @@ export function getCurrentUserId(): string | null {
     localStorage.getItem("userId") || localStorage.getItem("user_id");
 
   if (userId) {
-    console.log("✅ Found userId in localStorage:", userId);
     return userId;
   }
 
@@ -21,7 +20,6 @@ export function getCurrentUserId(): string | null {
       const userIdFromToken = payload.user_id || payload.sub || payload.userId;
 
       if (userIdFromToken) {
-        console.log("✅ Found userId in token:", userIdFromToken);
         return userIdFromToken;
       }
     } catch (error) {
@@ -39,5 +37,4 @@ export function getCurrentUserId(): string | null {
 export function setCurrentUserId(userId: string): void {
   if (typeof window === "undefined") return;
   localStorage.setItem("userId", userId);
-  console.log("✅ Stored userId:", userId);
 }

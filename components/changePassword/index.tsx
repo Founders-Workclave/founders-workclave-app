@@ -84,11 +84,7 @@ const PasswordChangeComponent: React.FC<PasswordChangeComponentProps> = ({
       setSuccessMessage(null);
       setValidationErrors([]);
 
-      console.log("🔐 Submitting password change...");
-
       const response = await passwordService.changePassword(passwords);
-
-      console.log("✅ Password changed successfully:", response);
 
       // Clear form
       setPasswords({

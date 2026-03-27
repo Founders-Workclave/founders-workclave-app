@@ -35,13 +35,8 @@ export const usePRDs = ({
     setError(null);
 
     try {
-      console.log("📄 Fetching PRDs for project:", projectId);
       const response = await agencyService.getProjectPRDs(projectId);
-      console.log("📄 PRDs API response:", response);
-      console.log("📄 Number of PRDs:", response.prds?.length || 0);
-
       const transformed = transformPRDs(response.prds || []);
-      console.log("📄 Transformed PRDs:", transformed);
       setPRDs(transformed);
     } catch (err) {
       const errorMessage =
@@ -64,7 +59,6 @@ export const usePRDs = ({
       try {
         setError(null);
         await agencyService.uploadPRD(projectId, payload);
-        // Refetch to get the updated list
         await fetchPRDs();
       } catch (err) {
         const errorMessage =
@@ -82,15 +76,12 @@ export const usePRDs = ({
       try {
         setError(null);
         await agencyService.deletePRD(projectId, prdId);
-
-        // Optimistically update the UI
         setPRDs((prevPRDs) => prevPRDs.filter((prd) => prd.id !== prdId));
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to delete PRD";
         setError(errorMessage);
         console.error("Error deleting PRD:", err);
-        // Refetch to restore the UI state
         await fetchPRDs();
         throw err;
       }

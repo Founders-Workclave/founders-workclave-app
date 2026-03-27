@@ -48,9 +48,6 @@ export const passwordService = {
       if (!token) {
         throw new ApiError("Authentication required", 401);
       }
-
-      console.log("🔐 Changing password...");
-
       const response = await fetch(`${API_BASE_URL}/change-password/`, {
         method: "POST",
         headers: {
@@ -63,9 +60,6 @@ export const passwordService = {
           newPassword2: passwordData.confirmPassword,
         }),
       });
-
-      console.log("📡 Password change response status:", response.status);
-
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response
           .json()
@@ -119,12 +113,9 @@ export const passwordService = {
       }
 
       const data: PasswordChangeResponse = await response.json();
-      console.log("✅ Password changed successfully:", data);
-
       return data;
     } catch (error) {
       console.error("💥 Exception in changePassword:", error);
-
       if (error instanceof ApiError) {
         throw error;
       }

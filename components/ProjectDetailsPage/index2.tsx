@@ -94,9 +94,7 @@ export default function TabOneComponent({ params }: PageProps) {
     }
   };
 
-  const handleViewFullPRD = () => {
-    console.log("View full PRD clicked");
-  };
+  const handleViewFullPRD = () => {};
 
   if (isLoading) {
     return <AllLoading text="Loading project details..." />;

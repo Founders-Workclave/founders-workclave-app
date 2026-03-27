@@ -34,8 +34,6 @@ export const useSignup = (options?: UseSignupOptions): UseSignupReturn => {
     try {
       const userType = options?.userType || "founder";
 
-      console.log("🔐 useSignup: Creating account with userType:", userType);
-
       const payload = {
         firstName: String(data.firstName || ""),
         lastName: String(data.lastName || ""),
@@ -46,16 +44,6 @@ export const useSignup = (options?: UseSignupOptions): UseSignupReturn => {
         password: String(data.password || ""),
         userType: userType,
       };
-
-      console.log("📤 Signup payload:", {
-        email: payload.email,
-        userType: payload.userType,
-        company: payload.company,
-        hasPassword: !!payload.password,
-        phoneNumber: payload.phoneNumber,
-        countryCode: payload.countryCode,
-        firstName: payload.firstName,
-      });
 
       const response = await authApi.register(payload);
 
@@ -69,12 +57,6 @@ export const useSignup = (options?: UseSignupOptions): UseSignupReturn => {
 
         toast.success(response.message || successMessage, {
           id: loadingToast,
-        });
-
-        console.log("✅ Signup successful:", {
-          userType,
-          hasToken: !!response.data?.token,
-          userId: response.data?.userId || response.data?.id,
         });
       } else {
         // auth.ts already returns a friendly message — use it directly

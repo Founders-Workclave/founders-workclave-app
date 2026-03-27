@@ -53,12 +53,6 @@ const UserProfile: React.FC<UserProfileProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"projects" | "prds">("projects");
 
-  console.log("🎨 UserProfile rendered with:", {
-    userId: user.id,
-    projectsCount: user.projects?.length,
-    projects: user.projects,
-  });
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":

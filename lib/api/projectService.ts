@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Project, ApiProject, ProjectDetailResponse } from "@/types/project";
 import { getUser, handleSessionTimeout } from "@/lib/api/auth";
 
@@ -205,7 +206,6 @@ export class ProjectService {
       );
 
       const data = await response.json();
-      console.log("🔍 Raw API response:", data); // ← add this temporarily
 
       let apiProject: ApiProject;
 

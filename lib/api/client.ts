@@ -93,8 +93,6 @@ export class ApiClient {
     options?: FetchOptions
   ): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
-    console.log("🚀 POST:", url);
-
     const response = await fetch(url, {
       method: "POST",
       headers: { ...this.getHeaders(), ...options?.headers },
@@ -111,8 +109,6 @@ export class ApiClient {
     options?: FetchOptions
   ): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
-    console.log("🚀 PUT:", url);
-
     const response = await fetch(url, {
       method: "PUT",
       headers: { ...this.getHeaders(), ...options?.headers },
@@ -125,8 +121,6 @@ export class ApiClient {
 
   async delete<T>(endpoint: string, options?: FetchOptions): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
-    console.log("🚀 DELETE:", url);
-
     const response = await fetch(url, {
       method: "DELETE",
       headers: { ...this.getHeaders(), ...options?.headers },
@@ -142,8 +136,6 @@ export class ApiClient {
     options?: FetchOptions
   ): Promise<T> {
     const url = this.buildURL(endpoint, options?.params);
-    console.log("🚀 PATCH:", url);
-
     const response = await fetch(url, {
       method: "PATCH",
       headers: { ...this.getHeaders(), ...options?.headers },

@@ -52,7 +52,7 @@ const PaymentDetailModal: React.FC<PaymentDetailModalProps> = ({
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case "completed":
+      case "successful":
         return styles.statusCompleted;
       case "in-progress":
         return styles.statusInProgress;

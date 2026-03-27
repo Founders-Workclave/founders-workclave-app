@@ -70,7 +70,6 @@ const UsersTable: React.FC<UsersTableProps> = ({
   };
 
   const handleAction = (action: string, userId: string) => {
-    console.log(`${action} user:`, userId);
     setOpenActionMenuId(null);
 
     switch (action) {
@@ -81,11 +80,9 @@ const UsersTable: React.FC<UsersTableProps> = ({
         break;
 
       case "Deactivate":
-        console.log("Deactivating user:", userId);
         break;
 
       case "Reactivate":
-        console.log("Reactivating user:", userId);
         break;
 
       case "Delete":
@@ -93,12 +90,10 @@ const UsersTable: React.FC<UsersTableProps> = ({
           "Are you sure you want to delete this user?"
         );
         if (confirmDelete) {
-          console.log("Deleting user:", userId);
         }
         break;
 
       default:
-        console.log("Unknown action:", action);
     }
   };
 

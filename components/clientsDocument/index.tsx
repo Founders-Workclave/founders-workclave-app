@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import styles from "@/components/agencyDocuments/styles.module.css";
 import { Eye, Download, FileText } from "lucide-react";
 import { useClientPRDs } from "@/hooks/useClientPrd";
@@ -16,13 +16,6 @@ interface ManagerDocumentsProps {
 
 const ClientDocuments: React.FC<ManagerDocumentsProps> = ({ projectId }) => {
   const { prds, isLoading, error } = useClientPRDs({ projectId });
-
-  useEffect(() => {
-    console.log("📄 ManagerDocuments - projectId:", projectId);
-    console.log("📄 ManagerDocuments - prds:", prds);
-    console.log("📄 ManagerDocuments - isLoading:", isLoading);
-    console.log("📄 ManagerDocuments - error:", error);
-  }, [projectId, prds, isLoading, error]);
 
   const handleView = (documentUrl: string) => {
     const previewUrl = getGoogleDrivePreviewUrl(documentUrl);

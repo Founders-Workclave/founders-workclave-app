@@ -27,11 +27,9 @@ export default function PaymentVerifyPage() {
 
   useEffect(() => {
     if (status === "success") {
-      // Just show the success page — no auto-redirect
       return;
     }
 
-    // Auto-redirect only for failed or loading states
     const timer = setTimeout(() => {
       router.push(getRedirectPath());
     }, 3000);

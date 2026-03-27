@@ -28,18 +28,13 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
     try {
       setIsLoggingOut(true);
 
-      // Call the onLogoutStart callback if provided
       if (onLogoutStart) {
         onLogoutStart();
       }
 
-      console.log("🚪 Logging out user...");
-
-      // Clear all authentication data
       clearAuth();
 
       if (typeof window !== "undefined") {
-        // Clear localStorage items
         localStorage.removeItem("user");
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
@@ -50,8 +45,6 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
         // Dispatch custom logout event for other components to listen
         window.dispatchEvent(new CustomEvent("userLoggedOut"));
       }
-
-      console.log("✅ User logged out successfully");
 
       if (onLogoutComplete) {
         onLogoutComplete();

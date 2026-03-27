@@ -26,12 +26,6 @@ export const useRegister = (options?: UseRegisterOptions) => {
     setSuccess(false);
 
     try {
-      console.log(
-        "📝 useRegister: Calling API with userType:",
-        options?.userType
-      );
-
-      // Add userType to the payload
       const fullPayload: RegisterPayload = {
         ...payload,
         userType: options?.userType,
@@ -40,7 +34,6 @@ export const useRegister = (options?: UseRegisterOptions) => {
       const response = await authApi.register(fullPayload);
 
       if (response.success) {
-        console.log("✅ useRegister: Registration successful");
         setSuccess(true);
         setError(null);
         return response;

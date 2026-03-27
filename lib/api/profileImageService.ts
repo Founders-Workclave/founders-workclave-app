@@ -48,13 +48,6 @@ export const profileImageService = {
       const formData = new FormData();
       formData.append("image", imageFile);
 
-      console.log("📤 Uploading profile image to API...");
-      console.log("📂 File details:", {
-        name: imageFile.name,
-        size: imageFile.size,
-        type: imageFile.type,
-      });
-
       const response = await fetch(`${API_BASE_URL}/profile-image-edit/`, {
         method: "PATCH",
         headers: {
@@ -62,8 +55,6 @@ export const profileImageService = {
         },
         body: formData,
       });
-
-      console.log("📡 Upload response status:", response.status);
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response
@@ -93,15 +84,7 @@ export const profileImageService = {
 
       const responseData = await response.json();
 
-      console.log(
-        "📥 PROFILE IMAGE UPLOAD - FULL RESPONSE:",
-        JSON.stringify(responseData, null, 2)
-      );
-
-      // Extract the response data
       const data = responseData.data || responseData;
-
-      // Try to find the image URL in different possible fields
       const imageUrl =
         data.image ||
         data.profileImage ||
@@ -112,23 +95,11 @@ export const profileImageService = {
         responseData.imageUrl ||
         responseData.url;
 
-      console.log("🖼️ Extracted image URL:", imageUrl);
-      console.log("🖼️ All possible image fields:", {
-        "data.image": data.image,
-        "data.profileImage": data.profileImage,
-        "data.imageUrl": data.imageUrl,
-        "data.url": data.url,
-        "responseData.image": responseData.image,
-        "responseData.profileImage": responseData.profileImage,
-      });
-
       // Update localStorage with new profile image
       if (imageUrl) {
         const currentUser = getUserFromStorage();
         if (currentUser) {
           updateUserInStorage({ profileImage: imageUrl });
-          console.log("✅ Updated profileImage in localStorage:", imageUrl);
-
           // Dispatch event for other components
           if (typeof window !== "undefined") {
             window.dispatchEvent(

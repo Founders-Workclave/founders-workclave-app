@@ -1,16 +1,18 @@
-import WalletPage from "@/components/wallet";
+// import WalletPage from "@/components/wallet";
+import ComingSoon from "@/components/comingSoon";
 import ClientLayout from "@/layout/clients/page";
 
-interface WalletModalProps {
-  params: {
-    userId: string;
-  };
-}
+// interface WalletModalProps {
+//   params: {
+//     userId: string;
+//   };
+// }
 
-const PMWalletModal = ({ params }: WalletModalProps) => {
+const PMWalletModal = () => {
   return (
     <ClientLayout pageTitle="Wallet" pageText="">
-      <WalletPage params={params} />
+      {/* <WalletPage params={params} /> */}
+      <ComingSoon />
     </ClientLayout>
   );
 };

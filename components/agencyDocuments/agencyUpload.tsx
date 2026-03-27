@@ -85,12 +85,8 @@ const AgencyUploadPRDModal: React.FC<ManagerUploadPRDModalProps> = ({
         throw new Error(errorText || "Failed to upload PRD");
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const data = await response.json();
-      console.log("✅ PRD uploaded:", data);
-
-      // Reset form
-      setFile(null);
-      setDescription("");
       onSuccess();
       onClose();
     } catch (err) {

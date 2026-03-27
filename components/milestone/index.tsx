@@ -120,13 +120,11 @@ const MilestonesPage: React.FC<MilestonesPageProps> = ({ projectId }) => {
     fetchMilestones();
   }, [projectId]);
 
-  const handleViewDetails = (milestoneId: string | number) => {
-    console.log("View details for milestone:", milestoneId);
-  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleViewDetails = (milestoneId: string | number) => {};
 
-  const handleRequestUpdate = (milestoneId: string | number) => {
-    console.log("Request update for milestone:", milestoneId);
-  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleRequestUpdate = (milestoneId: string | number) => {};
 
   if (isLoading) {
     return <AllLoading text="Loading milestones..." />;

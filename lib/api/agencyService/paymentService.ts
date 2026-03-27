@@ -17,7 +17,7 @@ export interface Payment {
   percentagePaid: number;
   paymentDate: string;
   progressPercentage: number;
-  status: "ongoing" | "completed" | "pending";
+  status: "successful" | "ongoing" | "completed" | "pending";
 }
 
 export interface PaymentsResponse {

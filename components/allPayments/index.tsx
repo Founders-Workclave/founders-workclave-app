@@ -74,10 +74,8 @@ const AllPayments = () => {
     setCurrentPage(page);
   };
 
-  const handleSeeDetails = (paymentId: number) => {
-    console.log("View payment details:", paymentId);
-    // Navigate to payment details page or open modal
-  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleSeeDetails = (paymentId: number) => {};
 
   return (
     <div className={styles.container}>

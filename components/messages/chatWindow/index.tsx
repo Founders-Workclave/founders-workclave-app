@@ -61,6 +61,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
@@ -120,7 +121,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // Helper to close search and reset all search state
   const closeSearch = useCallback(() => {
     setIsSearchOpen(false);
     setSearchQuery("");
@@ -230,22 +230,34 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       onSendMessage(messageText.trim(), replyingTo?.id);
       setMessageText("");
       setReplyingTo(null);
+      // Reset textarea height after clearing
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
+      }
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
+      // Enter alone → send
       e.preventDefault();
       handleSend();
     }
+    // Shift+Enter → browser inserts a newline naturally, nothing to do
+  };
+
+  // Auto-grow the textarea as the user types
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setMessageText(e.target.value);
+    // Reset height first so shrinking works correctly
+    e.target.style.height = "auto";
+    e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   const handleReply = (message: Message) => {
     setReplyingTo(message);
     setTimeout(() => {
-      document
-        .querySelector<HTMLInputElement>(`.${styles.messageInput}`)
-        ?.focus();
+      textareaRef.current?.focus();
     }, 100);
   };
 
@@ -515,7 +527,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                     {/* Reply Preview */}
                     {message.replyToMessage && (
                       <div className={styles.replyPreview}>
-                        {/* <div className={styles.replyBar}></div> */}
                         <div className={styles.replyContent}>
                           <div className={styles.replyAuthor}>
                             {message.replyToMessage.senderName || "Unknown"}
@@ -527,7 +538,14 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       </div>
                     )}
 
-                    <p className={styles.messageText}>
+                    {/* whiteSpace: pre-wrap preserves \n from Shift+Enter */}
+                    <p
+                      className={styles.messageText}
+                      style={{
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }}
+                    >
                       {isSearchOpen && searchQuery
                         ? highlightText(message.text, searchQuery)
                         : message.text}
@@ -692,16 +710,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
       {/* Input */}
       <div className={styles.inputContainer}>
-        <input
-          type="text"
+        <textarea
+          ref={textareaRef}
           placeholder={
             isConnected ? "Type a message..." : "Connecting to chat..."
           }
           value={messageText}
-          onChange={(e) => setMessageText(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onChange={handleTextareaChange}
+          onKeyDown={handleKeyDown}
           className={styles.messageInput}
           disabled={!isConnected}
+          rows={1}
         />
         <button
           className={styles.emojiButton}

@@ -15,7 +15,7 @@ interface Booking {
 }
 
 const CalendarComponent: React.FC = () => {
-  const [currentMonth, setCurrentMonth] = useState(new Date(2024, 7)); // August 2024
+  const [currentMonth] = useState(new Date(2024, 7));
   const [showModal, setShowModal] = useState(false);
   const [availabilityDays, setAvailabilityDays] = useState<AvailabilityDay[]>([
     { id: 1, date: "", time: "" },
@@ -91,7 +91,6 @@ const CalendarComponent: React.FC = () => {
   };
 
   const handleSetupAvailability = () => {
-    console.log("Setting up availability:", availabilityDays);
     setShowModal(false);
   };
 

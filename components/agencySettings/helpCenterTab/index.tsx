@@ -33,7 +33,6 @@ const HelpCenterTab: React.FC = () => {
       });
 
       if (response.ok) {
-        console.log("Support request submitted");
         setFormData({
           name: "",
           email: "",

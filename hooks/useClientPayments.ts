@@ -51,8 +51,6 @@ export const useClientPayments = (
     setError(null);
 
     try {
-      console.log("💳 Fetching client payments for project:", projectId);
-
       const token = getAuthToken();
       const headers: HeadersInit = {
         "Content-Type": "application/json",
@@ -75,7 +73,6 @@ export const useClientPayments = (
       }
 
       const data: ProjectPaymentsResponse = await response.json();
-      console.log("💳 Manager payments API response:", data);
       setPaymentsData(data);
     } catch (err) {
       const errorMessage =

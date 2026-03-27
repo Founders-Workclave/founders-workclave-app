@@ -54,7 +54,6 @@ const PRDPage = () => {
   };
 
   const handleEdit = (prdId: number) => {
-    console.log("Edit PRD:", prdId);
     // TODO: Implement edit functionality
   };
 
@@ -69,8 +68,6 @@ const PRDPage = () => {
   };
 
   const handleStartConsultation = () => {
-    console.log("Start AI consultation");
-    // TODO: Navigate to consultation page
     window.location.href = "/consultation";
   };
 

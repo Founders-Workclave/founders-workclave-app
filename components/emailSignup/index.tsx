@@ -11,7 +11,7 @@ import SignupFormAgency from "../signupForm";
 const EmailSignupComp = () => {
   const router = useRouter();
   const handleSignup = (data: SignupFormData) => {
-    console.log("User registered:", data);
+    // Handle signup logic here
   };
   return (
     <div className={styles.container}>

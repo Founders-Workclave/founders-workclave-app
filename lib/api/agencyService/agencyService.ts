@@ -34,19 +34,13 @@ export const agencyService = {
     return apiClient.get("/agency/projects/", { params: { page, limit } });
   },
 
-  /**
-   * Fetches a single project by ID
-   * 🚨 Backend requires TRAILING SLASH
-   */
   async getProjectById(projectId: string): Promise<ProjectDetailResponse> {
     const id = projectId.trim();
-    console.log("📋 Fetching project:", id);
     return apiClient.get(`/agency/project/${id}/`);
   },
 
   /**
    * Updates/edits an existing project
-   * 🚨 Backend requires TRAILING SLASH
    */
   async updateProject(
     projectId: string,
@@ -54,7 +48,6 @@ export const agencyService = {
     prdFile?: File
   ): Promise<{ message: string; projectId: string }> {
     const id = projectId.trim();
-    console.log("✏️ Updating project:", id);
 
     // If there's a PRD file, send as FormData (same as create)
     if (prdFile) {
@@ -78,7 +71,6 @@ export const agencyService = {
    */
   async getProjectMilestones(projectId: string): Promise<MilestonesResponse> {
     const id = projectId.trim();
-    console.log("📋 Fetching milestones for project:", id);
     return apiClient.get(`/agency/project/${id}/milestones/`);
   },
 
@@ -92,7 +84,6 @@ export const agencyService = {
   ): Promise<MilestonesResponse> {
     const projId = projectId.trim();
     const milId = milestoneId.trim();
-    console.log("📝 Updating milestone:", milId, "for project:", projId);
     return apiClient.patch(
       `/agency/project/${projId}/milestones/${milId}/`,
       payload
@@ -104,7 +95,6 @@ export const agencyService = {
    */
   async getProjectPRDs(projectId: string): Promise<PRDsResponse> {
     const id = projectId.trim();
-    console.log("📋 Fetching PRDs for project:", id);
     return apiClient.get(`/agency/project/${id}/prds/`);
   },
 
@@ -116,7 +106,6 @@ export const agencyService = {
     payload: UploadPRDPayload
   ): Promise<PRDsResponse> {
     const id = projectId.trim();
-    console.log("📤 Uploading PRD for project:", id);
     return apiClient.post(`/agency/project/${id}/prds/`, payload);
   },
 
@@ -127,7 +116,6 @@ export const agencyService = {
     projectId: string,
     prdId: number
   ): Promise<{ message: string }> {
-    console.log("🗑️ Deleting PRD:", prdId);
     return apiClient.delete(`/agency/project/prd/${prdId}/delete/`);
   },
 
@@ -142,7 +130,6 @@ export const agencyService = {
    * Fetches all PRDs across all projects
    */
   async getAllPRDs(): Promise<AllPRDsResponse> {
-    console.log("📋 Fetching all PRDs");
     return apiClient.get("/agency/prds/");
   },
 
@@ -153,7 +140,6 @@ export const agencyService = {
     projectId: string
   ): Promise<ProjectPaymentsResponse> {
     const id = projectId.trim();
-    console.log("💰 Fetching payment history for project:", id);
     return apiClient.get(`/agency/project/${id}/payments/`);
   },
 };

@@ -56,8 +56,6 @@ export const milestoneService = {
 
       const idString = String(projectId).trim();
 
-      console.log("➕ Creating new milestone:", { projectId: idString, data });
-
       const response = await fetch(
         `${API_BASE_URL}/agency/project/${idString}/add-milestone/`,
         {
@@ -95,7 +93,6 @@ export const milestoneService = {
         );
       }
       const responseData = await response.json();
-      console.log("✅ Milestone created successfully:", responseData);
       return responseData;
     } catch (error) {
       console.error("💥 Exception in createMilestone:", error);
@@ -122,14 +119,6 @@ export const milestoneService = {
       }
 
       const idString = String(milestoneId).trim();
-
-      console.log("🔍 Completing milestone:", {
-        originalId: milestoneId,
-        idType: typeof milestoneId,
-        stringId: idString,
-        projectId,
-        url: `${API_BASE_URL}/agency/project/milestone/${idString}/completed/`,
-      });
 
       const response = await fetch(
         `${API_BASE_URL}/agency/project/milestone/${idString}/completed/`,
@@ -160,7 +149,6 @@ export const milestoneService = {
       }
 
       const responseData = await response.json();
-      console.log("✅ Milestone completed successfully:", responseData);
       return responseData;
     } catch (error) {
       console.error("💥 Exception in completeMilestone:", error);
@@ -196,13 +184,6 @@ export const milestoneService = {
 
       const idString = String(milestoneId).trim();
 
-      console.log("🔧 Editing milestone:", {
-        originalId: milestoneId,
-        idType: typeof milestoneId,
-        stringId: idString,
-        data,
-      });
-
       const response = await fetch(
         `${API_BASE_URL}/agency/project/milestone/${idString}/edit/`,
         {
@@ -231,7 +212,6 @@ export const milestoneService = {
       }
 
       const responseData = await response.json();
-      console.log("✅ Milestone edited successfully:", responseData);
       return responseData;
     } catch (error) {
       console.error("💥 Exception in editMilestone:", error);

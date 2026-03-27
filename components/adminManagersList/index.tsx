@@ -92,9 +92,7 @@ const AdminManagersPage: React.FC<AllProductManagersPageProps> = ({
     router.push(`/agency/pm/${pmId}`);
   };
 
-  const handleMessage = (pmId: string): void => {
-    console.log("Message PM:", pmId);
-  };
+  const handleMessage = (_pmId: string): void => {};
 
   const handlePageChange = (page: number): void => {
     setCurrentPage(page);
@@ -137,7 +135,6 @@ const AdminManagersPage: React.FC<AllProductManagersPageProps> = ({
 
   return (
     <div className={styles.pageWrapper}>
-      {/* Filter Tabs */}
       <div className={styles.tabsContainer}>
         <button
           onClick={() => setFilterTab("all")}

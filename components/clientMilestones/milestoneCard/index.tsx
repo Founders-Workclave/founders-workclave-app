@@ -185,11 +185,9 @@ const ClientMilestoneCard: React.FC<ManagerMilestoneCardProps> = ({
         }}
         walletBalance={0}
         onPayWithWallet={() => {
-          console.log("Wallet payment for:", milestone.title);
           setIsPaymentModalOpen(false);
         }}
         onPayWithPaystack={() => {
-          console.log("Paystack payment for:", milestone.title);
           setIsPaymentModalOpen(false);
         }}
       />

@@ -24,7 +24,6 @@ export const useLogin = (options?: UseLoginOptions) => {
       const response = await authApi.login(payload, options?.userType);
 
       if (response.success) {
-        console.log("✅ useLogin: Login successful");
         setSuccess(true);
         setError(null);
         return response;

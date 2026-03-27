@@ -52,8 +52,6 @@ const ManagersProfileTab: React.FC = () => {
         if (user) {
           setUserInfo(user);
 
-          console.log("User data loaded:", user);
-
           let phoneNumber = user.phoneNumber || "";
           let countryCode = "+234"; // default
 
@@ -75,15 +73,6 @@ const ManagersProfileTab: React.FC = () => {
               }
             }
           }
-
-          console.log("Setting profile data with:", {
-            company: user.company || "",
-            firstName: user.firstName || "",
-            lastName: user.lastName || "",
-            phoneNumber: phoneNumber,
-            countryCode: countryCode,
-            email: user.email || "",
-          });
 
           setProfileData({
             company: user.company || "",

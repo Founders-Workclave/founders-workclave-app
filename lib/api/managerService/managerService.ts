@@ -11,12 +11,6 @@ import {
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
-console.log("🔍 Manager Service - BASE_URL:", BASE_URL);
-console.log("🔍 Manager Service - Environment check:", {
-  hasWindow: typeof window !== "undefined",
-  nodeEnv: process.env.NODE_ENV,
-});
-
 /**
  * Get authentication token from storage or cookies
  * Adjust this based on your auth implementation
@@ -36,16 +30,11 @@ const getAuthToken = (): string | null => {
     for (const key of possibleKeys) {
       const token = localStorage.getItem(key) || sessionStorage.getItem(key);
       if (token) {
-        console.log(
-          `🔑 Found token in ${key}:`,
-          token.substring(0, 20) + "..."
-        );
         return token;
       }
     }
 
     console.warn("⚠️ No auth token found in localStorage or sessionStorage");
-    console.log("📋 Checked keys:", possibleKeys);
 
     // Try to get from cookies as fallback
     const cookies = document.cookie.split(";");
@@ -56,7 +45,6 @@ const getAuthToken = (): string | null => {
           name.toLowerCase().includes(key.toLowerCase())
         )
       ) {
-        console.log(`🔑 Found token in cookie ${name}`);
         return value;
       }
     }
@@ -79,8 +67,6 @@ class ManagerService {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-
-    console.log("📋 Request headers:", headers);
     return headers;
   }
 
@@ -93,11 +79,6 @@ class ManagerService {
   }> {
     const url = `${BASE_URL}/manager/`;
 
-    console.log("🚀 Fetching manager dashboard");
-    console.log("📍 BASE_URL:", BASE_URL);
-    console.log("📍 Full URL:", url);
-    console.log("📍 URL is valid:", url.startsWith("http"));
-
     const token = getAuthToken();
     const fetchOptions: RequestInit = {
       method: "GET",
@@ -105,21 +86,12 @@ class ManagerService {
     };
 
     if (token) {
-      console.log("🔐 Using token-based auth (no credentials)");
     } else {
-      console.log("🍪 No token found, trying cookie-based auth");
       fetchOptions.credentials = "include";
     }
 
     try {
-      console.log("⏳ Starting fetch...");
-      console.log("📋 Fetch options:", fetchOptions);
-
       const response = await fetch(url, fetchOptions);
-
-      console.log("✅ Response received");
-      console.log("📊 Response status:", response.status);
-
       if (!response.ok) {
         const errorText = await response.text();
         console.error("❌ Error response:", errorText);
@@ -134,7 +106,6 @@ class ManagerService {
       }
 
       const data: ManagerDashboardResponse = await response.json();
-      console.log("📦 Dashboard data received:", data);
 
       return {
         stats: {
@@ -167,18 +138,11 @@ class ManagerService {
   async getProjectDetails(projectId: string): Promise<ManagerProjectDetails> {
     const url = `${BASE_URL}/manager/project/${projectId}/`;
 
-    console.log("🚀 Fetching project details");
-    console.log("📍 Full URL:", url);
-
     try {
       const response = await fetch(url, {
         method: "GET",
         headers: this.getHeaders(),
       });
-
-      console.log("✅ Response received");
-      console.log("📊 Response status:", response.status);
-
       if (!response.ok) {
         const errorText = await response.text();
         console.error("❌ Error response:", errorText);
@@ -188,7 +152,6 @@ class ManagerService {
       }
 
       const data = await response.json();
-      console.log("📦 Project details received:", data);
       return transformManagerProjectDetails(data);
     } catch (error) {
       console.error("💥 Error fetching project details:", error);

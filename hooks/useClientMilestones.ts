@@ -73,8 +73,6 @@ export const useClientMilestones = (
       }
 
       const data = await response.json();
-      console.log("📦 Client milestones received:", data);
-
       const sorted: Milestone[] = (data.milestones || [])
         .sort((a: Milestone, b: Milestone) => a.order - b.order)
         .map((milestone: Milestone) => ({

@@ -126,7 +126,6 @@ const AgenciesTable: React.FC<AgenciesTableProps> = ({
   };
 
   const handleAction = (action: string, agencyId: string) => {
-    console.log(`${action} agency:`, agencyId);
     setOpenActionMenuId(null);
 
     switch (action) {
@@ -137,11 +136,9 @@ const AgenciesTable: React.FC<AgenciesTableProps> = ({
         break;
 
       case "Deactivate":
-        console.log("Deactivating agency:", agencyId);
         break;
 
       case "Reactivate":
-        console.log("Reactivating agency:", agencyId);
         break;
 
       case "Delete":
@@ -149,12 +146,13 @@ const AgenciesTable: React.FC<AgenciesTableProps> = ({
           "Are you sure you want to delete this agency?"
         );
         if (confirmDelete) {
-          console.log("Deleting agency:", agencyId);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const deletedAgencyId = agencyId;
         }
         break;
 
       default:
-        console.log("Unknown action:", action);
+        break;
     }
   };
 

@@ -34,14 +34,9 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
 
   useEffect(() => {
     if (success) {
-      console.log("✅ Agency signup successful, redirecting...");
-
-      // Call parent onSubmit if provided
       if (onSubmit) {
         onSubmit(formData);
       }
-
-      // Redirect to agency dashboard after short delay
       setTimeout(() => {
         router.push("/agency");
       }, 1500);
@@ -111,12 +106,6 @@ const SignupFormAgency: React.FC<SignupFormProps> = ({ onSubmit }) => {
       );
       return;
     }
-
-    console.log("🔐 Submitting agency signup:", {
-      email: formData.email,
-      company: formData.company,
-      userType: "agency",
-    });
 
     // Call signup function from hook
     await signup(formData);

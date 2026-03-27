@@ -20,30 +20,17 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  // Get current user on mount
   const currentUser = getCurrentUser();
-
-  // Check authorization status - computed, not stored in state
   const isAuthorized = isAuthenticated() && isAdmin();
 
-  // Check authentication and authorization
   useEffect(() => {
-    console.log("🔍 Admin Layout - Checking auth:", {
-      isAuth: isAuthenticated(),
-      isAdminUser: isAdmin(),
-      user: getCurrentUser(),
-    });
-
     if (!isAuthenticated()) {
-      console.log("❌ Not authenticated, redirecting to login");
       toast.error("Please log in to access admin area");
       router.replace("/login?redirect=/admin");
       return;
     }
 
     if (!isAdmin()) {
-      console.log("❌ Not admin, redirecting to dashboard");
       toast.error("Access denied. Admin privileges required.");
 
       const user = getCurrentUser();
@@ -56,8 +43,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children, pageTitle }) => {
       }
       return;
     }
-
-    console.log("✅ Admin access granted");
   }, [router]);
 
   const toggleMobileMenu = () => {

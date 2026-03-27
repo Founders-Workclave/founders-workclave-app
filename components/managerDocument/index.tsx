@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import styles from "@/components/agencyDocuments/styles.module.css";
 import { Eye, Download, FileText, Plus, Trash2 } from "lucide-react";
 import { useManagerPRDs } from "@/hooks/useManagerPrd";
@@ -21,13 +21,6 @@ const ManagerDocuments: React.FC<ManagerDocumentsProps> = ({ projectId }) => {
   });
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  useEffect(() => {
-    console.log("📄 ManagerDocuments - projectId:", projectId);
-    console.log("📄 ManagerDocuments - prds:", prds);
-    console.log("📄 ManagerDocuments - isLoading:", isLoading);
-    console.log("📄 ManagerDocuments - error:", error);
-  }, [projectId, prds, isLoading, error]);
 
   const handleView = (documentUrl: string) => {
     const previewUrl = getGoogleDrivePreviewUrl(documentUrl);

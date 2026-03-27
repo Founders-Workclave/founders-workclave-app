@@ -52,26 +52,20 @@ const ProfileTab: React.FC = () => {
         if (user) {
           setUserInfo(user);
 
-          console.log("User data loaded:", user);
-
-          // Parse phone number to separate country code and number
           let phoneNumber = user.phoneNumber || "";
           let countryCode = "+234"; // default
 
           if (phoneNumber && phoneNumber.startsWith("+")) {
-            // Extract country code - Nigeria is +234 (3 digits after +)
-            // More robust: try common patterns
             if (phoneNumber.startsWith("+234")) {
               countryCode = "+234";
-              phoneNumber = phoneNumber.substring(4); // Remove +234
+              phoneNumber = phoneNumber.substring(4);
             } else if (phoneNumber.startsWith("+1")) {
               countryCode = "+1";
-              phoneNumber = phoneNumber.substring(2); // Remove +1
+              phoneNumber = phoneNumber.substring(2);
             } else if (phoneNumber.startsWith("+44")) {
               countryCode = "+44";
-              phoneNumber = phoneNumber.substring(3); // Remove +44
+              phoneNumber = phoneNumber.substring(3);
             } else {
-              // Generic fallback: assume 1-4 digit country code
               const match = phoneNumber.match(/^(\+\d{1,3})(\d+)$/);
               if (match) {
                 countryCode = match[1];
@@ -79,15 +73,6 @@ const ProfileTab: React.FC = () => {
               }
             }
           }
-
-          console.log("Setting profile data with:", {
-            company: user.company || "",
-            firstName: user.firstName || "",
-            lastName: user.lastName || "",
-            phoneNumber: phoneNumber,
-            countryCode: countryCode,
-            email: user.email || "",
-          });
 
           setProfileData({
             company: user.company || "",
@@ -132,8 +117,6 @@ const ProfileTab: React.FC = () => {
       setError(null);
       setSuccessMessage(null);
 
-      console.log("🎨 Starting image upload...");
-
       // Convert base64 data URL to File object
       const file = await dataURLtoFile(imageDataUrl, "logo.png");
       setPendingImageFile(file);
@@ -142,30 +125,19 @@ const ProfileTab: React.FC = () => {
       setProfileImage(imageDataUrl);
 
       // Upload to API
-      console.log("📤 Uploading to API...");
       const response = await profileService.uploadLogo(file);
-      console.log("📥 Upload response:", response);
 
       if (response.logoUrl) {
-        console.log("✅ Logo URL received:", response.logoUrl);
         setProfileImage(response.logoUrl);
         setSuccessMessage("Logo uploaded successfully!");
       } else {
-        console.log("✅ Upload successful but no URL returned");
         setSuccessMessage(response.message || "Logo uploaded successfully!");
       }
 
-      // IMPORTANT: Refetch profile to get the updated image from server
-      console.log("🔄 Refetching profile to confirm upload...");
       const updatedUser = await profileService.fetchUserProfile();
-      console.log("👤 Updated user profile:", updatedUser);
 
       if (updatedUser.profileImage) {
         setProfileImage(updatedUser.profileImage);
-        console.log(
-          "✅ Profile image updated from server:",
-          updatedUser.profileImage
-        );
       } else {
         console.warn("⚠️ No profile image in updated user data");
       }

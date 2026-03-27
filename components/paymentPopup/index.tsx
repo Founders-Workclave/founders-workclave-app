@@ -31,6 +31,7 @@ interface PaymentHistoryProps {
 }
 
 const PaymentHistory: React.FC<PaymentHistoryProps> = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   projectId, // TODO: Use this when fetching real payment data from API
 }) => {
   const project = milestoneDataRaw as Project;
@@ -57,9 +58,6 @@ const PaymentHistory: React.FC<PaymentHistoryProps> = ({
       method: index % 2 === 0 ? "Wallet" : "Paystack",
       status: "completed" as const,
     }));
-
-  // Suppress unused variable warning
-  console.log("Project ID for future API use:", projectId);
 
   return (
     <div className={styles.container}>

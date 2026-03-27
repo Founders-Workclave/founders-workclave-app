@@ -140,6 +140,8 @@
   line-height: 1.5;
   font-size: 14px;
   word-wrap: break-word;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .messageTime {
@@ -169,7 +171,8 @@
   flex: 1;
   padding: 16px 12px;
   border: 1px solid #e4e4e4;
-  border-radius: 100px;
+  border-radius: 20px;
+  font-family: "inter", sans-serif;
   font-size: 15px;
   color: #111827;
   background: transparent;
@@ -882,4 +885,12 @@
 .replyBarCancel:hover {
   background: #ffe0e0;
   color: #e53935;
+}
+
+.messageInput {
+  resize: none;
+  overflow-y: hidden;
+  max-height: 150px;
+  overflow-y: auto;
+  line-height: 1.4;
 }

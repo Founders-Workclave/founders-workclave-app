@@ -34,17 +34,6 @@ const TeamAssignment: React.FC<TeamAssignmentProps> = ({
     fetchManagers();
   }, []);
 
-  // FIXED: Log selection state for debugging
-  useEffect(() => {
-    console.log("🔍 TeamAssignment Debug:");
-    console.log("  - selectedManagerId:", selectedManagerId);
-    console.log("  - selectedManagerId type:", typeof selectedManagerId);
-    console.log(
-      "  - Available manager IDs:",
-      productManagers.map((m) => ({ id: m.id, type: typeof m.id }))
-    );
-  }, [selectedManagerId, productManagers]);
-
   const fetchManagers = async () => {
     try {
       setLoading(true);

@@ -32,30 +32,21 @@ export const useProjectDetails = (
     setError(null);
 
     try {
-      console.log("🔍 Fetching project:", projectId);
-
-      // Fetch project details
       const projectResponse = await agencyService.getProjectById(projectId);
-      console.log("📦 Project response:", projectResponse);
 
       const transformedProject = transformProjectDetail(
         projectResponse.project
       );
       setProject(transformedProject);
-
-      // Fetch milestones
       try {
         const milestonesResponse = await agencyService.getProjectMilestones(
           projectId
         );
-        console.log("📊 Milestones response:", milestonesResponse);
 
         const transformedMilestones = transformMilestones(
           milestonesResponse.milestones
         );
         setMilestones(transformedMilestones);
-
-        // Optional: update project progress milestones if needed
         if (transformedProject.projectProgress) {
           transformedProject.projectProgress.milestones =
             transformedMilestones.map((m) => ({

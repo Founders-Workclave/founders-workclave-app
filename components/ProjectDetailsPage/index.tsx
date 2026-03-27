@@ -59,7 +59,6 @@ export default function ProjectDetailPage({ params }: PageProps) {
   };
 
   const handleDownloadPRD = async () => {
-    console.log("Download PRD clicked");
     try {
       const token = localStorage.getItem("access_token");
 

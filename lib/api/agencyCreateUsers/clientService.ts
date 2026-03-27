@@ -27,21 +27,6 @@ export const clientService = {
     try {
       const token = getAuthToken();
 
-      // 🐛 DEBUG: Log what we're sending (development only)
-      if (process.env.NODE_ENV === "development") {
-        console.log("=== REGISTER CLIENT API CALL ===");
-        console.log("Endpoint:", `${API_BASE_URL}/agency/register-client/`);
-        console.log("Data:", {
-          firstName: clientData.firstName,
-          lastName: clientData.lastName,
-          email: clientData.email,
-          phone: clientData.phone,
-          // Don't log password for security
-          password: "[REDACTED]",
-        });
-        console.log("================================");
-      }
-
       const headers: HeadersInit = {
         "Content-Type": "application/json",
       };
@@ -60,14 +45,6 @@ export const clientService = {
         const errorData: ApiErrorResponse = await response
           .json()
           .catch(() => ({ message: "Failed to register client" }));
-
-        // 🐛 DEBUG: Log detailed error (development only)
-        if (process.env.NODE_ENV === "development") {
-          console.error("=== API ERROR RESPONSE ===");
-          console.error("Status:", response.status);
-          console.error("Error Data:", errorData);
-          console.error("=========================");
-        }
 
         // Parse Django REST Framework validation errors
         let errorMessage = "Failed to register client";
@@ -151,7 +128,6 @@ export const clientService = {
 
       const responseData: RegisterClientResponse = await response.json();
       if (process.env.NODE_ENV === "development") {
-        console.log("✅ Client registered successfully:", responseData);
       }
       return responseData;
     } catch (error) {

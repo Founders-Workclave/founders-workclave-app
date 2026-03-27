@@ -50,7 +50,6 @@ const NextMilestone = ({
         }}
         walletBalance={walletBalance}
         onPayWithWallet={() => {
-          console.log("Wallet payment");
           setIsOpen(false);
         }}
         onPayWithPaystack={() => {}}

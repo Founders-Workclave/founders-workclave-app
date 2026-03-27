@@ -234,8 +234,7 @@ const ProjectDetailsPage: React.FC = () => {
     }
   };
 
-  const handleEditSubmit = (data: ProjectFormData) => {
-    console.log("Project updated:", data);
+  const handleEditSubmit = () => {
     refetch();
   };
 

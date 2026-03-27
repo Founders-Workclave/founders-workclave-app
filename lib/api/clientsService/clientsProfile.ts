@@ -89,39 +89,17 @@ export const profileService = {
       }
 
       const response_data = await response.json();
-      console.log(
-        "🔍 FULL API RESPONSE:",
-        JSON.stringify(response_data, null, 2)
-      );
 
       const hasDataWrapper = response_data.data !== undefined;
       const data = hasDataWrapper ? response_data.data : response_data;
-      console.log("📦 Extracted data:", JSON.stringify(data, null, 2));
 
-      // 🔍 CHECK ALL POSSIBLE IMAGE FIELDS
-      console.log("🖼️ Image field checks:", {
-        "data.image": data.image,
-        "data.profileImage": data.profileImage,
-        "data.logo": data.logo,
-        "data.logoUrl": data.logoUrl,
-        "data.companyLogo": data.companyLogo,
-        "data.avatar": data.avatar,
-        "response_data.image": response_data.image,
-        "response_data.logo": response_data.logo,
-      });
-
-      // Get existing user data to preserve fields not returned by API
       const existingUser = getUserFromStorage() as UserProfile | null;
-      console.log("Existing user in storage:", existingUser);
 
       // Parse phone number to remove spaces and separate country code
       let phoneNumber =
         data.phone || data.phoneNumber || existingUser?.phoneNumber || "";
-      console.log("Phone number before cleaning:", phoneNumber);
       phoneNumber = phoneNumber.replace(/\s/g, "");
-      console.log("Phone number after cleaning:", phoneNumber);
 
-      // 🔍 TRY ALL POSSIBLE IMAGE FIELD NAMES
       const profileImage =
         data.image ||
         data.profileImage ||
@@ -132,8 +110,6 @@ export const profileService = {
         response_data.image ||
         response_data.logo ||
         existingUser?.profileImage;
-
-      console.log("✅ Final profileImage value:", profileImage);
 
       // Update localStorage with fetched data
       const updatedProfile: Partial<UserProfile> = {
@@ -153,11 +129,9 @@ export const profileService = {
         profileImage: profileImage, // Use the image we found
       };
 
-      console.log("💾 Updated profile to store:", updatedProfile);
       this.updateUserProfile(updatedProfile);
 
       const finalUser = this.getUserProfile();
-      console.log("👤 Final user in storage after update:", finalUser);
       return finalUser as UserProfile;
     } catch (error) {
       if (error instanceof ApiError) {
@@ -221,14 +195,6 @@ export const profileService = {
         formData.append("phone", updates.phone.trim());
       }
 
-      console.log("Updating profile with:", {
-        firstName: updates.firstName,
-        lastName: updates.lastName,
-        email: updates.email,
-        phone: updates.phone,
-        company: updates.company,
-      });
-
       const response = await fetch(`${API_BASE_URL}/user/`, {
         method: "PATCH",
         headers: {
@@ -237,14 +203,10 @@ export const profileService = {
         body: formData,
       });
 
-      console.log("Response status:", response.status);
-
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response
           .json()
           .catch(() => ({ message: "Failed to update profile" }));
-
-        console.error("Error response:", errorData);
 
         // Handle authentication errors
         if (isAuthError(response.status)) {
@@ -264,7 +226,6 @@ export const profileService = {
       }
 
       const response_data = await response.json();
-      console.log("Success response:", response_data);
 
       const responseData = response_data.data || {};
       const cleanPhone = responseData.phone
@@ -320,8 +281,6 @@ export const profileService = {
       const formData = new FormData();
       formData.append("logo", logoFile);
 
-      console.log("📤 Uploading logo to:", `${API_BASE_URL}/client/edit-logo/`);
-
       const response = await fetch(`${API_BASE_URL}/client/edit-logo/`, {
         method: "PATCH",
         headers: {
@@ -329,8 +288,6 @@ export const profileService = {
         },
         body: formData,
       });
-
-      console.log("📡 Upload response status:", response.status);
 
       if (!response.ok) {
         const errorData: ApiErrorResponse = await response
@@ -355,19 +312,6 @@ export const profileService = {
 
       const responseData = await response.json();
 
-      // 🔍 DETAILED LOGGING
-      console.log(
-        "📥 LOGO UPLOAD - FULL RESPONSE:",
-        JSON.stringify(responseData, null, 2)
-      );
-      console.log("📥 LOGO UPLOAD - Response keys:", Object.keys(responseData));
-      if (responseData.data) {
-        console.log(
-          "📥 LOGO UPLOAD - Data keys:",
-          Object.keys(responseData.data)
-        );
-      }
-
       const data = responseData.data || responseData;
 
       // Try to find the image URL in ALL possible fields
@@ -383,23 +327,8 @@ export const profileService = {
         responseData.image ||
         responseData.url;
 
-      console.log("🖼️ LOGO UPLOAD - Extracted image URL:", imageUrl);
-      console.log("🖼️ LOGO UPLOAD - All image-related fields:", {
-        "data.logoUrl": data.logoUrl,
-        "data.logo": data.logo,
-        "data.image": data.image,
-        "data.profileImage": data.profileImage,
-        "data.companyLogo": data.companyLogo,
-        "data.url": data.url,
-        "responseData.logoUrl": responseData.logoUrl,
-        "responseData.logo": responseData.logo,
-        "responseData.image": responseData.image,
-      });
-
       if (imageUrl) {
         this.updateUserProfile({ profileImage: imageUrl });
-        console.log("✅ Updated profileImage in localStorage to:", imageUrl);
-
         return {
           message: data.message || "Logo uploaded successfully",
           logoUrl: imageUrl,

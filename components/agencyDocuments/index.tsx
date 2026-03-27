@@ -20,12 +20,7 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  useEffect(() => {
-    console.log("📄 AgencyDocuments - projectId:", projectId);
-    console.log("📄 AgencyDocuments - prds:", prds);
-    console.log("📄 AgencyDocuments - isLoading:", isLoading);
-    console.log("📄 AgencyDocuments - error:", error);
-  }, [projectId, prds, isLoading, error]);
+  useEffect(() => {}, [projectId, prds, isLoading, error]);
 
   const handleView = (documentUrl: string) => {
     const previewUrl = getGoogleDrivePreviewUrl(documentUrl);
@@ -85,7 +80,6 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
       <div className={styles.wrapper}>
         <div className={styles.header}>
           <h2>Documents</h2>
-          {/* ✅ Fixed: was calling handleUpload (console.log only) instead of opening modal */}
           <button
             className={styles.uploadBtn}
             onClick={() => setIsUploadModalOpen(true)}
@@ -98,7 +92,6 @@ const AgencyDocuments: React.FC<AgencyDocumentsProps> = ({ projectId }) => {
           <p>No documents found for this project.</p>
         </div>
 
-        {/* ✅ Fixed: modal was missing from empty state branch */}
         <AgencyUploadPRDModal
           isOpen={isUploadModalOpen}
           onClose={() => setIsUploadModalOpen(false)}

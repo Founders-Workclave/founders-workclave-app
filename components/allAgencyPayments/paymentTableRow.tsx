@@ -12,7 +12,7 @@ interface Payment {
   amount: number;
   currency: string;
   percentagePaid: number;
-  status: "completed" | "in-progress" | "pending";
+  status: "Successful" | "completed" | "in-progress" | "pending";
   paymentMethod: string | null;
   paymentDate: string | null;
   clientName?: string;
@@ -29,6 +29,8 @@ const PaymentTableRow: React.FC<PaymentTableRowProps> = ({
 }) => {
   const getStatusClass = (status: string) => {
     switch (status) {
+      case "successful":
+        return styles.statusSuccessful;
       case "completed":
         return styles.statusCompleted;
       case "in-progress":

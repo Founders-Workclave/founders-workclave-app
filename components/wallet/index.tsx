@@ -37,12 +37,10 @@ const WalletPage = ({}: PageProps) => {
   const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
 
   const handleFundWithFlutterwave = (amount: number) => {
-    console.log("Fund with Flutterwave:", amount);
     // Implement Flutterwave integration
   };
 
   const handleFundWithPaystack = (amount: number) => {
-    console.log("Fund with Paystack:", amount);
     // Implement Paystack integration
   };
 

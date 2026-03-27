@@ -12,6 +12,7 @@ export default function CreateButton({ buttonName }: CreateButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleCustomSubmit = async (data: PMFormData) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const result = await pmService.registerPM({
       firstName: data.firstName,
       lastName: data.lastName,
@@ -19,7 +20,6 @@ export default function CreateButton({ buttonName }: CreateButtonProps) {
       phone: `${data.countryCode}${data.phoneNumber}`,
       password: data.password,
     });
-    console.log("API result:", result);
     toast.success("Manager registered successfully!");
     toast.error("Error registering Manager!");
     toast.loading("Registering Manager...");
@@ -47,7 +47,7 @@ export default function CreateButton({ buttonName }: CreateButtonProps) {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCustomSubmit}
-        onSuccess={() => console.log("Success callback")}
+        onSuccess={() => "Success callback"}
       />
     </main>
   );

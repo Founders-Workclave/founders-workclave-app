@@ -11,7 +11,6 @@ export default function CreateButton({ buttonName }: CreateButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSuccess = () => {
-    console.log("Client registered successfully!");
     setIsModalOpen(false);
     window.location.reload();
     toast.success("Client registered successfully!");

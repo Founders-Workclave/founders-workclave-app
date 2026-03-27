@@ -175,11 +175,6 @@ export function transformProjectFormToApiRequest(
 
   const allFeatures = [...features, ...deletedFeatures];
 
-  console.log("🔄 Transform - coreFeatures:", formData.coreFeatures);
-  console.log("🔄 Transform - filteredFeatures:", filteredFeatures);
-  console.log("🔄 Transform - featureIds:", formData.featureIds);
-  console.log("🔄 Transform - final features payload:", allFeatures);
-
   return {
     client: formData.clientId,
     projectName: formData.projectName,

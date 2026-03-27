@@ -16,18 +16,21 @@ export const tabsData: TabData[] = [
 // data/banks.ts
 export const banksData = [
   { value: "access-bank", label: "Access Bank" },
-  { value: "gtbank", label: "GTBank" },
-  { value: "first-bank", label: "First Bank" },
-  { value: "uba", label: "UBA" },
+  { value: "united-bank-for-africa", label: "United Bank for Africa" },
+  { value: "first-bank-of-nigeria", label: "First Bank of Nigeria" },
+  { value: "first-city-monument-bank", label: "First City Monument Bank" },
   { value: "zenith-bank", label: "Zenith Bank" },
   { value: "fidelity-bank", label: "Fidelity Bank" },
+  { value: "unity-bank", label: "Unity Bank" },
   { value: "union-bank", label: "Union Bank" },
+  { value: "premiumtrust-bank", label: "PremiumTrust Bank" },
+  { value: "guaranty-trust-bank", label: "Guaranty Trust Bank" },
   { value: "sterling-bank", label: "Sterling Bank" },
-  { value: "stanbic-ibtc", label: "Stanbic IBTC" },
-  { value: "fcmb", label: "FCMB" },
-  { value: "ecobank", label: "Ecobank" },
+  { value: "stanbic-ibtc-bank", label: "Stanbic IBTC Bank" },
+  { value: "ecobank-plc", label: "Ecobank Plc" },
   { value: "wema-bank", label: "Wema Bank" },
   { value: "polaris-bank", label: "Polaris Bank" },
+  { value: "keystone-bank", label: "Keystone Bank" },
 ];
 
 // data/subscriptionPlans.ts

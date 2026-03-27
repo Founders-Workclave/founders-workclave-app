@@ -34,8 +34,6 @@ const ProfileUploadWithService: React.FC<ProfileUploadWithServiceProps> = ({
       // Show preview immediately (optimistic update)
       setPreviewImage(imageDataUrl);
 
-      console.log("🎨 Converting image to file...");
-
       // Convert base64 to File
       const file = await profileImageService.dataURLtoFile(
         imageDataUrl,
@@ -48,12 +46,8 @@ const ProfileUploadWithService: React.FC<ProfileUploadWithServiceProps> = ({
         throw new Error(validation.error);
       }
 
-      console.log("📤 Uploading to API...");
-
       // Upload to server
       const response = await profileImageService.uploadProfileImage(file);
-
-      console.log("✅ Upload successful:", response);
 
       // Update with server URL
       const imageUrl =
