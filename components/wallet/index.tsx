@@ -36,10 +36,12 @@ const WalletPage = ({}: PageProps) => {
   const endIndex = startIndex + itemsPerPage;
   const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleFundWithFlutterwave = (amount: number) => {
     // Implement Flutterwave integration
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleFundWithPaystack = (amount: number) => {
     // Implement Paystack integration
   };

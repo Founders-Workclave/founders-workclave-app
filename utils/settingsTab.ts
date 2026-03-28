@@ -15,22 +15,22 @@ export const tabsData: TabData[] = [
 
 // data/banks.ts
 export const banksData = [
-  { value: "access-bank", label: "Access Bank" },
-  { value: "united-bank-for-africa", label: "United Bank for Africa" },
-  { value: "first-bank-of-nigeria", label: "First Bank of Nigeria" },
-  { value: "first-city-monument-bank", label: "First City Monument Bank" },
-  { value: "zenith-bank", label: "Zenith Bank" },
-  { value: "fidelity-bank", label: "Fidelity Bank" },
-  { value: "unity-bank", label: "Unity Bank" },
-  { value: "union-bank", label: "Union Bank" },
-  { value: "premiumtrust-bank", label: "PremiumTrust Bank" },
-  { value: "guaranty-trust-bank", label: "Guaranty Trust Bank" },
-  { value: "sterling-bank", label: "Sterling Bank" },
-  { value: "stanbic-ibtc-bank", label: "Stanbic IBTC Bank" },
-  { value: "ecobank-plc", label: "Ecobank Plc" },
-  { value: "wema-bank", label: "Wema Bank" },
-  { value: "polaris-bank", label: "Polaris Bank" },
-  { value: "keystone-bank", label: "Keystone Bank" },
+  { value: "Access Bank", label: "Access Bank" },
+  { value: "United Bank for Africa", label: "United Bank for Africa" },
+  { value: "First Bank of Nigeria", label: "First Bank of Nigeria" },
+  { value: "First City Monument Bank", label: "First City Monument Bank" },
+  { value: "Zenith Bank", label: "Zenith Bank" },
+  { value: "Fidelity Bank", label: "Fidelity Bank" },
+  { value: "Unity Bank", label: "Unity Bank" },
+  { value: "Union Bank", label: "Union Bank" },
+  { value: "PremiumTrust Bank", label: "PremiumTrust Bank" },
+  { value: "Guaranty Trust Bank", label: "Guaranty Trust Bank" },
+  { value: "Sterling Bank", label: "Sterling Bank" },
+  { value: "Stanbic IBTC Bank", label: "Stanbic IBTC Bank" },
+  { value: "Ecobank Plc", label: "Ecobank Plc" },
+  { value: "Wema Bank", label: "Wema Bank" },
+  { value: "Polaris Bank", label: "Polaris Bank" },
+  { value: "Keystone Bank", label: "Keystone Bank" },
 ];
 
 // data/subscriptionPlans.ts

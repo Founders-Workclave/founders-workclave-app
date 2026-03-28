@@ -105,6 +105,7 @@ export const milestoneService = {
 
   async completeMilestone(
     milestoneId: string | number,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     projectId?: string
   ): Promise<unknown> {
     try {

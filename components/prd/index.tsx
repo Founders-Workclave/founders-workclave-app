@@ -53,6 +53,7 @@ const PRDPage = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleEdit = (prdId: number) => {
     // TODO: Implement edit functionality
   };

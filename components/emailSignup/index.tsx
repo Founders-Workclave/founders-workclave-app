@@ -10,6 +10,7 @@ import SignupFormAgency from "../signupForm";
 
 const EmailSignupComp = () => {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSignup = (data: SignupFormData) => {
     // Handle signup logic here
   };

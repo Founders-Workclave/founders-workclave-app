@@ -65,7 +65,6 @@ export const agencyPauseService = {
       }
 
       const data = await response.json();
-      console.log("✅ Pause project API response:", data);
       return data;
     } catch (error) {
       if (error instanceof ApiError) {
@@ -125,7 +124,6 @@ export const agencyPauseService = {
       }
 
       const data = await response.json();
-      console.log("✅ Resume project API response:", data);
       return data;
     } catch (error) {
       if (error instanceof ApiError) {
