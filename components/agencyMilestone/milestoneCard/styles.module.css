@@ -312,3 +312,104 @@
     width: 100%;
   }
 }
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+  width: 380px;
+  max-width: calc(100vw - 2rem);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.modalIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #eaf3de;
+  margin-bottom: 1rem;
+}
+
+.modalTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.modalBody {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+}
+
+.modalBody strong {
+  color: #111827;
+  font-weight: 500;
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modalCancelButton {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: transparent;
+  color: #374151;
+  font-family: "inter", sans-serif;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.modalCancelButton:hover {
+  background: #f9fafb;
+}
+
+.modalCancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modalConfirmButton {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-family: "inter", sans-serif;
+  background: #5865f2;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.modalConfirmButton:hover {
+  background: #4f46e5;
+}
+
+.modalConfirmButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
