@@ -228,12 +228,6 @@ const ClientInformationPage: React.FC<ClientDetailProps> = ({
             {isStartingConversation ? "Starting..." : "Message client"}
           </button>
           <button
-            onClick={() => setShowAssignModal(true)}
-            className={styles.assignButton}
-          >
-            Assign project
-          </button>
-          <button
             onClick={handleDeactivateUser}
             className={styles.deactivateButton}
             disabled={isDeactivating}

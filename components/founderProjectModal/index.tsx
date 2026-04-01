@@ -46,11 +46,14 @@ export default function FounderProjectModal() {
     setSubmitError(null);
 
     try {
-      const res = await fetch("/api/submit-project", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea, category, vision }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/founder/ideaform/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idea, category, vision }),
+        }
+      );
 
       if (!res.ok) {
         const data = await res.json();
@@ -168,7 +171,9 @@ export default function FounderProjectModal() {
                 </>
               )}
             </div>
-            {submitError && <p className={styles.errorText}>{submitError}</p>}
+            {submitError && (
+              <p className={styles.errorText}>{submitError}</p>
+            )}
             {!submitted && (
               <button
                 className={`${styles.continueBtn} ${
