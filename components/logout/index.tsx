@@ -2,8 +2,11 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./styles.module.css";
-import { clearAuth } from "@/lib/api/auth";
+import { clearAuth, getAuthToken } from "@/lib/api/auth";
 import Logout from "@/svgs/logout";
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://foundersapi.up.railway.app";
 
 interface LogoutButtonProps {
   variant?: "button" | "menu-item" | "icon-only";
@@ -32,17 +35,34 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
         onLogoutStart();
       }
 
-      clearAuth();
-
+      // Call backend logout endpoint with refresh token
       if (typeof window !== "undefined") {
+        const refreshToken = localStorage.getItem("refreshToken");
+        const token = getAuthToken();
+
+        if (refreshToken) {
+          try {
+            const formData = new FormData();
+            formData.append("refresh", refreshToken);
+
+            await fetch(`${API_BASE_URL}/logout/`, {
+              method: "POST",
+              headers: {
+                ...(token && { Authorization: `Bearer ${token}` }),
+              },
+              body: formData,
+            });
+          } catch {
+            // Silently fail — still clear local state regardless
+          }
+        }
+
+        // Clear all local auth state
+        clearAuth();
         localStorage.removeItem("user");
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
-
-        // Clear sessionStorage
         sessionStorage.clear();
-
-        // Dispatch custom logout event for other components to listen
         window.dispatchEvent(new CustomEvent("userLoggedOut"));
       }
 
@@ -50,17 +70,14 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
         onLogoutComplete();
       }
 
-      // Small delay to ensure cleanup is complete
       await new Promise((resolve) => setTimeout(resolve, 300));
 
-      // Redirect to login page
       router.push(redirectTo);
       if (typeof window !== "undefined") {
         window.location.href = redirectTo;
       }
     } catch (error) {
       console.error("❌ Error during logout:", error);
-
       router.push(redirectTo);
     } finally {
       setIsLoggingOut(false);
@@ -139,7 +156,6 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
     );
   }
 
-  // Menu item variant
   if (variant === "menu-item") {
     return (
       <>
@@ -175,7 +191,6 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
     );
   }
 
-  // Default button variant
   return (
     <>
       <button
@@ -220,7 +235,6 @@ const LogoutButton: React.FC<LogoutButtonProps> = ({
   );
 };
 
-// Confirmation Modal Component
 const ConfirmationModal: React.FC<{
   onConfirm: () => void;
   onCancel: () => void;

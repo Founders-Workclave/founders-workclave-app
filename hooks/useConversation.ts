@@ -30,6 +30,7 @@ interface UseConversationsReturn {
   updateLastMessage: (conversationId: string, message: Message) => void;
   incrementUnreadCount: (conversationId: string) => void;
   markAsRead: (conversationId: string) => void;
+  markMessageDeleted: (messageId: string) => void;
 }
 
 interface ChatMessageData {
@@ -103,6 +104,18 @@ export const useConversations = ({
     },
     []
   );
+
+  const markMessageDeleted = useCallback((messageId: string) => {
+    setMessages((prev) => {
+      const updated: typeof prev = {};
+      for (const convId in prev) {
+        updated[convId] = prev[convId].map((msg) =>
+          msg.id === messageId ? { ...msg, isDeleted: true } : msg
+        );
+      }
+      return updated;
+    });
+  }, []);
 
   const fetchConversations = useCallback(async () => {
     if (!currentUserId) return;
@@ -409,6 +422,7 @@ export const useConversations = ({
         if (chatMessage.type === "connection_established") {
           return;
         }
+
         if (chatMessage.type === "online_users") {
           const userIds = chatMessage.user_ids as string[];
           if (!Array.isArray(userIds)) return;
@@ -438,14 +452,11 @@ export const useConversations = ({
           return;
         }
 
-        // ─── user_status ──────────────────────────────────────────────────
         if (chatMessage.type === "user_status") {
           const userId = chatMessage.user_id as string;
           const status = chatMessage.status as "online" | "offline";
 
-          if (userId === currentUserId) {
-            return;
-          }
+          if (userId === currentUserId) return;
 
           const mappedConvId = userConversationMap.current.get(userId);
 
@@ -462,7 +473,6 @@ export const useConversations = ({
           return;
         }
 
-        // ─── status_update ────────────────────────────────────────────────
         if (chatMessage.type === "status_update") {
           if (!chatMessage.message_id) return;
           const messageId = chatMessage.message_id;
@@ -499,7 +509,17 @@ export const useConversations = ({
           return;
         }
 
-        // ─── chat_message ─────────────────────────────────────────────────
+        // ── Real-time deletion for the RECEIVER ──────────────────────────
+        // The server broadcasts { type: "message_deleted", message_id: "..." }
+        // which arrives here as wsMessage.type === "message" with
+        // chatMessage.type === "message_deleted".
+        if (chatMessage.type === "message_deleted") {
+          const messageId = chatMessage.message_id as string;
+          if (!messageId) return;
+          markMessageDeleted(messageId);
+          return;
+        }
+
         if (chatMessage.type === "chat_message") {
           if (!chatMessage.message_id || !chatMessage.sender_id) return;
           const messageId = chatMessage.message_id;
@@ -582,6 +602,7 @@ export const useConversations = ({
       updateLastMessage,
       incrementUnreadCount,
       markAsRead,
+      markMessageDeleted,
     ]
   );
 
@@ -606,6 +627,7 @@ export const useConversations = ({
     updateLastMessage,
     incrementUnreadCount,
     markAsRead,
+    markMessageDeleted,
   };
 };
 

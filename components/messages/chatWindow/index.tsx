@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+import ReactDOM from "react-dom";
 import styles from "./styles.module.css";
 import SendMessage from "@/svgs/sendMessage";
 import MessageSkeleton from "../messageSkeleton";
@@ -20,6 +21,7 @@ export interface Message {
   senderName?: string;
   replyToId?: string | null;
   replyToMessage?: Message | null;
+  isDeleted?: boolean;
 }
 
 export interface Participant {
@@ -36,9 +38,24 @@ interface ChatWindowProps {
   messages: Message[];
   currentUserId: string;
   onSendMessage: (text: string, replyToId?: string) => void;
+  /**
+   * Called when the user deletes one of their own messages.
+   * The parent is responsible for:
+   *   1. Calling the REST API (DELETE /chat/delete-message/:id/)
+   *   2. Emitting a WebSocket event so the receiver is notified in real-time
+   *   3. Updating the messages array / marking the message as deleted
+   *      so both sender and receiver see the change without refreshing.
+   */
+  onDeleteMessage?: (messageId: string) => void;
   onBack?: () => void;
   isConnected?: boolean;
   isLoadingMessages?: boolean;
+}
+
+interface MenuState {
+  messageId: string;
+  top: number;
+  right: number;
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({
@@ -46,6 +63,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   messages: rawMessages,
   currentUserId,
   onSendMessage,
+  onDeleteMessage,
   onBack,
   isConnected = false,
   isLoadingMessages = false,
@@ -56,13 +74,13 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
   const [searchResults, setSearchResults] = useState<number[]>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(0);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [openMenu, setOpenMenu] = useState<MenuState | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messageRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const searchInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   const notificationSound = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -70,10 +88,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       window.AudioContext ||
       (window as Window & { webkitAudioContext?: typeof AudioContext })
         .webkitAudioContext;
-
     if (!AudioContextClass) return;
     const audioContext = new AudioContextClass();
-
     notificationSound.current = {
       play: () => {
         const oscillator = audioContext.createOscillator();
@@ -89,14 +105,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     } as HTMLAudioElement;
   }, []);
 
+  // Close portal menu on outside mousedown
   useEffect(() => {
-    if (rawMessages.length > 0) {
-      const lastMessage = rawMessages[rawMessages.length - 1];
-      if (lastMessage.senderId !== currentUserId) {
-      }
-    }
-  }, [rawMessages, currentUserId]);
+    if (!openMenu) return;
+    const handleMouseDown = () => setOpenMenu(null);
+    document.addEventListener("mousedown", handleMouseDown);
+    return () => document.removeEventListener("mousedown", handleMouseDown);
+  }, [openMenu]);
 
+  // rawMessages already contains isDeleted flags kept up-to-date by the parent
   const messages = useMemo(
     () =>
       rawMessages.map((msg) => ({
@@ -152,24 +169,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
         setCurrentSearchIndex(0);
         return;
       }
-
       const query = searchQuery.toLowerCase();
       const results: number[] = [];
-
       validMessages.forEach((message, index) => {
-        if (message.text.toLowerCase().includes(query)) {
+        if (!message.isDeleted && message.text.toLowerCase().includes(query)) {
           results.push(index);
         }
       });
-
       setSearchResults(results);
       setCurrentSearchIndex(results.length > 0 ? 0 : -1);
-
-      if (results.length > 0) {
-        scrollToMessage(results[0]);
-      }
+      if (results.length > 0) scrollToMessage(results[0]);
     };
-
     setTimeout(runSearch, 0);
   }, [searchQuery, validMessages, scrollToMessage]);
 
@@ -193,9 +203,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
       e.preventDefault();
       handleNextResult();
     }
-    if (e.key === "Escape") {
-      closeSearch();
-    }
+    if (e.key === "Escape") closeSearch();
   };
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,12 +233,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
     );
   };
 
+  const handleDeleteMessage = (messageId: string) => {
+    setOpenMenu(null);
+    // Delegate entirely to the parent — it handles API + WebSocket emit
+    onDeleteMessage?.(messageId);
+  };
+
   const handleSend = () => {
     if (messageText.trim() && isConnected) {
       onSendMessage(messageText.trim(), replyingTo?.id);
       setMessageText("");
       setReplyingTo(null);
-      // Reset textarea height after clearing
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
@@ -239,31 +252,23 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
-      // Enter alone → send
       e.preventDefault();
       handleSend();
     }
-    // Shift+Enter → browser inserts a newline naturally, nothing to do
   };
 
-  // Auto-grow the textarea as the user types
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessageText(e.target.value);
-    // Reset height first so shrinking works correctly
     e.target.style.height = "auto";
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
   const handleReply = (message: Message) => {
     setReplyingTo(message);
-    setTimeout(() => {
-      textareaRef.current?.focus();
-    }, 100);
+    setTimeout(() => textareaRef.current?.focus(), 100);
   };
 
-  const cancelReply = () => {
-    setReplyingTo(null);
-  };
+  const cancelReply = () => setReplyingTo(null);
 
   const formatTime = (timestamp: string) => {
     try {
@@ -305,6 +310,43 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
 
   return (
     <div className={styles.container}>
+      {/* ── Portal menu: rendered directly on document.body ── */}
+      {openMenu &&
+        typeof document !== "undefined" &&
+        ReactDOM.createPortal(
+          <div
+            className={styles.messageMenu}
+            style={{
+              position: "fixed",
+              top: openMenu.top,
+              right: openMenu.right,
+              zIndex: 99999,
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            <button
+              className={styles.messageMenuDelete}
+              onClick={() => handleDeleteMessage(openMenu.messageId)}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14H6L5 6" />
+                <path d="M10 11v6M14 11v6" />
+                <path d="M9 6V4h6v2" />
+              </svg>
+              Delete message
+            </button>
+          </div>,
+          document.body
+        )}
+
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
@@ -359,7 +401,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
           </div>
         </div>
 
-        {/* Header Actions */}
         <div className={styles.headerActions}>
           <button
             className={`${styles.searchToggleBtn} ${
@@ -416,7 +457,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               </span>
             )}
           </div>
-
           <div className={styles.searchNavigation}>
             <button
               className={styles.searchNavBtn}
@@ -495,6 +535,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
               const isSearchResult = searchResults.includes(index);
               const isActiveResult =
                 searchResults[currentSearchIndex] === index;
+              const isDeleted = message.isDeleted;
+              const isMenuOpen = openMenu?.messageId === message.id;
 
               return (
                 <div
@@ -509,6 +551,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       : styles.messageWrapperReceived
                   } ${isActiveResult ? styles.activeSearchResult : ""}`}
                 >
+                  {/* Bubble */}
                   <div
                     className={`${styles.messageBubble} ${
                       isCurrentUser
@@ -516,40 +559,59 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         : styles.messageReceived
                     } ${isSending ? styles.messageSending : ""}
                     ${isSearchResult ? styles.searchResultBubble : ""}
-                    ${isActiveResult ? styles.activeSearchBubble : ""}`}
+                    ${isActiveResult ? styles.activeSearchBubble : ""}
+                    ${isDeleted ? styles.messageDeleted : ""}`}
                   >
-                    {!isCurrentUser && message.senderName && (
+                    {!isCurrentUser && message.senderName && !isDeleted && (
                       <div className={styles.senderName}>
                         {message.senderName}
                       </div>
                     )}
 
-                    {/* Reply Preview */}
-                    {message.replyToMessage && (
+                    {!isDeleted && message.replyToMessage && (
                       <div className={styles.replyPreview}>
                         <div className={styles.replyContent}>
                           <div className={styles.replyAuthor}>
                             {message.replyToMessage.senderName || "Unknown"}
                           </div>
                           <div className={styles.replyText}>
-                            {message.replyToMessage.text}
+                            {message.replyToMessage.isDeleted
+                              ? "This message was deleted"
+                              : message.replyToMessage.text}
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* whiteSpace: pre-wrap preserves \n from Shift+Enter */}
-                    <p
-                      className={styles.messageText}
-                      style={{
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      {isSearchOpen && searchQuery
-                        ? highlightText(message.text, searchQuery)
-                        : message.text}
-                    </p>
+                    {isDeleted ? (
+                      <p className={styles.deletedText}>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          style={{ marginRight: 4, opacity: 0.6 }}
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                        </svg>
+                        This message was deleted
+                      </p>
+                    ) : (
+                      <p
+                        className={styles.messageText}
+                        style={{
+                          whiteSpace: "pre-wrap",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {isSearchOpen && searchQuery
+                          ? highlightText(message.text, searchQuery)
+                          : message.text}
+                      </p>
+                    )}
 
                     <div className={styles.messageFooter}>
                       {messageTime && (
@@ -557,7 +619,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                           {messageTime}
                         </span>
                       )}
-                      {isCurrentUser && (
+                      {isCurrentUser && !isDeleted && (
                         <span className={styles.messageStatus}>
                           {isSending ? (
                             <svg
@@ -649,26 +711,65 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                         </span>
                       )}
                     </div>
-
-                    {/* Reply Button */}
-                    <button
-                      className={styles.replyButton}
-                      onClick={() => handleReply(message)}
-                      title="Reply to this message"
-                    >
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M9 10L4 15L9 20" />
-                        <path d="M20 4v7a4 4 0 01-4 4H4" />
-                      </svg>
-                    </button>
                   </div>
+
+                  {/* Actions beside the bubble — shown on row hover */}
+                  {!isDeleted && (
+                    <div className={styles.messageActions}>
+                      <button
+                        className={styles.replyButton}
+                        onClick={() => handleReply(message)}
+                        title="Reply"
+                      >
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M9 10L4 15L9 20" />
+                          <path d="M20 4v7a4 4 0 01-4 4H4" />
+                        </svg>
+                      </button>
+
+                      {isCurrentUser && !isSending && (
+                        <button
+                          className={`${styles.messageMenuButton} ${
+                            isMenuOpen ? styles.messageMenuButtonActive : ""
+                          }`}
+                          onMouseDown={(e) => {
+                            e.stopPropagation();
+                            if (isMenuOpen) {
+                              setOpenMenu(null);
+                            } else {
+                              const rect = (
+                                e.currentTarget as HTMLElement
+                              ).getBoundingClientRect();
+                              setOpenMenu({
+                                messageId: message.id,
+                                top: rect.bottom + 6,
+                                right: window.innerWidth - rect.right,
+                              });
+                            }
+                          }}
+                          title="More options"
+                        >
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <circle cx="5" cy="12" r="2" />
+                            <circle cx="12" cy="12" r="2" />
+                            <circle cx="19" cy="12" r="2" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
