@@ -1,0 +1,102 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.title {
+  font-family: "inter", sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: #1a1d2e;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.title em {
+  font-style: italic;
+  color: #5865f2;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #9fa6bc;
+  max-width: 380px;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 460px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffffff;
+  border: 1px solid #e8eaf0;
+  border-radius: 12px;
+  padding: 13px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+  font-family: "inter", sans-serif;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(88, 101, 242, 0.06);
+}
+
+.chip:hover {
+  background: #f4f5fb;
+  border-color: rgba(88, 101, 242, 0.25);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.1);
+}
+
+.chipIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.chipText {
+  font-size: 13px;
+  color: #3d4460;
+  flex: 1;
+  line-height: 1.4;
+}
+
+.chipArrow {
+  color: #c9cce8;
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: transform 0.15s, color 0.15s;
+}
+
+.chip:hover .chipArrow {
+  color: #5865f2;
+  transform: translateX(3px);
+}
