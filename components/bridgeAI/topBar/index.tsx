@@ -6,7 +6,9 @@ import styles from "./styles.module.css";
 interface TopbarProps {
   hasConversation: boolean;
   isGeneratingPRD: boolean;
+  isGeneratingPRDPdf: boolean;
   onGeneratePRD: () => void;
+  onGeneratePRDPdf: () => void;
   onClearChat: () => void;
   onMenuToggle: () => void;
 }
@@ -50,7 +52,7 @@ export default function Topbar({
           <div>
             <p className={styles.agentName}>Bridge AI</p>
             <p className={styles.agentTitle}>
-              Principal PM · 15 years exp · FoundersWorkclave
+              Principal PM · FoundersWorkclave
             </p>
           </div>
         </div>

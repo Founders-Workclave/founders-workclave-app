@@ -14,6 +14,15 @@ import ServiceUnavailable from "../errorBoundary/serviceUnavailable";
 
 type FilterTab = "all" | "in-progress" | "completed";
 
+const formatDate = (dateStr: string): string => {
+  if (!dateStr) return "—";
+  return new Date(dateStr).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 const AllPRDsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -29,7 +38,7 @@ const AllPRDsPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       const response = await agencyService.getAllPRDs();
-      setPrds(response.prds);
+      setPrds(((response.prds ?? []) as PRD[]).filter(Boolean));
     } catch (err) {
       console.error("Error fetching PRDs:", err);
       setError("Failed to load PRDs");
@@ -44,10 +53,10 @@ const AllPRDsPage: React.FC = () => {
 
   const filteredPRDs = prds.filter((prd) => {
     const matchesSearch =
-      prd.project.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prd.client.toLowerCase().includes(searchQuery.toLowerCase());
+      (prd.project ?? "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (prd.client ?? "").toLowerCase().includes(searchQuery.toLowerCase());
 
-    const statusLower = prd.status.toLowerCase();
+    const statusLower = (prd.status ?? "").toLowerCase();
 
     const matchesFilter =
       filterTab === "all" ||
@@ -58,11 +67,20 @@ const AllPRDsPage: React.FC = () => {
     return matchesSearch && matchesFilter;
   });
 
-  // Pagination
   const totalPages = Math.ceil(filteredPRDs.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentPRDs = filteredPRDs.slice(startIndex, endIndex);
+
+  const getStatusLabel = (status: string): string => {
+    const s = (status ?? "").toLowerCase();
+    if (s === "in-progress" || s === "in progress") return "In-Progress";
+    if (s === "completed") return "Completed";
+    return status ?? "—";
+  };
+
+  const isCompleted = (status: string): boolean =>
+    (status ?? "").toLowerCase() === "completed";
 
   const handleView = (documentUrl: string): void => {
     window.open(documentUrl, "_blank");
@@ -141,7 +159,6 @@ const AllPRDsPage: React.FC = () => {
         </button>
       </div>
 
-      {/* PRDs Container */}
       <div className={styles.container}>
         <div className={styles.header}>
           <h1 className={styles.title}>All PRDs</h1>
@@ -190,29 +207,31 @@ const AllPRDsPage: React.FC = () => {
                     <th className={styles.tableHeaderCell}>Project</th>
                     <th className={styles.tableHeaderCell}>Client</th>
                     <th className={styles.tableHeaderCell}>Status</th>
+                    <th className={styles.tableHeaderCell}>Uploaded</th>
                     <th className={styles.tableHeaderCell}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {currentPRDs.map((prd, index) => (
                     <tr
-                      key={`${prd.project}-${index}`}
+                      key={`${prd.project}-${prd.uploadedAt}-${index}`}
                       className={styles.tableRow}
                     >
-                      <td className={styles.tableCell}>{prd.project}</td>
-                      <td className={styles.tableCell}>{prd.client}</td>
+                      <td className={styles.tableCell}>{prd.project ?? "—"}</td>
+                      <td className={styles.tableCell}>{prd.client ?? "—"}</td>
                       <td className={styles.tableCell}>
                         <span
                           className={`${styles.statusBadge} ${
-                            prd.status.toLowerCase() === "completed"
+                            isCompleted(prd.status)
                               ? styles.statusCompleted
                               : styles.statusInProgress
                           }`}
                         >
-                          {prd.status === "in-progress"
-                            ? "In-Progress"
-                            : "Completed"}
+                          {getStatusLabel(prd.status)}
                         </span>
+                      </td>
+                      <td className={styles.tableCell}>
+                        {formatDate(prd.uploadedAt)}
                       </td>
                       <td className={styles.tableCell}>
                         <div className={styles.actionsContainer}>
@@ -226,7 +245,7 @@ const AllPRDsPage: React.FC = () => {
                           </button>
                           <button
                             onClick={() =>
-                              handleDownload(prd.document, prd.project)
+                              handleDownload(prd.document, prd.project ?? "")
                             }
                             className={styles.actionButton}
                             aria-label="Download PRD"
@@ -253,27 +272,38 @@ const AllPRDsPage: React.FC = () => {
             {/* Mobile Card View */}
             <div className={styles.cardsContainer}>
               {currentPRDs.map((prd, index) => (
-                <div key={`${prd.project}-${index}`} className={styles.card}>
+                <div
+                  key={`${prd.project}-${prd.uploadedAt}-${index}`}
+                  className={styles.card}
+                >
                   <div className={styles.cardRow}>
                     <span className={styles.cardLabel}>Project</span>
-                    <span className={styles.cardValue}>{prd.project}</span>
+                    <span className={styles.cardValue}>
+                      {prd.project ?? "—"}
+                    </span>
                   </div>
                   <div className={styles.cardRow}>
                     <span className={styles.cardLabel}>Client</span>
-                    <span className={styles.cardValue}>{prd.client}</span>
+                    <span className={styles.cardValue}>
+                      {prd.client ?? "—"}
+                    </span>
                   </div>
                   <div className={styles.cardRow}>
                     <span className={styles.cardLabel}>Status</span>
                     <span
                       className={`${styles.statusBadge} ${
-                        prd.status.toLowerCase() === "completed"
+                        isCompleted(prd.status)
                           ? styles.statusCompleted
                           : styles.statusInProgress
                       }`}
                     >
-                      {prd.status === "in-progress"
-                        ? "In-Progress"
-                        : "Completed"}
+                      {getStatusLabel(prd.status)}
+                    </span>
+                  </div>
+                  <div className={styles.cardRow}>
+                    <span className={styles.cardLabel}>Uploaded</span>
+                    <span className={styles.cardValue}>
+                      {formatDate(prd.uploadedAt)}
                     </span>
                   </div>
                   <div className={styles.cardActions}>
@@ -285,7 +315,9 @@ const AllPRDsPage: React.FC = () => {
                       <PrdView />
                     </button>
                     <button
-                      onClick={() => handleDownload(prd.document, prd.project)}
+                      onClick={() =>
+                        handleDownload(prd.document, prd.project ?? "")
+                      }
                       className={styles.actionButton}
                       aria-label="Download PRD"
                     >

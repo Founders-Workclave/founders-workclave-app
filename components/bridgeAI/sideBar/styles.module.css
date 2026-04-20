@@ -297,3 +297,43 @@
     display: flex;
   }
 }
+
+.loadingConvs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: #888;
+  font-size: 0.875rem;
+}
+
+.spinner {
+  color: #5865f2;
+}
+
+.deleteBtn {
+  opacity: 0;
+  padding: 4px;
+  border: none;
+  background: none;
+  color: #ff4d4d;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+}
+
+.convItem:hover .deleteBtn {
+  opacity: 1;
+}
+
+.deleteBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinnerSmall {
+  color: #ff4d4d;
+}

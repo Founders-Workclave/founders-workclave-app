@@ -130,7 +130,7 @@ export const agencyService = {
    * Fetches all PRDs across all projects
    */
   async getAllPRDs(): Promise<AllPRDsResponse> {
-    return apiClient.get("/agency/prds/");
+    return apiClient.get("/bridge/prds/");
   },
 
   /**

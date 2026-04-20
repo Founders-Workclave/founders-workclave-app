@@ -1,9 +1,13 @@
 import { getAuthToken } from "@/lib/api/auth";
+
 import {
   SendMessagePayload,
   SendMessageResponse,
-  PRDGeneratePayload,
   PRDGenerateResponse,
+  ConversationListResponse,
+  ConversationMessagesResponse,
+  GeneratePRDPdfResponse,
+  DeleteConversationResponse,
 } from "@/types/bridge";
 
 const BASE_URL =
@@ -48,16 +52,71 @@ export const bridgeService = {
   },
 
   /**
-   * Generate a PRD document from an existing conversation.
+   * Generate a PRD (and PDF) from an existing conversation.
+   *
+   * Endpoint: POST /bridge/conversation/{conversation_id}/generate-prd/
+   *
+   * Response:
+   * - Success: { status: "Success", pdf_url: "https://...", conversation_id: "..." }
+   * - Failed:  { status: "Failed", pdf_url: "Error message...", conversation_id: "..." }
    */
-  async generatePRD(payload: PRDGeneratePayload): Promise<PRDGenerateResponse> {
-    const response = await fetch(`${BASE_URL}/bridge/prd/generate/`, {
-      method: "POST",
+  async generatePRD(conversationId: string): Promise<GeneratePRDPdfResponse> {
+    const response = await fetch(
+      `${BASE_URL}/bridge/conversation/${conversationId}/generate-prd/`,
+      {
+        method: "POST",
+        headers: authHeaders(),
+      }
+    );
+
+    return handleResponse<GeneratePRDPdfResponse>(response);
+  },
+
+  /**
+   * Fetch all conversations for the current user.
+   */
+  async getConversations(): Promise<ConversationListResponse> {
+    const response = await fetch(`${BASE_URL}/bridge/conversations/`, {
+      method: "GET",
       headers: authHeaders(),
-      body: JSON.stringify(payload),
     });
 
-    return handleResponse<PRDGenerateResponse>(response);
+    return handleResponse<ConversationListResponse>(response);
+  },
+
+  /**
+   * Fetch all messages for a given conversation.
+   */
+  async getConversationMessages(
+    conversationId: string
+  ): Promise<ConversationMessagesResponse> {
+    const response = await fetch(
+      `${BASE_URL}/bridge/conversation/${conversationId}/messages/`,
+      {
+        method: "GET",
+        headers: authHeaders(),
+      }
+    );
+
+    return handleResponse<ConversationMessagesResponse>(response);
+  },
+
+  /**
+   * Delete a conversation.
+   * DELETE /bridge/conversation/{conversation_id}/messages/
+   */
+  async deleteConversation(
+    conversationId: string
+  ): Promise<DeleteConversationResponse> {
+    const response = await fetch(
+      `${BASE_URL}/bridge/conversation/${conversationId}/messages/`,
+      {
+        method: "DELETE",
+        headers: authHeaders(),
+      }
+    );
+
+    return handleResponse<DeleteConversationResponse>(response);
   },
 };
 

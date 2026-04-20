@@ -3,6 +3,7 @@ export interface PRD {
   project: string;
   client: string;
   status: string;
+  uploadedAt: string;
 }
 
 export interface AllPRDsResponse {

@@ -20,6 +20,7 @@ export interface UploadPRDPayload {
 }
 
 export interface AllPRDsResponse {
+  data: AllPRDsResponse | PromiseLike<AllPRDsResponse>;
   message: string;
   prds: never;
 }

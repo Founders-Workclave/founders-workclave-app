@@ -3,16 +3,19 @@
 import { Conversation, ChatMode } from "@/types/bridge";
 import Image from "next/image";
 import styles from "./styles.module.css";
-import { FileIcon, LightbulbIcon } from "lucide-react";
+import { FileIcon, LightbulbIcon, Trash2Icon } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
   conversations: Conversation[];
   activeId: string | null;
   mode: ChatMode;
+  isLoadingConversations: boolean;
+  deletingId: string | null; // ✅ NEW
   onModeChange: (mode: ChatMode) => void;
   onNewChat: () => void;
   onSelectConversation: (id: string) => void;
+  onDeleteConversation: (id: string) => void; // ✅ NEW
   onClose: () => void;
 }
 
@@ -21,9 +24,12 @@ export default function Sidebar({
   conversations,
   activeId,
   mode,
+  isLoadingConversations,
+  deletingId,
   onModeChange,
   onNewChat,
   onSelectConversation,
+  onDeleteConversation,
   onClose,
 }: SidebarProps) {
   return (
@@ -50,7 +56,6 @@ export default function Sidebar({
             New conversation
           </button>
 
-          {/* Close button — mobile only */}
           <button
             className={styles.closeBtn}
             onClick={onClose}
@@ -73,7 +78,6 @@ export default function Sidebar({
         </div>
       </div>
 
-      {/* Mode */}
       <div className={styles.modeSection}>
         <p className={styles.sectionLabel}>Mode</p>
         <div className={styles.modeTabs}>
@@ -83,10 +87,7 @@ export default function Sidebar({
             }`}
             onClick={() => onModeChange("idea_refinement")}
           >
-            <LightbulbIcon
-              size={18}
-              color={mode === "idea_refinement" ? "#5865F2" : "#5865F2"}
-            />{" "}
+            <LightbulbIcon size={18} color="#5865F2" />
             <p className={styles.otherTexts}>Idea</p>
           </button>
           <button
@@ -95,48 +96,107 @@ export default function Sidebar({
             }`}
             onClick={() => onModeChange("prd_generation")}
           >
-            <FileIcon
-              size={18}
-              color={mode === "prd_generation" ? "#5865F2" : "#5865F2"}
-            />{" "}
+            <FileIcon size={18} color="#5865F2" />
             <p className={styles.otherTexts}>PRD</p>
           </button>
         </div>
       </div>
 
-      {/* Conversations */}
       <div className={styles.convList}>
         <p className={styles.sectionLabel}>Recent</p>
-        {conversations.length === 0 && (
+
+        {isLoadingConversations ? (
+          <div className={styles.loadingConvs}>
+            <svg
+              className={styles.spinner}
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+              <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round">
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  from="0 12 12"
+                  to="360 12 12"
+                  dur="0.8s"
+                  repeatCount="indefinite"
+                />
+              </path>
+            </svg>
+            <span>Loading conversations...</span>
+          </div>
+        ) : conversations.length === 0 ? (
           <p className={styles.emptyConvs}>No conversations yet</p>
-        )}
-        {conversations.map((conv) => (
-          <button
-            key={conv.id}
-            className={`${styles.convItem} ${
-              activeId === conv.id ? styles.convItemActive : ""
-            }`}
-            onClick={() => onSelectConversation(conv.id)}
-          >
-            <span
-              className={`${styles.convDot} ${
-                conv.mode === "idea_refinement"
-                  ? styles.convDotIdea
-                  : styles.convDotPrd
+        ) : (
+          conversations.map((conv) => (
+            <button
+              key={conv.id}
+              className={`${styles.convItem} ${
+                activeId === conv.id ? styles.convItemActive : ""
               }`}
-            />
-            <span className={styles.convTitle}>{conv.title}</span>
-            <span className={styles.convTime}>
-              {conv.createdAt.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
-          </button>
-        ))}
+              onClick={() => onSelectConversation(conv.id)}
+            >
+              <span
+                className={`${styles.convDot} ${
+                  conv.mode === "idea_refinement"
+                    ? styles.convDotIdea
+                    : styles.convDotPrd
+                }`}
+              />
+              <span className={styles.convTitle}>{conv.title}</span>
+              <span className={styles.convTime}>
+                {conv.createdAt.toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+
+              {/* ✅ Delete Button */}
+              <button
+                className={styles.deleteBtn}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteConversation(conv.id);
+                }}
+                aria-label="Delete conversation"
+                disabled={deletingId === conv.id}
+              >
+                {deletingId === conv.id ? (
+                  <svg
+                    className={styles.spinnerSmall}
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+                    <path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round">
+                      <animateTransform
+                        attributeName="transform"
+                        type="rotate"
+                        from="0 12 12"
+                        to="360 12 12"
+                        dur="0.8s"
+                        repeatCount="indefinite"
+                      />
+                    </path>
+                  </svg>
+                ) : (
+                  <Trash2Icon size={14} />
+                )}
+              </button>
+            </button>
+          ))
+        )}
       </div>
 
-      {/* Footer */}
       <div className={styles.footer}>
         <div className={styles.userAvatar}>FW</div>
         <div className={styles.userInfo}>

@@ -1,5 +1,5 @@
 import AgencyLayout from "@/layout/agency";
-import styles from "./styles.module.css";
+// import styles from "./styles.module.css";
 // import AllPRDsPage from "@/components/agencyPRD";
 // import ProjectStart from "@/components/projectStart";
 import ComingSoon from "@/components/comingSoon";
@@ -7,15 +7,10 @@ import ComingSoon from "@/components/comingSoon";
 const AdminPRDS = () => {
   return (
     <>
-      <AgencyLayout pageTitle="" pageText="">
-        <div className={styles.header}>
-          {/* <div>
-            <h2>AI PRDs</h2>
-          </div> */}
-        </div>
+      <AgencyLayout pageTitle="AI PRDs" pageText="">
         <ComingSoon />
-        {/* <ProjectStart />
-        <AllPRDsPage /> */}
+        {/* <ProjectStart /> */}
+        {/* <AllPRDsPage /> */}
       </AgencyLayout>
     </>
   );
